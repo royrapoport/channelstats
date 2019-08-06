@@ -43,7 +43,7 @@ class MessageTableFactory(object):
                 if self.local:
                     host = "http://localhost:8000"
             timestamp = pynamodb.attributes.UnicodeAttribute(hash_key=True)
-            slack_cid = pynamodb.attributes.UnicodeAttribute()
+            slack_cid = pynamodb.attributes.UnicodeAttribute(range_key=True)
             user_id= pynamodb.attributes.UnicodeAttribute()
             wordcount = pynamodb.attributes.NumberAttribute()
             files = pynamodb.attributes.UnicodeAttribute()
