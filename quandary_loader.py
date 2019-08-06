@@ -4,7 +4,7 @@ import json
 
 import message_writer
 
-mw = message_writer.MessageWriter()
+mw = message_writer.MessageWriter(local=True)
 
 cid = "GL3A0K8HE"
 
