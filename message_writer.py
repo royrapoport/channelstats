@@ -32,23 +32,44 @@ class MessageWriter(object):
         for table_name in messages:
             print("Writing to message table {}".format(table_name))
             table = message_tables[table_name]
-            with table.batch_write() as batch:
-                items = []
+            with table.batch_writer() as batch:
                 for message in messages[table_name]:
-                    timestamp = message['ts']
-                    user_id = message['user']
-                    wordcount = len(message['text'].split())
-                    (reaction_count, reactions) = self.get_reactions(message)
-                    (reply_count, replies) = self.get_replies(message)
-                    files = json.dumps(message.get("files", []))
-                    row = table(timestamp=timestamp, \
-                                slack_cid=cid, user_id=user_id, \
-                                wordcount=wordcount, reaction_count=reaction_count, \
-                                reactions=reactions, replies=replies, \
-                                reply_count=reply_count, files=files)
-                    items.append(row)
-                for row in items:
-                    batch.save(row)
+                    Row = self.make_row(message, cid)
+                    batch.put_item(Row)
+
+    def make_row(self, message, cid):
+        """
+        create a Row dictionary for insertion into DynamoDB
+        """
+        timestamp = message['ts']
+        user_id = message['user']
+        wordcount = len(message['text'].split())
+        (reaction_count, reactions) = self.get_reactions(message)
+        (reply_count, replies) = self.get_replies(message)
+        files = json.dumps(message.get("files", None))
+        Row = {
+            "timestamp": timestamp,
+            "slack_cid": cid,
+            "user_id": user_id,
+            "wordcount": wordcount,
+            "reaction_count": reaction_count,
+            "reactions": reactions,
+            "replies": replies,
+            "reply_count": reply_count,
+            "files": files
+        }
+        Row = self.prune_empty(Row)
+        return Row
+
+    def prune_empty(self, row):
+        """
+        prune attributes whose value is None
+        """
+        new_row = {}
+        for k in row:
+            if row[k] is not None:
+                new_row[k] = row[k]
+        return new_row
 
     def get_replies(self, message):
         """
@@ -69,8 +90,8 @@ class MessageWriter(object):
         if replies:
             replies = ",".join(replies)
         else:
-            replies = "none"
-        return (reply_count, ",".join(replies))
+            replies = None
+        return (reply_count, replies)
 
     def get_reactions(self, message):
         """
@@ -87,11 +108,8 @@ class MessageWriter(object):
             count += len(reaction['users'])
             reaction_text = "{}:{}".format(reaction_name, users)
             reactions.append(reaction_text)
-        # Fun fact: DynamoDB does not allow empty strings in attributevalues.
-        # So if we can't find any replies, we'll insert the string 'none'
-        # (This is lame)
         if reactions:
             reactions = ",".join(reactions)
         else:
-            reactions = "none"
+            reactions = None
         return (count, reactions)
