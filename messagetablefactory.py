@@ -2,7 +2,10 @@
 
 import time
 
+# import botocore
+# import botocore.errorfactory.ResourceNotFoundException
 import boto3
+import ddb
 
 
 class MessageTableFactory(object):
@@ -10,12 +13,6 @@ class MessageTableFactory(object):
     def __init__(self, local=False):
         self.__day_tables = {}
         self.local = local
-        if local:
-            self.dynamodb_resource = boto3.resource('dynamodb', endpoint_url="http://localhost:8000")
-            self.dynamodb_client = boto3.client('dynamodb', endpoint_url="http://localhost:8000")
-        else:
-            self.dynamodb_resource = boto3.resource('dynamodb')
-            self.dynamodb_client = boto3.client('dynamodb')
 
     def get_existing_tables(self):
         """
@@ -44,47 +41,9 @@ class MessageTableFactory(object):
         """
 
         day = self.make_day(timestamp)
-        if day not in self.__day_tables:
-            table_name = self.get_message_table_name(timestamp)
-            try:
-                self.dynamodb_client.describe_table(TableName=table_name)
-                table = self.dynamodb_resource.Table(table_name)
-            except botocore.errorfactory.ResourceNotFoundException:
-                table = self.create_table(table_name)
-            self.__day_tables[day] = table
-        return self.__day_tables[day]
-
-    def create_table(self, table_name):
-        """
-        creates DynamoDB table with this name; waits until table is created;
-        returns table
-        """
-        table = self.dynamodb_resource.create_table(
-            TableName=table_name,
-            KeySchema=[
-                {
-                    'AttributeName': "timestamp",
-                    'KeyType': 'HASH'
-                },
-                {
-                    'AttributeName': "slack_cid",
-                    'KeyType': 'RANGE'
-                }
-            ],
-            AttributeDefinitions=[
-                {
-                    'AttributeName': "timestamp",
-                    'AttributeType': 'S'
-                },
-                {
-                    'AttributeName': "slack_cid",
-                    'AttributeType': 'S'
-                }
-            ],
-            ProvisionedThroughput={
-                'ReadCapacityUnits': 10,
-                'WriteCapacityUnits': 10
-            }
-        )
-        self.dynamodb_client.get_waiter('table_exists').wait(TableName=table_name)
-        return table
+        table_name = self.get_message_table_name(timestamp)
+        if table_name not in self.__day_tables:
+            DDB = ddb.DDB(table_name, [("timestamp", "S"), ("slack_cid", "S")], (10,10), local=self.local)
+            table = DDB.get_table()
+            self.__day_tables[table_name] = table
+        return self.__day_tables[table_name]

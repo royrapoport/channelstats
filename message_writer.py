@@ -35,6 +35,8 @@ class MessageWriter(object):
             with table.batch_writer() as batch:
                 for message in messages[table_name]:
                     Row = self.make_row(message, cid)
+                    if not Row:
+                        continue
                     batch.put_item(Row)
 
     def make_row(self, message, cid):
@@ -42,7 +44,11 @@ class MessageWriter(object):
         create a Row dictionary for insertion into DynamoDB
         """
         timestamp = message['ts']
-        user_id = message['user']
+        try:
+            user_id = message['user']
+        except:
+            print("How the hell no user? {}".format(json.dumps(message, indent=4)))
+            return None
         wordcount = len(message['text'].split())
         (reaction_count, reactions) = self.get_reactions(message)
         (reply_count, replies) = self.get_replies(message)
