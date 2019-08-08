@@ -1,5 +1,6 @@
 #! /usr/bin/env python
 
+import re
 import time
 
 # import botocore
@@ -19,12 +20,19 @@ class MessageTableFactory(object):
         """
         return self.dynamodb_client.list_tables()['TableNames']
 
-    def get_message_table_name(self, timestamp):
+    def get_message_table_name(self, timestamp_or_dt):
         """
-        given str timestamp, return the name of the Message table we'll store
+        given str timestamp or yyyy-mm-dd, return the name of the Message table we'll store
         a message in
         """
-        return "Message-{}".format(self.make_day(timestamp))
+        try:
+            int(float(timestamp))
+            date = self.make_day(timestamp_or_dt)
+        except:
+            if not re.match("\d\d\d\d-\d\d-\d\d", timestamp_or_dt):
+                raise RuntimeException("timestamp_or_dt needs to be a timestamp or dt")
+            date = timestamp_or_dt
+        return "Message-{}".format(date)
 
     def make_day(self, timestamp):
         """
@@ -33,13 +41,12 @@ class MessageTableFactory(object):
         lt = time.localtime(int(float(timestamp)))
         return time.strftime("%Y-%m-%d", lt)
 
-    def get_message_table(self, timestamp):
+    def get_message_table(self, timestamp_or_dt):
         """
         Return a pynamodb.models.Model Table for the given UNIX timestamp;
         """
 
-        day = self.make_day(timestamp)
-        table_name = self.get_message_table_name(timestamp)
+        table_name = self.get_message_table_name(timestamp_or_dt)
         if table_name not in self.__day_tables:
             DDB = ddb.DDB(table_name, [("timestamp", "S"), ("slack_cid", "S")], (10,10))
             table = DDB.get_table()
