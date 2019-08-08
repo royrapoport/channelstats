@@ -5,9 +5,8 @@ import ddb
 class ChannelConfiguration(object):
     table_name = "ChannelConfiguration"
 
-    def __init__(self, local=False):
-        self.local = local
-        self.ddb = ddb.DDB(self.table_name, [('slack_cid', 'S')], (10,10), local=local)
+    def __init__(self):
+        self.ddb = ddb.DDB(self.table_name, [('slack_cid', 'S')], (10,10))
         self.table = self.ddb.get_table()
 
     def set_channel_config(self, slack_cid, last_message_timestamp, refetch_interval):

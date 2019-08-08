@@ -2,6 +2,7 @@
 
 import time
 
+import config
 import channel_configuration
 import slack_token
 import slacker
@@ -9,20 +10,17 @@ import message_writer
 
 class Downloader(object):
 
-    # Maximum age in days of messages
-    max_age = 2
-
-    def __init__(self, sname, stoken, local=False):
-        self.cconfig = channel_configuration.ChannelConfiguration(local=local)
+    def __init__(self, sname, stoken):
+        self.cconfig = channel_configuration.ChannelConfiguration()
         self.slack = slacker.Slacker(sname, stoken)
-        self.MessageWriter = message_writer.MessageWriter(local=local)
+        self.MessageWriter = message_writer.MessageWriter()
 
     def earliest_timestamp(self):
         """
-        Given self.max_age, return the minimum timestamp we're willing to refetch
+        Given config.max_age, return the minimum timestamp we're willing to refetch
         """
         now = time.time()
-        then = now - 86400 * self.max_age
+        then = now - 86400 * config.max_age
         return then
 
     def ts_print(self, timestamp):
@@ -53,5 +51,5 @@ class Downloader(object):
             # WRITE_MESSAGES(messages, cid)
 
 if __name__ == "__main__":
-    downloader = Downloader("rands-leadership", slack_token.token, local=True)
+    downloader = Downloader("rands-leadership", slack_token.token)
     downloader.download()

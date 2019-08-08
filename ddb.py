@@ -1,9 +1,11 @@
 
 import boto3
 
+import config
+
 class DDB(object):
 
-    def __init__(self, table_name, attributes, provisioned_throughput, local=False):
+    def __init__(self, table_name, attributes, provisioned_throughput):
         """
         table_name is self-explanatory
         attributes is a list of one or two (attribute_name, attribute_type); first is HASH, second
@@ -11,7 +13,7 @@ class DDB(object):
         provisioned_throughput is a list of (read_capacity_units, write_capacity_units)
         local is boolean, whether we're using local dynamodb
         """
-        if local:
+        if config.local:
             self.dynamodb_resource = boto3.resource('dynamodb', endpoint_url="http://localhost:8000")
             self.dynamodb_client = boto3.client('dynamodb', endpoint_url="http://localhost:8000")
         else:

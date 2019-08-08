@@ -6,8 +6,8 @@ import messagetablefactory
 
 class MessageWriter(object):
 
-    def __init__(self, local=False):
-        self.MessageTableFactory = messagetablefactory.MessageTableFactory(local=local)
+    def __init__(self):
+        self.MessageTableFactory = messagetablefactory.MessageTableFactory()
 
     def write(self, list_of_messages, cid):
         """

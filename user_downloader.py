@@ -8,8 +8,8 @@ import user
 
 class UserDownloader(object):
 
-    def __init__(self, sname, stoken, local=False):
-        self.user = user.User(local=local)
+    def __init__(self, sname, stoken):
+        self.user = user.User()
         self.slack = slacker.Slacker(sname, stoken)
 
     def download(self):
@@ -17,5 +17,5 @@ class UserDownloader(object):
         self.user.batch_upload(users)
 
 if __name__ == "__main__":
-    user_downloader = UserDownloader("rands-leadership", slack_token.token, local=True)
+    user_downloader = UserDownloader("rands-leadership", slack_token.token)
     user_downloader.download()

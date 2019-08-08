@@ -4,9 +4,8 @@ import ddb
 class User(object):
     table_name = "User"
 
-    def __init__(self, local=False):
-        self.local = local
-        self.ddb = ddb.DDB(self.table_name, [('slack_uid', 'S')], (10,10), local=local)
+    def __init__(self):
+        self.ddb = ddb.DDB(self.table_name, [('slack_uid', 'S')], (10,10))
         self.table = self.ddb.get_table()
 
     def batch_upload(self, users):

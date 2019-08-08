@@ -8,8 +8,8 @@ import channel
 
 class ChannelDownloader(object):
 
-    def __init__(self, sname, stoken, local=False):
-        self.channel = channel.Channel(local=local)
+    def __init__(self, sname, stoken):
+        self.channel = channel.Channel()
         self.slack = slacker.Slacker(sname, stoken)
 
     def download(self):
@@ -17,5 +17,5 @@ class ChannelDownloader(object):
         self.channel.batch_upload(channels)
 
 if __name__ == "__main__":
-    channel_downloader = ChannelDownloader("rands-leadership", slack_token.token, local=True)
+    channel_downloader = ChannelDownloader("rands-leadership", slack_token.token)
     channel_downloader.download()

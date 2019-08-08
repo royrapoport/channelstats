@@ -10,9 +10,8 @@ import ddb
 
 class MessageTableFactory(object):
 
-    def __init__(self, local=False):
+    def __init__(self):
         self.__day_tables = {}
-        self.local = local
 
     def get_existing_tables(self):
         """
@@ -37,13 +36,12 @@ class MessageTableFactory(object):
     def get_message_table(self, timestamp):
         """
         Return a pynamodb.models.Model Table for the given UNIX timestamp;
-        if local, use a local endpoint for DynamoDB
         """
 
         day = self.make_day(timestamp)
         table_name = self.get_message_table_name(timestamp)
         if table_name not in self.__day_tables:
-            DDB = ddb.DDB(table_name, [("timestamp", "S"), ("slack_cid", "S")], (10,10), local=self.local)
+            DDB = ddb.DDB(table_name, [("timestamp", "S"), ("slack_cid", "S")], (10,10))
             table = DDB.get_table()
             self.__day_tables[table_name] = table
         return self.__day_tables[table_name]
