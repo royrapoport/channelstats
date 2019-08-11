@@ -1,6 +1,7 @@
 #! /usr/bin/env python3
 
 import datetime
+import json
 
 import channel
 import messagetablefactory
@@ -37,6 +38,8 @@ class ReportGenerator(object):
         # print("gm activity by hour:")
         # for x in range(0,24):
         #    print("{}: {}".format(x, self.report._data['hour'].get(x)))
+        report = self.report.data()
+        print("Report is {} chars".format(len(json.dumps(report))))
         print("user activity by hour:")
         for x in range(0,24):
             print("{}: {}".format(x, self.report._data['user_weekday_hour'].get(x)))
