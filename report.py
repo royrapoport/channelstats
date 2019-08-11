@@ -4,13 +4,46 @@ import copy
 import json
 import time
 
+import config
 import user
 import utils
 
+class Accumulator(object):
+    """
+    Accumulator accumulates a list of objects, which will
+    never ben larger than LIMIT provided.  It will keep the
+    top LIMIT objects, where the size of object is determined
+    by running METHOD(object)
+    """
+    def __init__(self, limit, method):
+        self.limit = limit
+        self.method = method
+        self.items = []
+        self.min = 0
+        self.size = 0
+
+    def append(self, item):
+        item_size = self.method(item)
+        if item_size < self.min and self.size >= self.limit:
+            return
+        # If we're here, then this is bigger than the minimum
+        # current size, and that means we'll definitely add it
+        self.items.append(item)
+        self.items.sort(key = lambda x: self.method(x))
+        self.items.reverse()
+        self.items = self.items[0:self.limit]
+        self.min = self.method(self.items[-1])
+
 class Report(object):
+
+    # Where we keep the 'top X' of messages, what X should we go for?
+    top_limit = 10
+
     def __init__(self):
         self._data = {}
         self.user = user.User()
+        self.reactions_accumulator = Accumulator(self.top_limit, lambda x: x[0])
+        self.reply_accumulator = Accumulator(self.top_limit, lambda x: x[0])
 
     def message(self, message):
         accum_methods = [x for x in dir(self) if x.find("accum_") == 0]
@@ -72,7 +105,7 @@ class Report(object):
             print("Couldn't find user {}".format(message['user_id']))
             return
         if 'tz_offset' not in user or 'tz' not in user:
-            print("User has no tz info: {}".format(user))
+            # print("User has no tz info: {}".format(user))
             return
         tz_offset = user['tz_offset']
         tz = user.get("tz", "Unknown")
@@ -87,6 +120,35 @@ class Report(object):
             self.increment(["user_weekday_hour_per_user", uid, hour], message)
 
     def finalize(self):
+        final_methods = [x for x in dir(self) if x.find("_finalize_") == 0]
+        for final_method in final_methods:
+            method = "self.{}()".format(final_method)
+            eval(method)
+
+    def make_url(self, mrecord):
+        mid = mrecord[1]
+        cid = mrecord[2]
+        return("https://{}.slack.com/archives/{}/p{}".format(config.slack_name, cid,mid))
+
+    def _finalize_reply_popularity(self):
+        self._data['reply_count'] = self.reply_accumulator.items
+        return
+        x = self._data['reply_count'][0]
+        print("Most replied message: {}".format(x))
+        print(self.make_url(x))
+        x = self._data['reply_count'][-1]
+        print("Least replied tracked message: {}".format(x))
+        print(self.make_url(x))
+
+    def _finalize_reaction_popularity(self):
+        self._data['reaction_count'] = self.reactions_accumulator.items
+        return
+        x = self._data['reaction_count'][0]
+        print("Most popular message: {}".format(x))
+        x = self._data['reaction_count'][-1]
+        print("Least popular tracked message: {}".format(x))
+
+    def _finalize_period_activity(self):
         # Two-step process:
         # First, we'll take the per-hour stats per user in
         # user_weekday_hour_per_user and convert them from message counts
@@ -107,7 +169,7 @@ class Report(object):
                 messagecount = hourdict[hour][0]
                 perc = messagecount * 100.0 / total
                 percdict[hour] = perc
-            print("converting\n{}\nto\n{}".format(hourdict, percdict))
+            # print("converting\n{}\nto\n{}".format(hourdict, percdict))
             up[user] = percdict
 
         # Now, convert the per-user stats to per-hour stats
@@ -155,17 +217,29 @@ class Report(object):
         keep track of most reacji'ed messages
         """
         reaction_count = message['reaction_count']
-        mid = message['timestamp']
-        cid = message['slack_cid']
         uid = message['user_id']
         # No sense in keeping count of unreacted messages
         if reaction_count == 0:
             return
-        self.create_key(["reaction_count", reaction_count], [])
-        mrecord = (mid, cid, uid)
-        self._data['reaction_count'][reaction_count].append(mid)
+
         self.create_key(["reactions_per_user", uid], 0)
         self._data['reactions_per_user'][uid] += reaction_count
+
+        mid = message['timestamp']
+        cid = message['slack_cid']
+        mrecord = (reaction_count, mid, cid, uid)
+        self.reactions_accumulator.append(mrecord)
+
+    def accum_reply_count(self,  message):
+        """
+        keep track of the longest  threads
+        """
+        uid = message['user_id']
+        mid = message['timestamp']
+        cid = message['slack_cid']
+        reply_count = message['reply_count']
+        mrecord = (reply_count, mid, cid, uid)
+        self.reply_accumulator.append(mrecord)
 
     def accum_channel(self, message):
         self.increment(["channels", message['slack_cid']], message)
