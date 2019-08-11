@@ -45,6 +45,9 @@ class Report(object):
         self.reactions_accumulator = Accumulator(self.top_limit, lambda x: x[0])
         self.reply_accumulator = Accumulator(self.top_limit, lambda x: x[0])
 
+    def data(self):
+        return utils.dump(self._data)
+
     def message(self, message):
         accum_methods = [x for x in dir(self) if x.find("accum_") == 0]
         for accum_method in accum_methods:
