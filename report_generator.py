@@ -30,15 +30,23 @@ class ReportGenerator(object):
                     self.report.message(message)
                 elif message['user_id'] == user:
                     self.report.message(message)
+        self.report.finalize()
         # self.report.dump()
-        self.reaction_summary(40)
-        return
-        print("gm activity by hour:")
-        for x in range(0,24):
-            print("{}: {}".format(x, self.report._data['hour'].get(x)))
+        # self.reaction_summary(40)
+        # return
+        # print("gm activity by hour:")
+        # for x in range(0,24):
+        #    print("{}: {}".format(x, self.report._data['hour'].get(x)))
         print("user activity by hour:")
         for x in range(0,24):
-            print("{}: {}".format(x, self.report._data['user_hour'].get(x)))
+            print("{}: {}".format(x, self.report._data['user_weekday_hour'].get(x)))
+
+        print("user activity by timezone:")
+        tzs = list(self.report._data['timezone'].keys())
+        tzs.sort(key = lambda x: self.report._data['timezone'][x])
+        tzs.reverse()
+        for tz in tzs:
+            print("{}: {}".format(tz, self.report._data['timezone'][tz]))
 
     def reaction_summary(self, top=10):
         rdict = self.report._data['reaction']
@@ -65,7 +73,7 @@ if __name__ == "__main__":
     roy = "U06NSQT34"
     jenna =  "U8MEPG4Q7"
     rg = ReportGenerator()
-    # rg.generate_report("2019-07-21", 7)
+    rg.generate_report("2019-07-28", 7)
     # rg.generate_report("2019-07-28", 7, roy)
-    rg.generate_report("2019-07-28", 7, jenna)
+    # rg.generate_report("2019-07-28", 7, jenna)
     # rg.generate_report("2019-07-28", 7, noemi)
