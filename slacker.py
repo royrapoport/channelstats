@@ -96,7 +96,7 @@ class Slacker(object):
                 self.api_wait += diff
                 return payload
             except Exception:
-                print("Failed to retrieve {} : {} / {}.  Sleeping {} seconds".format(url, Exception, e, delay))
+                print("Failed to retrieve {} : {}.  Sleeping {} seconds".format(url, Exception, delay))
                 time.sleep(delay)
                 if delay < max_delay:
                     delay += increment
