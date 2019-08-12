@@ -119,6 +119,7 @@ class Report(object):
         wday = localtime.tm_wday
         self.increment(["user_weekday", wday], message)
         if wday < 5: # We only look at weekday activity
+            # print("Incrementing user_weekday_hour because wday is {}".format(wday))
             self.increment(["user_weekday_hour", hour], message)
             self.increment(["user_weekday_hour_per_user", uid, hour], message)
 
