@@ -3,6 +3,7 @@
 import time
 
 import config
+import channel
 import channel_configuration
 import slack_token
 import slacker
@@ -14,6 +15,7 @@ class Downloader(object):
         self.cconfig = channel_configuration.ChannelConfiguration()
         self.slack = slacker.Slacker(sname, stoken)
         self.MessageWriter = message_writer.MessageWriter()
+        self.channel = channel.Channel()
 
     def earliest_timestamp(self):
         """
@@ -31,8 +33,12 @@ class Downloader(object):
         return new_messages
 
     def download(self):
-        for cid in self.slack.get_all_channel_ids():
-            print("Getting messages for {}".format(cid))
+        cids = self.slack.get_all_channel_ids()
+        cid_count = len(cids)
+        idx = 1
+        for cid in cids:
+            print("Getting messages for {}/{} {} - {}".format(idx, cid_count, cid, self.channel.get(cid)))
+            idx += 1
             (last_timestamp, refetch) = self.cconfig.get_channel_config(cid)
             last_timestamp = int(float(last_timestamp))
             timestamp = last_timestamp - refetch
