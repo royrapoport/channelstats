@@ -248,6 +248,31 @@ class Report(object):
     def accum_channel(self, message):
         self.increment(["channels", message['slack_cid']], message)
 
+    def _finalize_stats(self):
+        self.create_key(["statistics"], {})
+        users = self._data['users']
+        user_names = users.keys()
+        total_users = len(user_names)
+        self._data['statistics']['posters'] = total_users
+        messages = sum([x[0] for x in users.values()])
+        words = sum([x[1] for x in users.values()])
+        self._data['statistics']['messages'] = messages
+        self._data['statistics']['words'] = words
+        self._data['statistics']['average messages'] = messages / total_users
+        self._data['statistics']['average words'] = words / total_users
+        # sort by messages
+        user_names.sort(lambda x: users[x][0])
+        midpoint_user = user_names[total_users/2]
+        midpoint_messages = users[midpoint_user][0]
+        self._data['statistics']['median messages'] = midpoint_messages
+        # sort by words
+        user_names.sort(lambda x: users[x][1])
+        midpoint_user = user_names[total_users/2]
+        midpoint_words = users[midpoint_user][1]
+        self._data['statistics']['median words'] = midpoint_words
+
+
+
     def accum_user(self, message):
         self.increment(["users", message['user_id']], message)
 
