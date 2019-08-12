@@ -30,7 +30,7 @@ class MessageWriter(object):
             messages[table_name].append(message)
 
         for table_name in messages:
-            print("Writing to message table {}".format(table_name))
+            # print("Writing to message table {}".format(table_name))
             table = message_tables[table_name]
             with table.batch_writer() as batch:
                 for message in messages[table_name]:
