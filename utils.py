@@ -14,11 +14,11 @@ class DecimalEncoder(json.JSONEncoder):
         return super(DecimalEncoder, self).default(o)
 
 
-def dumps(j):
+def dumps(j, indent=4):
     """
     json.dumps(j), but deal with Decimal encoding
     """
-    return json.dumps(j, indent=4, cls=DecimalEncoder)
+    return json.dumps(j, indent=indent, cls=DecimalEncoder)
 
 def dump(j):
     """
