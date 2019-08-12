@@ -26,11 +26,11 @@ class MessageTableFactory(object):
         a message in
         """
         try:
-            int(float(timestamp))
+            int(float(timestamp_or_dt))
             date = self.make_day(timestamp_or_dt)
         except:
             if not re.match("\d\d\d\d-\d\d-\d\d", timestamp_or_dt):
-                raise RuntimeException("timestamp_or_dt needs to be a timestamp or dt")
+                raise RuntimeError("timestamp_or_dt needs to be a timestamp or dt")
             date = timestamp_or_dt
         return "Message-{}".format(date)
 
