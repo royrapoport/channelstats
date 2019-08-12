@@ -14,11 +14,11 @@ class DDB(object):
         local is boolean, whether we're using local dynamodb
         """
         if config.local:
-            self.dynamodb_resource = boto3.resource('dynamodb', endpoint_url="http://localhost:8000")
-            self.dynamodb_client = boto3.client('dynamodb', endpoint_url="http://localhost:8000")
+            self.dynamodb_resource = boto3.resource('dynamodb', region_name=config.region, endpoint_url="http://localhost:8000")
+            self.dynamodb_client = boto3.client('dynamodb', region_name=config.region, endpoint_url="http://localhost:8000")
         else:
-            self.dynamodb_resource = boto3.resource('dynamodb')
-            self.dynamodb_client = boto3.client('dynamodb')
+            self.dynamodb_resource = boto3.resource('dynamodb', region_name=config.region)
+            self.dynamodb_client = boto3.client('dynamodb', region_name=config.region)
         self.attributes = attributes
         self.provisioned_throughput = provisioned_throughput
         self.validate_attributes()
