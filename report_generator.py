@@ -110,6 +110,11 @@ class ReportGenerator(object):
         for tz in tzs:
             print("{}: {}".format(tz, report['timezone'][tz]))
 
+        print("Report statistics:")
+        stats = report['statistics']
+        for k in stats:
+            print("\t{} : {}".format(k, stats[k]))
+
     def reaction_summary(self, top=10):
         rdict = report['reaction']
         reactions = list(rdict.keys())
