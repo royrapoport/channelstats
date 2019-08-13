@@ -1,5 +1,6 @@
 
 import ddb
+import utils
 
 class User(object):
     table_name = "User"
@@ -28,15 +29,6 @@ class User(object):
                     'tz': user.get("tz"),
                     'tz_offset': user.get("tz_offset")
                 }
-                Row = self.prune_empty(Row)
+                Row = utils.prune_empty(Row)
                 batch.put_item(Row)
 
-    def prune_empty(self, row):
-        """
-        prune attributes whose value is None
-        """
-        new_row = {}
-        for k in row:
-            if row[k]:
-                new_row[k] = row[k]
-        return new_row

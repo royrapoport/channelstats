@@ -3,6 +3,7 @@
 import json
 
 import messagetablefactory
+import utils
 
 class MessageWriter(object):
 
@@ -64,18 +65,8 @@ class MessageWriter(object):
             "reply_count": reply_count,
             "files": files
         }
-        Row = self.prune_empty(Row)
+        Row = utils.prune_empty(Row)
         return Row
-
-    def prune_empty(self, row):
-        """
-        prune attributes whose value is None
-        """
-        new_row = {}
-        for k in row:
-            if row[k] is not None:
-                new_row[k] = row[k]
-        return new_row
 
     def get_replies(self, message):
         """

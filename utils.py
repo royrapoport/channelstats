@@ -26,3 +26,13 @@ def dump(j):
     """
     j = dumps(j)
     return json.loads(j)
+
+def prune_empty(row):
+    """
+    prune attributes whose value is None
+    """
+    new_row = {}
+    for k in row:
+        if row[k]:
+            new_row[k] = row[k]
+    return new_row
