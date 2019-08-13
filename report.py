@@ -249,29 +249,37 @@ class Report(object):
         self.increment(["channels", message['slack_cid']], message)
 
     def _finalize_stats(self):
+        stats = {}
         self.create_key(["statistics"], {})
         users = self._data['users']
-        user_names = users.keys()
+        user_names = list(users.keys())
+
         total_users = len(user_names)
-        self._data['statistics']['posters'] = total_users
-        messages = sum([x[0] for x in users.values()])
-        words = sum([x[1] for x in users.values()])
-        self._data['statistics']['messages'] = messages
-        self._data['statistics']['words'] = words
-        self._data['statistics']['average messages'] = messages / total_users
-        self._data['statistics']['average words'] = words / total_users
-        # sort by messages
-        user_names.sort(lambda x: users[x][0])
-        midpoint_user = user_names[total_users/2]
-        midpoint_messages = users[midpoint_user][0]
-        self._data['statistics']['median messages'] = midpoint_messages
-        # sort by words
-        user_names.sort(lambda x: users[x][1])
-        midpoint_user = user_names[total_users/2]
-        midpoint_words = users[midpoint_user][1]
-        self._data['statistics']['median words'] = midpoint_words
+        stats['posters'] = total_users
 
+        elems = {'messages': 0, 'words': 1}
 
+        for elem in elems:
+            count_of = float(sum([x[elems[elem]] for x in users.values()]))
+            stats[elem] = count_of
+            stats["average {}".format(elem)] = count_of / total_users
+            user_names.sort(key = lambda x: users[x][elems[elem]])
+            user_names.reverse()
+            midpoint_user = user_names[int(total_users/2)]
+            midpoint_number = users[midpoint_user][elems[elem]]
+            stats['median {}'.format(elem)] = midpoint_number
+            # What percent of messages/words did the top ten users account for?
+            top_ten = user_names[0:10]
+            count = float(sum([users[x][elems[elem]] for x in top_ten]))
+            stats['topten {}'.format(elem)] = (count * 100.0) / count_of
+            # How many users account for 50% of the volume?
+            idx = 0
+            count = 0
+            while count < count_of / 2:
+                count += users[user_names[idx]][elems[elem]]
+                idx += 1
+            stats['50percent of {}'.format(elem)] = idx
+        self._data['statistics'] = stats
 
     def accum_user(self, message):
         self.increment(["users", message['user_id']], message)
