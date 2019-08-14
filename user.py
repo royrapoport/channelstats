@@ -1,4 +1,6 @@
 
+import time
+
 import ddb
 import utils
 
@@ -98,7 +100,7 @@ class User(object):
                 ":d": row["display_name"],
                 ":t": row["tz"],
                 ":o": row["tz_offset"]
-            }
+            },
             ReturnValues="UPDATED_NEW"
         )
 
