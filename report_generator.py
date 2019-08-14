@@ -141,8 +141,9 @@ if __name__ == "__main__":
     jenna =  "U8MEPG4Q7"
     date = "2019-07-28"
     days = 7
+    force_regen = False
     for x in [None, roy, jenna, noemi]:
         rg = ReportGenerator()
         print("Generating report for {}/{}/{}".format(date,days,x))
-        rg.summarize_report(rg.report(date, days, x, force_generate=False))
+        rg.summarize_report(rg.report(date, days, x, force_generate=force_regen))
         print("")
