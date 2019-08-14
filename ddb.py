@@ -5,7 +5,7 @@ import config
 
 class DDB(object):
 
-    def __init__(self, table_name, attributes, provisioned_throughput):
+    def __init__(self, table_name, attributes=None, provisioned_throughput=None):
         """
         table_name is self-explanatory
         attributes is a list of one or two (attribute_name, attribute_type); first is HASH, second
@@ -21,8 +21,9 @@ class DDB(object):
             self.dynamodb_client = boto3.client('dynamodb', region_name=config.region)
         self.attributes = attributes
         self.provisioned_throughput = provisioned_throughput
-        self.validate_attributes()
-        self.validate_provisioned_throughput()
+        if attributes and provisioned_throughput:
+            self.validate_attributes()
+            self.validate_provisioned_throughput()
         self.table_name = table_name
         self.table = None
 
@@ -54,6 +55,8 @@ class DDB(object):
             self.dynamodb_client.describe_table(TableName=self.table_name)
             table = self.dynamodb_resource.Table(self.table_name)
         except:
+            if not self.attributes:
+                raise RuntimeError("Given no attributes, I cannot create a table")
             table = self.create_table()
         self.table = table
         return table
