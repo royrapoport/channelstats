@@ -17,7 +17,7 @@ class ReportGenerator(object):
     def __init__(self):
         self.mtf = messagetablefactory.MessageTableFactory()
         self.report_creator = report.Report()
-        self.DDB = ddb.DDB("Report", [("report_id", "S")], (10,10))
+        self.DDB = ddb.DDB("Report", [("report_id", "S")])
         self.table = self.DDB.get_table()
 
     def make_report_id(self, start_day, days, user):

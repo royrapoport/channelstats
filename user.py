@@ -8,7 +8,7 @@ class User(object):
     table_name = "User"
 
     def __init__(self):
-        self.ddb = ddb.DDB(self.table_name, [('key', 'S')], (10,10))
+        self.ddb = ddb.DDB(self.table_name, [('key', 'S')])
         self.table = self.ddb.get_table()
         self.users = {}
         self.modified = {}
@@ -43,17 +43,19 @@ class User(object):
         k = self.make_key(uid)
         row = self.get(k)
         if not row:
-            row = {'key': k, 'uids': ""}
-        row["uids"] += " {}".format(uid)
+            row = "{}".format(uid)
+        else:
+            row["uids"] += " {}".format(uid)
         self.users[k] = row
         self.modified[k] = True
 
     def finish_registration(self):
         with self.table.batch_writer() as batch:
             for k in self.modified:
+                print("Saving hash key {}".format(k))
                 Row = {
                     'key': k,
-                    'uids': self.users[k]["uids"]
+                    'uids': self.users[k]
                 }
                 batch.put_item(Row)
 
@@ -66,7 +68,7 @@ class User(object):
         row = self.get(k)
         if not row:
             return False
-        # print("row is {}".format(row))
+        # print("Row: {}".format(row))
         if row["uids"].find(uid) == -1:
             return False
         return True
@@ -88,11 +90,10 @@ class User(object):
         )
 
     def update_user(self, row):
-        print("row: {}".format(row))
-        expr="set real_name=:r, user_name=:n, display_name=:d, tz=:t, tz_offset=:o"
+        expr="set real_name=:r, name=:n, display_name=:d, tz=:t, tz_offset=:o"
         self.table.update_item(
             Key={
-                'key':row['key']
+                'key':row['id']
             },
             UpdateExpression=expr,
             ExpressionAttributeValues={
@@ -119,22 +120,20 @@ class User(object):
 
         insert_users = []
         now = time.time()
-        t = time.localtime(now)
-        now_date = time.strftime("%Y-%m-%d",  t)
         last_run = self.get_last_run()
         for user in users:
             uid = user['id']
             Row = {
                 'key': user['id'],
                 'real_name': user.get("real_name"),
-                'user_name': user.get("name"),
+                'name': user.get("name"),
                 'display_name': user.get('profile', {}).get('display_name'),
                 'tz': user.get("tz"),
                 'tz_offset': user.get("tz_offset"),
             }
             if not self.user_exists(uid):
                 self.register_user(uid)
-                Row['insert'] = now_date
+                Row['insert_timestamp'] = now
                 Row = utils.prune_empty(Row)
                 insert_users.append(Row)
             else: # user already exists.  Updated?
@@ -145,11 +144,11 @@ class User(object):
 
         with self.table.batch_writer() as batch:
             for row in insert_users:
-                print("Inserting new {}".format(row))
+                print("Inserting new {}".format(self.f(Row)))
                 batch.put_item(row)
 
         self.finish_registration()
         self.set_last_run()
 
     def f(self, row):
-        return "{} ({})".format(row.get('id', row['key']), row['display_name'])
+        return "{} ({})".format(row['id'], row['display_name'])

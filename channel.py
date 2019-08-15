@@ -6,7 +6,7 @@ class Channel(object):
     table_name = "Channel"
 
     def __init__(self):
-        self.ddb = ddb.DDB(self.table_name, [('key', 'S')], (10,10))
+        self.ddb = ddb.DDB(self.table_name, [('key', 'S')])
         self.table = self.ddb.get_table()
 
     def batch_upload(self, channels):
