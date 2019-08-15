@@ -16,12 +16,12 @@ class User(object):
     def get(self, key):
         if key in self.users:
             return self.users[key]
-        response = self.table.get_item(Key={'key':uid})
+        response = self.table.get_item(Key={'key':key})
         item = response.get("Item")
         self.users[key] = item
         return item
 
-    def make_key(uid):
+    def make_key(self, uid):
         """
         We need to store efficiently (so we can fetch more than one at a time)
         To do that, we need to store multiple UIDs against the same key.
@@ -43,9 +43,8 @@ class User(object):
         k = self.make_key(uid)
         row = self.get(k)
         if not row:
-            row = "{}".format(uid)
-        else:
-            row["uids"] += " {}".format(uid)
+            row = {'key': k, 'uids': ""}
+        row["uids"] += " {}".format(uid)
         self.users[k] = row
         self.modified[k] = True
 
@@ -54,7 +53,7 @@ class User(object):
             for k in self.modified:
                 Row = {
                     'key': k,
-                    'uids': self.users[k]
+                    'uids': self.users[k]["uids"]
                 }
                 batch.put_item(Row)
 
@@ -67,6 +66,7 @@ class User(object):
         row = self.get(k)
         if not row:
             return False
+        # print("row is {}".format(row))
         if row["uids"].find(uid) == -1:
             return False
         return True
@@ -79,7 +79,7 @@ class User(object):
         return last_run
 
     def set_last_run(self):
-        now = time.time()
+        now = int(time.time())
         self.table.put_item(
             Item={
                 'key': "last run",
@@ -88,10 +88,11 @@ class User(object):
         )
 
     def update_user(self, row):
-        expr="set real_name=:r, name=:n, display_name=:d, tz=:t, tz_offset=:o"
+        print("row: {}".format(row))
+        expr="set real_name=:r, user_name=:n, display_name=:d, tz=:t, tz_offset=:o"
         self.table.update_item(
             Key={
-                'key':row['id']
+                'key':row['key']
             },
             UpdateExpression=expr,
             ExpressionAttributeValues={
@@ -118,20 +119,22 @@ class User(object):
 
         insert_users = []
         now = time.time()
+        t = time.localtime(now)
+        now_date = time.strftime("%Y-%m-%d",  t)
         last_run = self.get_last_run()
         for user in users:
             uid = user['id']
             Row = {
                 'key': user['id'],
                 'real_name': user.get("real_name"),
-                'name': user.get("name"),
+                'user_name': user.get("name"),
                 'display_name': user.get('profile', {}).get('display_name'),
                 'tz': user.get("tz"),
                 'tz_offset': user.get("tz_offset"),
             }
             if not self.user_exists(uid):
                 self.register_user(uid)
-                Row['insert_timestamp'] = now
+                Row['insert'] = now_date
                 Row = utils.prune_empty(Row)
                 insert_users.append(Row)
             else: # user already exists.  Updated?
@@ -142,11 +145,11 @@ class User(object):
 
         with self.table.batch_writer() as batch:
             for row in insert_users:
-                print("Inserting new {}".format(self.f(Row)))
+                print("Inserting new {}".format(row))
                 batch.put_item(row)
 
         self.finish_registration()
         self.set_last_run()
 
     def f(self, row):
-        return "{} ({})".format(row['id'], row['display_name'])
+        return "{} ({})".format(row.get('id', row['key']), row['display_name'])
