@@ -1,6 +1,7 @@
 #! /usr/bin/env python2.7
 
 import json
+import sys
 import time
 
 import requests
@@ -15,10 +16,10 @@ class Slacker(object):
         self.api_calls = 0
         self.api_wait = 0
 
-    def get_messages(self, cid, timestamp):
+    def get_messages(self, cid, timestamp, callback=None):
         timestamp = int(float(timestamp))
         # print("Getting messages from {} starting {}".format(cid, time.asctime(time.localtime(int(timestamp)))))
-        messages = self.paginated_lister("conversations.history?channel={}&oldest={}".format(cid, timestamp))
+        messages = self.paginated_lister("conversations.history?channel={}&oldest={}".format(cid, timestamp), callback=callback)
         return messages
 
     def get_all_users(self):
@@ -50,7 +51,13 @@ class Slacker(object):
             raise RuntimeError("Multiple response objects corresponding to lists found: {}".format(lists))
         return lists[0]
 
-    def paginated_lister(self, api_call, limit=200):
+    def paginated_lister(self, api_call, limit=200, callback=None):
+        """
+        if callback is defined, we'll call that method on each element we retrieve
+        and not keep track of the total set of elements we retrieve.  That way, we can
+        get an arbitrary large set of elements without running out of memory
+        In that case, we'll only return the latest set of results
+        """
 
         element_name = None
         start = time.time()
@@ -58,6 +65,7 @@ class Slacker(object):
         cursor = None
         results = []
         separator = self.use_separator(api_call)
+        count = 0
         api_call = api_call + separator + "limit={}".format(limit)
         while not done:
             interim_api_call = api_call
@@ -66,7 +74,21 @@ class Slacker(object):
             interim_results = self.api_call(interim_api_call)
             if not element_name:
                 element_name = self.discover_element_name(interim_results)
-            results += interim_results[element_name]
+            if callback:
+                for element in interim_results[element_name]:
+                    count += 1
+                    callback(element)
+                results = interim_results[element_name]
+                if count % 2000 == 0:
+                    sys.stdout.write(str(count))
+                    if count % 6001 == 0:
+                        print("Let's stop for now")
+                        return
+                else:
+                    sys.stdout.write(".")
+                sys.stdout.flush()
+            else:
+                results += interim_results[element_name]
             # print("I now have {} results".format(len(results)))
             cursor = interim_results.get("response_metadata", {}).get("next_cursor", "")
             if not cursor:
