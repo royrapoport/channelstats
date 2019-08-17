@@ -65,7 +65,6 @@ class Slacker(object):
         cursor = None
         results = []
         separator = self.use_separator(api_call)
-        count = 0
         api_call = api_call + separator + "limit={}".format(limit)
         while not done:
             interim_api_call = api_call
@@ -76,17 +75,8 @@ class Slacker(object):
                 element_name = self.discover_element_name(interim_results)
             if callback:
                 for element in interim_results[element_name]:
-                    count += 1
                     callback(element)
                 results = interim_results[element_name]
-                if count % 2000 == 0:
-                    sys.stdout.write(str(count))
-                    if count % 6001 == 0:
-                        print("Let's stop for now")
-                        return
-                else:
-                    sys.stdout.write(".")
-                sys.stdout.flush()
             else:
                 results += interim_results[element_name]
             # print("I now have {} results".format(len(results)))
