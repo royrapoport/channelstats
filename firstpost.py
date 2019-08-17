@@ -1,6 +1,8 @@
 
 
 import json
+import sys
+import time
 
 import ddb
 import configuration
@@ -25,6 +27,23 @@ class FirstPost(object):
         self.users[key] = item
         return item
 
+    def set_channel(self, cid):
+        self.count = 0
+        self.channel = cid
+
+    def print_progress(self, ts):
+        s = None
+        if self.count % 10000 == 0:
+            f = time.localtime(ts)
+            s = time.strftime("%Y-%m-%d", f)
+        elif self.count % 2000 == 0:
+            s = str(self.count)
+        elif self.count % 200 == 0:
+            s = "."
+        if s:
+            sys.stdout.write(s)
+            sys.stdout.flush()
+
     def message(self, message):
         # print("message: {}".format(message))
         uid = message.get('user')
@@ -33,6 +52,10 @@ class FirstPost(object):
         ts = int(float(message['ts']))
         mid = message['ts']
         entry = self.get(uid)
+
+        self.count += 1
+        self.print_progress(ts)
+
         if entry:
             if entry['ts'] > ts:
                 # f = "For {} found an earlier entry than {}/{}: {}/{}".format(entry['key'], entry['channel'], entry['ts'], self.channel, ts)
