@@ -31,7 +31,7 @@ class Downloader(object):
                 print("\tSkipping channel -- already got it")
                 continue
             idx += 1
-            self.fp.channel = cid
+            self.fp.set_channel(cid)
             messages = self.slack.get_messages(cid, 0, self.fp.message)
             self.fp.save()
 
