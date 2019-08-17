@@ -13,6 +13,7 @@ class FirstPost(object):
         self.table = self.ddb.get_table()
         self.users = {}
         self.modified = {}
+        self.saved = {}
 
     def get(self, key):
         if key in self.users:
@@ -52,12 +53,15 @@ class FirstPost(object):
         return self.get(cid)
 
     def save_channel(self, cid):
+        if cid in self.saved:
+            return
         row = {
             "key":cid,
             "channel":cid,
             "ts":0
         }
         print("Saving {}".format(row))
+        self.saved[cid] = 1
 
         self.table.put_item(Item=row)
 
@@ -72,7 +76,10 @@ class FirstPost(object):
                 channel = row['channel']
                 if channel not in channels:
                     channels[channel] = 1
+                if uid in self.saved:
+                    continue
                 print("Inserting new {}".format(row))
                 batch.put_item(row)
+                self.saved[uid] = 1
         for channel in channels.keys():
             self.save_channel(channel)
