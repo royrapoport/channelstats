@@ -8,6 +8,7 @@ import channel_configuration
 import slack_token
 import slacker
 import message_writer
+import firstpost
 
 class Downloader(object):
 
@@ -16,6 +17,7 @@ class Downloader(object):
         self.slack = slacker.Slacker(sname, stoken)
         self.MessageWriter = message_writer.MessageWriter()
         self.channel = channel.Channel()
+        self.fp = firstpost.FirstPost()
 
     def earliest_timestamp(self):
         """
@@ -54,7 +56,11 @@ class Downloader(object):
                 self.cconfig.set_channel_config(cid, max_ts, 0)
                 print("Got {} messages for CID {}".format(len(messages), cid))
                 self.MessageWriter.write(messages, cid)
+                self.fp.set_channel(cid)
+                for message in messages:
+                    self.fp.message(message)
             # WRITE_MESSAGES(messages, cid)
+        self.fp.save()
 
 if __name__ == "__main__":
     downloader = Downloader("rands-leadership", slack_token.token)
