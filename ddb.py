@@ -1,7 +1,9 @@
 
 import boto3
+import json
 
 import config
+import utils
 
 class DDB(object):
 
@@ -55,6 +57,22 @@ class DDB(object):
     def delete_table(self):
         table = self.get_table()
         table.delete()
+
+    def dump(self, fname):
+        response = self.get_table().scan()
+        items = response['Items']
+        f = open(fname, "w")
+        f.write(utils.dumps(items))
+        f.close()
+
+    def load(self, fname):
+        f = open(fname, "r")
+        content = f.read()
+        items = json.loads(content)
+        f.close()
+        with self.get_table().batch_writer() as batch:
+            for item in items:
+                batch.put_item(item)
 
     def create_table(self):
         """
