@@ -14,6 +14,7 @@ class UserDownloader(object):
 
     def download(self):
         users = self.slack.get_all_users()
+        print("found {} users".format(len(users)))
         self.user.batch_upload(users)
 
 if __name__ == "__main__":
