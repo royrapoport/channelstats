@@ -26,7 +26,8 @@ class User(object):
         return item
 
     def update_user(self, row):
-        expr="set real_name=:r, name=:n, display_name=:d, tz=:t, tz_offset=:o"
+        expr="set real_name=:r, user_name=:n, display_name=:d, tz=:t, tz_offset=:o"
+        print("Row: {}".format(row))
         self.table.update_item(
             Key={
                 'id':row['id']
@@ -34,7 +35,7 @@ class User(object):
             UpdateExpression=expr,
             ExpressionAttributeValues={
                 ":r" : row['real_name'],
-                ":n": row["name"],
+                ":n": row["user_name"],
                 ":d": row["display_name"],
                 ":t": row["tz"],
                 ":o": row["tz_offset"]
@@ -62,7 +63,7 @@ class User(object):
             Row = {
                 'id': user['id'],
                 'real_name': user.get("real_name"),
-                'name': user.get("name"),
+                'user_name': user.get("name"),
                 'display_name': user.get('profile', {}).get('display_name'),
                 'tz': user.get("tz"),
                 'tz_offset': user.get("tz_offset"),
