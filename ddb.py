@@ -23,7 +23,7 @@ class DDB(object):
         self.attributes = attributes
         if attributes:
             self.validate_attributes()
-        self.table_name = table_name
+        self.table_name = config.prefix + "." + table_name
         self.table = None
 
     def validate_attributes(self):
