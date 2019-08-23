@@ -244,6 +244,10 @@ class Report(object):
         mid = message['timestamp']
         cid = message['slack_cid']
         reply_count = message.get('reply_count', 0)
+        if reply_count == 0:
+            return
+        self.create_key(["user_reply_count", uid], 0)
+        self._data["user_reply_count"][uid] += reply_count
         mrecord = (reply_count, mid, cid, uid)
         self.reply_accumulator.append(mrecord)
 
