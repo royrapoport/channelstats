@@ -91,9 +91,10 @@ class Report(object):
             k = keys.pop(0)
             cur = cur[k]
         cur[0] += 1
-        cur[1] += message["wordcount"]
+        cur[1] += message.get("wordcount", 0)
 
     def accum_timestats(self, message):
+        # print("accumulating data for {}".format(message))
         uid = message['user_id']
         timestamp = int(float(message['timestamp']))
         # First, get stats unadjusted and by UTC
@@ -158,6 +159,7 @@ class Report(object):
         # user_weekday_hour_per_user and convert them from message counts
         # to percentage of messages
         up = {}
+        print("data keys: {}".format(self._data.keys()))
         users = self._data['user_weekday_hour_per_user'].keys()
         for user in users:
             hourdict = self._data['user_weekday_hour_per_user'][user]
@@ -220,7 +222,7 @@ class Report(object):
         """
         keep track of most reacji'ed messages
         """
-        reaction_count = message['reaction_count']
+        reaction_count = message.get('reaction_count', 0)
         uid = message['user_id']
         # No sense in keeping count of unreacted messages
         if reaction_count == 0:
@@ -241,7 +243,7 @@ class Report(object):
         uid = message['user_id']
         mid = message['timestamp']
         cid = message['slack_cid']
-        reply_count = message['reply_count']
+        reply_count = message.get('reply_count', 0)
         mrecord = (reply_count, mid, cid, uid)
         self.reply_accumulator.append(mrecord)
 
