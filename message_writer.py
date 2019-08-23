@@ -54,6 +54,8 @@ class MessageWriter(object):
         (reaction_count, reactions) = self.get_reactions(message)
         (reply_count, replies) = self.get_replies(message)
         files = json.dumps(message.get("files", None))
+        if files == 'null':
+            files = None
         Row = {
             "timestamp": timestamp,
             "slack_cid": cid,
