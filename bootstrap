@@ -1,0 +1,7 @@
+#! /usr/bin/env bash
+
+
+./user_downloader.py
+./channel_downloader.py	
+./message_downloader.py	
+
