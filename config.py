@@ -12,3 +12,5 @@ max_age = 20
 # have multiple channelstats instances using the same DDB environment, each
 # with its own namespace
 prefix = "channelstats"
+# By default, refetch this many days
+refetch_interval = 7
