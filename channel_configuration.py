@@ -1,6 +1,7 @@
 
-import boto3
 import ddb
+
+import config
 
 class ChannelConfiguration(object):
     table_name = "ChannelConfiguration"
@@ -9,24 +10,51 @@ class ChannelConfiguration(object):
         self.ddb = ddb.DDB(self.table_name, [('slack_cid', 'S')])
         self.table = self.ddb.get_table()
 
-    def set_channel_config(self, slack_cid, last_message_timestamp, refetch_interval):
+    def channel_configuration_exists(self, slack_cid):
+        response = self.table.get_item(
+            Key={
+                'slack_cid': cid
+            }
+        )
+        return 'Item' in response
+
+    def update_channel_timestamp(self, slack_cid, last_message_timestamp):
+        if not channel_configuration_exists(slack_cid):
+            self.set_channel_config(slack_cid, last_message_timestamp)
+            return
+
+        self.table.update_item(
+            Key={
+                'slack_cid':slack_cid
+            },
+            UpdateExpression="set last_message_timestamp=:t"
+            ExpressionAttributeValues={
+                ":t" : int(last_message_timestamp)
+            },
+            ReturnValues="UPDATED_new"
+        )
+
+    def set_channel_config(self, slack_cid, last_message_timestamp, refetch=None):
         """
         Sets configuration for the given slack_cid
         """
+
+        if refresh is None:
+            refresh = config.refresh
 
         self.table.put_item(
             Item={
                 'slack_cid':slack_cid,
                 'last_message_timestamp':str(last_message_timestamp),
-                'refetch':refetch_interval
+                'refetch':refetch
             }
         )
 
     def get_channel_config(self, cid):
         """
-        returns (last_message_timestamp, refetch_interval) for cid
+        returns (last_message_timestamp, refetch) for cid
         If we have never gotten cid, last_message_timestamp will be 0
-        if we don't have a defined refetch_interval, refetch_interval will be 0
+        if we don't have a defined refetch, refetch will be 0
         """
         response = self.table.get_item(
             Key={

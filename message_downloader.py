@@ -53,7 +53,7 @@ class Downloader(object):
             if messages:
                 max_ts = max([int(float(x['ts'])) for x in messages])
                 print("Setting max ts for {} to {}".format(cid, time.asctime(time.localtime(max_ts))))
-                self.cconfig.set_channel_config(cid, max_ts, 0)
+                self.cconfig.update_channel_timestamp(cid, max_ts)
                 print("Got {} messages for CID {}".format(len(messages), cid))
                 self.MessageWriter.write(messages, cid)
                 self.fp.set_channel(cid)
