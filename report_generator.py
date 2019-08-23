@@ -141,9 +141,14 @@ if __name__ == "__main__":
     jenna =  "U8MEPG4Q7"
     date = "2019-07-28"
     days = 7
-    force_regen = False
-    for x in [None, roy, jenna, noemi]:
+    force_regen = True
+    # for x in [None, roy, jenna, noemi]:
+    for x in [None]:
         rg = ReportGenerator()
         print("Generating report for {}/{}/{}".format(date,days,x))
-        rg.summarize_report(rg.report(date, days, x, force_generate=force_regen))
+        report = rg.report(date, days, x, force_generate=force_regen)
+        rg.summarize_report(report)
+        f = open("report.json", "w")
+        f.write(json.dumps(report, indent=4))
+        f.close()
         print("")
