@@ -13,13 +13,13 @@ class ChannelConfiguration(object):
     def channel_configuration_exists(self, slack_cid):
         response = self.table.get_item(
             Key={
-                'slack_cid': cid
+                'slack_cid': slack_cid
             }
         )
         return 'Item' in response
 
     def update_channel_timestamp(self, slack_cid, last_message_timestamp):
-        if not channel_configuration_exists(slack_cid):
+        if not self.channel_configuration_exists(slack_cid):
             self.set_channel_config(slack_cid, last_message_timestamp)
             return
 
@@ -27,7 +27,7 @@ class ChannelConfiguration(object):
             Key={
                 'slack_cid':slack_cid
             },
-            UpdateExpression="set last_message_timestamp=:t"
+            UpdateExpression="set last_message_timestamp=:t",
             ExpressionAttributeValues={
                 ":t" : int(last_message_timestamp)
             },
@@ -39,8 +39,8 @@ class ChannelConfiguration(object):
         Sets configuration for the given slack_cid
         """
 
-        if refresh is None:
-            refresh = config.refresh
+        if refetch is None:
+            refetch = config.refetch
 
         self.table.put_item(
             Item={
