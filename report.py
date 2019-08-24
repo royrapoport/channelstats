@@ -220,7 +220,8 @@ class Report(object):
 
     def accum_reaction_count(self, message):
         """
-        keep track of most reacji'ed messages
+        keep track of most reacji'ed messages, keep count of
+        reactions per user
         """
         reaction_count = message.get('reaction_count', 0)
         uid = message['user_id']
@@ -228,8 +229,8 @@ class Report(object):
         if reaction_count == 0:
             return
 
-        self.create_key(["reactions_per_user", uid], 0)
-        self._data['reactions_per_user'][uid] += reaction_count
+        self.create_key(["user_stats", uid, "reactions"], 0)
+        self._data["user_stats"][uid]["reactions"] += reaction_count
 
         mid = message['timestamp']
         cid = message['slack_cid']
@@ -246,8 +247,10 @@ class Report(object):
         reply_count = message.get('reply_count', 0)
         if reply_count == 0:
             return
-        self.create_key(["user_reply_count", uid], 0)
-        self._data["user_reply_count"][uid] += reply_count
+
+        self.create_key(["user_stats", uid, "replies"], 0)
+        self._data["user_stats"][uid]["replies"] += reply_count
+
         mrecord = (reply_count, mid, cid, uid)
         self.reply_accumulator.append(mrecord)
 
@@ -271,6 +274,15 @@ class Report(object):
             stats["average {}".format(elem)] = count_of / total_users
             user_names.sort(key = lambda x: users[x][elems[elem]])
             user_names.reverse()
+            running_total = 0
+            for user_name in user_names:
+                count = float(users[user_name][elems[elem]])
+                percentage = count * 100.0 / count_of
+                running_total += count
+                running_percentage = running_total * 100.0 / count_of
+                self.create_key(["user_stats", user_name], {})
+                self._data['user_stats'][user_name]["percent_of_{}".format(elem)] = percentage
+                self._data['user_stats'][user_name]["cum_percent_of_{}".format(elem)] = running_percentage
             midpoint_user = user_names[int(total_users/2)]
             midpoint_number = users[midpoint_user][elems[elem]]
             stats['median {}'.format(elem)] = midpoint_number
@@ -288,7 +300,9 @@ class Report(object):
         self._data['statistics'] = stats
 
     def accum_user(self, message):
-        self.increment(["users", message['user_id']], message)
+        uid = message['user_id']
+        self.increment(["users", uid], message)
+        self.increment(["user_stats", message['user_id'], "count"], message)
 
     def accum_channel_user(self, message):
         cid = message['slack_cid']
