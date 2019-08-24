@@ -1,4 +1,5 @@
 
+import re
 import time
 
 import ddb
@@ -26,20 +27,30 @@ class User(object):
         return item
 
     def update_user(self, row):
-        expr="set real_name=:r, user_name=:n, display_name=:d, tz=:t, tz_offset=:o"
+        values = {
+            ":t": row["tz"],
+            ":D": row["deleted"],
+            ":o": row["tz_offset"]
+        }
+        expr="set deleted=:D, tz=:t, tz_offset=:o, "
+        if row['real_name']:
+            expr += "real_name=:r, "
+            values[":r"] = row["real_name"]
+        if row["user_name"]:
+            expr += "user_name=:n, "
+            values[":n"] = row["user_name"]
+        if row["display_name"]:
+            expr += "display_name=:d, "
+            values[":d"] = row["display_name"]
+        expr = re.sub(", $", "", expr)
+        print("Expr: {}".format(expr))
         print("Row: {}".format(row))
         self.table.update_item(
             Key={
                 'id':row['id']
             },
             UpdateExpression=expr,
-            ExpressionAttributeValues={
-                ":r" : row['real_name'],
-                ":n": row["user_name"],
-                ":d": row["display_name"],
-                ":t": row["tz"],
-                ":o": row["tz_offset"]
-            },
+            ExpressionAttributeValues=values,
             ReturnValues="UPDATED_NEW"
         )
 
@@ -55,6 +66,9 @@ class User(object):
         #            update the user (but don't change insert_date)
         # Mark last run time
 
+        active_users = [x for x in users if x['deleted'] == False]
+        self.configuration.set_count("active users", len(active_users))
+        self.configuration.set_count("all users", len(users))
         insert_users = []
         now = int(time.time())
         last_run = self.configuration.get_last_run()
@@ -63,6 +77,7 @@ class User(object):
             Row = {
                 'id': user['id'],
                 'real_name': user.get("real_name"),
+                'deleted': user.get("deleted"),
                 'user_name': user.get("name"),
                 'display_name': user.get('profile', {}).get('display_name'),
                 'tz': user.get("tz"),
