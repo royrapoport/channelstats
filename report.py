@@ -268,7 +268,9 @@ class Report(object):
 
         elems = {'messages': 0, 'words': 1}
 
-        for elem in elems:
+        for elem in ['messages', 'words']:
+            report_user_names = []
+            include = True
             count_of = float(sum([x[elems[elem]] for x in users.values()]))
             stats[elem] = count_of
             stats["average {}".format(elem)] = count_of / total_users
@@ -280,6 +282,11 @@ class Report(object):
                 percentage = count * 100.0 / count_of
                 running_total += count
                 running_percentage = running_total * 100.0 / count_of
+                if running_percentage <= 50:
+                    report_user_names.append(user_name)
+                elif include:
+                    report_user_names.append(user_name)
+                    include = False
                 self.create_key(["user_stats", user_name], {})
                 self._data['user_stats'][user_name]["percent_of_{}".format(elem)] = percentage
                 self._data['user_stats'][user_name]["cum_percent_of_{}".format(elem)] = running_percentage
@@ -297,6 +304,7 @@ class Report(object):
                 count += users[user_names[idx]][elems[elem]]
                 idx += 1
             stats['50percent of {}'.format(elem)] = idx
+            stats['50percent users for {}'.format(elem)] = report_user_names
         self._data['statistics'] = stats
 
     def accum_user(self, message):
