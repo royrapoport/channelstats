@@ -2,6 +2,7 @@
 
 import datetime
 import json
+import sys
 
 from boto3.dynamodb.conditions import Key, Attr
 
@@ -115,6 +116,10 @@ class ReportGenerator(object):
         for k in stats:
             print("\t{} : {}".format(k, stats[k]))
 
+        print("Statistics for Roy:")
+        stats = report['user_stats']['U06NSQT34']
+        print(json.dumps(stats, indent=4))
+
     def reaction_summary(self, top=10):
         rdict = report['reaction']
         reactions = list(rdict.keys())
@@ -139,9 +144,11 @@ if __name__ == "__main__":
     noemi = "UHWD9BHPD"
     roy = "U06NSQT34"
     jenna =  "U8MEPG4Q7"
-    date = "2019-07-28"
+    date = "2019-08-18"
     days = 7
-    force_regen = True
+    force_regen = False
+    if len(sys.argv) > 1 and sys.argv[1] == "regen":
+        force_regen = True
     # for x in [None, roy, jenna, noemi]:
     for x in [None]:
         rg = ReportGenerator()
