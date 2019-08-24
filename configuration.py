@@ -19,6 +19,17 @@ class Configuration(object):
         self.cache[key] = item
         return item
 
+    def set_count(self, count_label, value):
+        item = {'key': 'counts', count_label: value}
+        print("item: {}".format(item))
+        self.table.put_item(Item=item)
+
+    def get_count(self, count_label):
+        counts = self.get("counts")
+        if not counts:
+            return 0
+        return counts.get(count_label, 0)
+
     def get_last_run(self):
         last_run = self.get("last run")
         if not last_run:
