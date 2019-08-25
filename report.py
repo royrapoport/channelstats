@@ -266,19 +266,32 @@ class Report(object):
     def accum_channel(self, message):
         self.increment(["channels", message['slack_cid']], message)
 
+    def order_dict(self, d):
+        """
+        Given a dict whose values are (messages, words)
+        turn it into an ordered dict ordered from key with most
+        words to least
+        """
+        dk = list(d.keys())
+        dk.sort(key = lambda k: d[k][1])
+        dk.reverse()
+        nk = collections.OrderedDict()
+        for k in dk:
+            nk[k] = d[k]
+        return nk
+
+    def _finalize_timezones(self):
+        """
+        Make the timezone dictionary ordered by words
+        """
+        self._data['timezone'] = self.order_dict(self._data['timezone'])
+
     def _finalize_channels(self):
         """
         Make the channels dictionary ordered by words
         """
-        channels = self._data['channels']
-        cnames = list(channels.keys())
-        cnames.sort(key = lambda cname: channels[cname][1])
-        cnames.reverse()
-        nk = collections.OrderedDict()
-        for cname in cnames:
-            nk[cname] = channels[cname]
-        self._data['channels'] = nk
-        
+        self._data['channels'] = self.order_dict(self._data['channels'])
+
     def _finalize_stats(self):
         stats = {}
         users = self._data['users']
