@@ -20,9 +20,16 @@ class Configuration(object):
         return item
 
     def set_count(self, count_label, value):
-        item = {'key': 'counts', count_label: value}
-        print("item: {}".format(item))
-        self.table.put_item(Item=item)
+        self.table.update_item(
+            Key={
+                'key':'counts'
+            },
+            UpdateExpression="set {}=:v".format(count_label),
+            ExpressionAttributeValues={
+                ":v" : int(value)
+            },
+            ReturnValues="UPDATED_NEW"
+        )
 
     def get_count(self, count_label):
         counts = self.get("counts")
