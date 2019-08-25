@@ -130,8 +130,8 @@
         7.8% of total volume
         <p/>
 
-        <b>rphm</b> is reactions per 100 messages -- an indication of
-        how many reactions your messages got on average<p/>
+        <b>rphw</b> is reactions per 100 words -- an indication of
+        how many reactions your words got on average<p/>
 
         <b>wpm</b> is average words per message<p/>
         The last number is the total number of messages sent by this user.<p/>
@@ -188,27 +188,31 @@
 
                             </b>
                         </td>
-                        [% for user in payload.users %]
+                        {% for user in payload['statistics']['50percent users for words'] %}
                             <td style="vertical-align: text-top;">
-                                [[user.words]]<br/>
-                                [[user.percentage]]%<br/>
-                                [[user.cumpercentage]]%<br/>
-                                [[user.rphm]] rphm<br/>
-                                [[user.wpm]] wpm
-                                [[user.messages]]<br/>
+                                {% with us = payload['user_stats'][user] %}
+                                    {{us.count.1}} w <br/>
+                                    {{us.count.0}} m <br/>
+                                    {{'{:0.1f}'.format(us.percent_of_words)}}% of total <br/>
+                                    {{'{:0.1f}'.format(us.cum_percent_of_words)}}% running total <br/>
+                                    {{'{:0.1f}'.format(us.reactions * 100 / us.count.1)}} rphw <br/>
+                                    {{'{:0.1f}'.format(us.replies * 100 / us.count.1)}} replies/w <br/>
+                                    {{'{:0.1f}'.format(us.count.1 / us.count.0)}} w/m
+                                {% endwith %}
                             </td>
-                        [% endfor %]
+                        {% endfor %}
                     </tr>
-                    [% for channel in payload.channels %]
+                    {% for channel in payload.channels %}
+                    {% with ci = payload['channel_info'][channel] %}
                         <tr>
-                            [% if channel.new %]
+                            {% if ci['new'] %}
                                 <td bgcolor='#ffff00'>
-                            [% else %]
+                            {% else %}
                                 <td>
-                            [% endif %]
-                                [[channel.rank]]
-                                <b>[[channel.name]]</b>
-                                ([[channel.members]])
+                            {% endif %}
+                                {{loop.index}}
+                                <b>{{ci.name}}</b>
+                                ({{ci.members}})
                             </td>
                             <td>
                                 [[channel.messages]]m
@@ -225,7 +229,8 @@
                                 </td>
                             [% endfor %]
                         </tr>
-                    [% endfor %]
+                    {% endwith %}
+                    {% endfor %}
                 </tbody>
             </table>
         </div>
