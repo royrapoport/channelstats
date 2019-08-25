@@ -274,38 +274,39 @@
                             <thead>
                                 <tr>
                                     <th>Day</th>
-                                    <th>Messages</th>
+                                    <th>Activity</th>
                                 </tr>
                             </thead>
                             <tbody>
-                                <tr></tr>
-                                [% for day in payload.days %]
-                                    <tr>
-                                        <td>[[day.name]]</td>
-                                        <td>[[day.count]]</td>
-                                    </tr>
-                                [% endfor %]
+                                <tr> <td>Monday</td> <td> {{payload['user_weekday'].get("0", [0,0])[0]}} m {{payload['user_weekday'].get("0", [0,0])[1]}} w </td> </tr>
+                                <tr> <td>Tuesday</td> <td> {{payload['user_weekday'].get("1", [0,0])[0]}} m {{payload['user_weekday'].get("1", [0,0])[1]}} w </td> </tr>
+                                <tr> <td>Wednesday</td> <td> {{payload['user_weekday'].get("2", [0,0])[0]}} m {{payload['user_weekday'].get("2", [0,0])[1]}} w </td> </tr>
+                                <tr> <td>Thursday</td> <td> {{payload['user_weekday'].get("3", [0,0])[0]}} m {{payload['user_weekday'].get("3", [0,0])[1]}} w </td> </tr>
+                                <tr> <td>Friday</td> <td> {{payload['user_weekday'].get("4", [0,0])[0]}} m {{payload['user_weekday'].get("4", [0,0])[1]}} w </td> </tr>
+                                <tr> <td>Saturday</td> <td> {{payload['user_weekday'].get("5", [0,0])[0]}} m {{payload['user_weekday'].get("5", [0,0])[1]}} w </td> </tr>
+                                <tr> <td>Sunday</td> <td> {{payload['user_weekday'].get("6", [0,0])[0]}} m {{payload['user_weekday'].get("6", [0,0])[1]}} w </td> </tr>
                             </tbody>
                         </table>
                     </td>
 
                     <td style="vertical-align: text-top;">
-                        <b>Messages Per Hour</b><br/>
+                        <b>Activity Per Hour (On Weekdays)</b><br/>
                         <table border="1">
                             <thead>
                                 <tr>
-                                    <th>Hour</th>
-                                    <th>Messages</th>
+                                    <th>Hour of the Day</th>
+                                    <th>Percent of Total Activity</th>
                                 </tr>
                             </thead>
                             <tbody>
-                                <tr></tr>
-                                [% for hour in payload.hours%]
-                                    <tr>
-                                        <td>[[hour.name]]</td>
-                                        <td>[[hour.count]]</td>
-                                    </tr>
-                                [% endfor %]
+                                {% for hour in payload.weekday_activity_percentage %}
+                                <tr>
+                                    <td>{{hour}}</td>
+                                    <td>
+                                        {{ '{:.2f}%'.format(payload.weekday_activity_percentage[hour]) }}
+                                    </td>
+                                </tr>
+                                {% endfor %}
                             </tbody>
                         </table>
                     </td>
