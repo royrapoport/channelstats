@@ -50,6 +50,12 @@ class Report(object):
     def data(self):
         return utils.dump(self._data)
 
+    def set_start_date(self, start_date):
+        self._data['start_date'] = start_date
+
+    def set_end_date(self, end_date):
+        self._data['end_date'] = end_date
+
     def message(self, message):
         accum_methods = [x for x in dir(self) if x.find("accum_") == 0]
         for accum_method in accum_methods:
