@@ -14,10 +14,11 @@ class Channel(object):
             for channel in channels:
                 cid = channel['id']
                 cname = channel.get("name")
-                Row = {'key': cid, 'value': cname}
+                created = channel['created']
+                Row = {'key': cid, 'name': cname, 'created': created}
                 Row = utils.prune_empty(Row)
                 batch.put_item(Row)
-                Row = {'key': cname, 'value': cid}
+                Row = {'key': cname, 'name': cid, 'created': created}
                 Row = utils.prune_empty(Row)
                 batch.put_item(Row)
 
@@ -26,4 +27,4 @@ class Channel(object):
         if 'Item' not in response:
             return None
         item = response['Item']
-        return item['value']
+        return item
