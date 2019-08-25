@@ -212,12 +212,15 @@
                             {% endif %}
                                 {{loop.index}}
                                 <b>{{ci.name}}</b>
-                                ({{ci.members}})
+                                ({{ci.members}} members)
                             </td>
                             <td>
-                                [[channel.messages]]m
-                                [[channel.participants]]p
-                                [[channel.messages_per_participant]] m/p
+                                {{payload.channels[channel][0]}} m
+                                {{payload.channels[channel][1]}} w <br/>
+                                {{payload['channel_user'][channel]|length}} p <br/>
+                                {{
+                                    '{:0.1f} w/p'.format(payload.channels[channel][1] / payload['channel_user'][channel].keys()|length)
+                                }}
                             </td>
                             [% for user_message in channel.user_activity %]
                                 [% if user_message %]
