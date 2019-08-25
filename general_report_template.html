@@ -222,15 +222,17 @@
                                     '{:0.1f} w/p'.format(payload.channels[channel][1] / payload['channel_user'][channel].keys()|length)
                                 }}
                             </td>
-                            [% for user_message in channel.user_activity %]
-                                [% if user_message %]
+                            {% for user in payload['statistics']['50percent users for words'] %}
+                                {% if user in payload['channel_user'][channel] %}
                                     <td bgcolor='#00FF00'>
-                                [% else %]
+                                        {{payload['channel_user'][channel][user][0]}} m
+                                        {{payload['channel_user'][channel][user][1]}} w
+                                    </td>
+                                {% else %}
                                     <td>
-                                [% endif %]
-                                    [[user_message]]
-                                </td>
-                            [% endfor %]
+                                    </td>
+                                {% endif %}
+                            {% endfor %}
                         </tr>
                     {% endwith %}
                     {% endfor %}
@@ -242,6 +244,30 @@
             <tbody>
                 <tr></tr>
                 <tr>
+                    <td style="vertical-align: text-top;">
+                        <b>Activity Per Author Timezone</b>
+                        <table border="1">
+                            <thead>
+                                <tr>
+                                    <td><b>Timezone</b></td>
+                                    <td><b>Activity</b></td>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for tz in payload.timezone %}
+                                    <tr>
+                                        <td>
+                                            {{tz}}
+                                        </td>
+                                        <td>
+                                            {{payload.timezone[tz][0]}} m
+                                            {{payload.timezone[tz][1]}} w
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </td>
                     <td style="vertical-align: text-top;">
                         <b>Messages Per Day</b><br/>
                         <table border="1">
