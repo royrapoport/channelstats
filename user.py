@@ -18,6 +18,9 @@ class User(object):
         self.configuration = configuration.Configuration()
         self.modified = {}
 
+    def batch_get_user(self, userids):
+        return self.ddb.batch_hash_get(userids)
+
     def get(self, key):
         if key in self.users:
             return self.users[key]
