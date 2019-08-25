@@ -8,6 +8,7 @@ from boto3.dynamodb.conditions import Key, Attr
 
 import channel
 import ddb
+import formatter
 import messagetablefactory
 import report
 import user
@@ -72,6 +73,8 @@ class ReportGenerator(object):
         """
         print("Generating report for {}/{}/{}".format(start_day, days, user))
         dates = self.generate_dates(start_day, days)
+        self.report_creator.set_start_date(dates[0])
+        self.report_creator.set_end_date(dates[-1])
         # print("For the report of {} days starting {} we have dates {}".format(days, start_day, dates))
         tables = [self.mtf.get_message_table(date) for date in dates]
         # print("Message table names: {}".format(tables))
@@ -141,6 +144,7 @@ class ReportGenerator(object):
         return dates
 
 if __name__ == "__main__":
+    formatter_obj = formatter.Formatter()
     noemi = "UHWD9BHPD"
     roy = "U06NSQT34"
     jenna =  "U8MEPG4Q7"
@@ -159,3 +163,7 @@ if __name__ == "__main__":
         f.write(json.dumps(report, indent=4))
         f.close()
         print("")
+        mhtml = formatter_obj.format(report)
+        f = open("report.html", "w")
+        f.write(mhtml)
+        f.close()
