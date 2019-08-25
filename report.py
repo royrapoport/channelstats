@@ -5,6 +5,7 @@ import json
 import time
 
 import config
+import configuration
 import user
 import utils
 
@@ -44,6 +45,7 @@ class Report(object):
         self.user = user.User()
         self.reactions_accumulator = Accumulator(self.top_limit, lambda x: x[0])
         self.reply_accumulator = Accumulator(self.top_limit, lambda x: x[0])
+        self.configuration = configuration.Configuration()
 
     def data(self):
         return utils.dump(self._data)
@@ -259,7 +261,6 @@ class Report(object):
 
     def _finalize_stats(self):
         stats = {}
-        self.create_key(["statistics"], {})
         users = self._data['users']
         user_names = list(users.keys())
 
@@ -267,6 +268,9 @@ class Report(object):
         stats['posters'] = total_users
 
         elems = {'messages': 0, 'words': 1}
+
+        for label in ["active_users", "all_users"]:
+            stats[label] = self.configuration.get_count(label)
 
         for elem in ['messages', 'words']:
             report_user_names = []
