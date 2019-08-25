@@ -67,8 +67,8 @@ class User(object):
         # Mark last run time
 
         active_users = [x for x in users if x['deleted'] == False]
-        self.configuration.set_count("active users", len(active_users))
-        self.configuration.set_count("all users", len(users))
+        self.configuration.set_count("active_users", len(active_users))
+        self.configuration.set_count("all_users", len(users))
         insert_users = []
         now = int(time.time())
         last_run = self.configuration.get_last_run()
