@@ -1,5 +1,6 @@
 #! /usr/bin/env python
 
+import collections
 import copy
 import json
 import time
@@ -265,6 +266,19 @@ class Report(object):
     def accum_channel(self, message):
         self.increment(["channels", message['slack_cid']], message)
 
+    def _finalize_channels(self):
+        """
+        Make the channels dictionary ordered by words
+        """
+        channels = self._data['channels']
+        cnames = list(channels.keys())
+        cnames.sort(key = lambda cname: channels[cname][1])
+        cnames.reverse()
+        nk = collections.OrderedDict()
+        for cname in cnames:
+            nk[cname] = channels[cname]
+        self._data['channels'] = nk
+        
     def _finalize_stats(self):
         stats = {}
         users = self._data['users']
