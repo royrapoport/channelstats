@@ -26,6 +26,43 @@ class DDB(object):
         self.table_name = config.prefix + "." + table_name
         self.table = None
 
+    def chunks(self, l, n):
+        n = max(1, n)
+        return (l[i:i+n] for i in range(0, len(l), n))
+
+    def batch_hash_get(self, hashlist, hashkeyname=None):
+        if not hashkeyname:
+            if not self.attributes:
+                raise RuntimeError("Can't avoid specifying hashkeyname if created without explicit attributes")
+            hashkeyname = self.attributes[0][0]
+        ret = {}
+        for chunk in self.chunks(hashlist, 99):
+            miniret = self.mini_batch_hash_get(chunk, hashkeyname)
+            for i in miniret:
+                ret[i] = miniret[i]
+        return ret
+
+    def mini_batch_hash_get(self, hashlist, hashkeyname):
+        """
+        given a list of hashkeys, return all matching items from the table using batch operations
+        """
+        if len(hashlist) > 99:
+            raise RuntimeError("mini_batch_hash_get must be called with no more than 99 items")
+
+            # print("Given no hashkeyname, defaulted to {}".format(hashkeyname))
+        RequestItems = {}
+        RequestItems[self.table_name] = {}
+        RequestItems[self.table_name]['Keys'] = []
+        for i in hashlist:
+            RequestItems[self.table_name]['Keys'].append({hashkeyname: i})
+        response = self.dynamodb_resource.batch_get_item(RequestItems=RequestItems)
+        items = response['Responses'][self.table_name]
+        item_dict = {}
+        for i in items:
+            k = i[hashkeyname]
+            item_dict[k] = i
+        return item_dict
+
     def validate_attributes(self):
         at = self.attributes
         assert len(at) > 0
