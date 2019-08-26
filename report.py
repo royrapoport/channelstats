@@ -39,7 +39,7 @@ class Accumulator(object):
 class Report(object):
 
     # Where we keep the 'top X' of messages, what X should we go for?
-    top_limit = 10
+    top_limit = 100
 
     def __init__(self):
         self._data = {}
