@@ -268,12 +268,15 @@ class Report(object):
 
     def order_dict(self, d):
         """
-        Given a dict whose values are (messages, words)
-        turn it into an ordered dict ordered from key with most
-        words to least
+        Given a dict whose values are either (messages, words) or just an int
+        turn it into an ordered dict ordered from key with most to least
         """
         dk = list(d.keys())
-        dk.sort(key = lambda k: d[k][1])
+        first_elem = d[dk[0]]
+        if type(first_elem) in [tuple, list]:
+            dk.sort(key = lambda k: d[k][1])
+        else:
+            dk.sort(key = lambda k: d[k])
         dk.reverse()
         nk = collections.OrderedDict()
         for k in dk:
@@ -286,11 +289,24 @@ class Report(object):
         """
         self._data['timezone'] = self.order_dict(self._data['timezone'])
 
+    def _finalize_reaction(self):
+        self._data['reaction'] = self.order_dict(self._data['reaction'])
+
     def _finalize_channels(self):
         """
         Make the channels dictionary ordered by words
         """
         self._data['channels'] = self.order_dict(self._data['channels'])
+        cs = {}
+        count = 0
+        total_words = sum([x[1] for x in self._data['channels'].values()])
+        for cname in self._data['channels'].keys():
+            words = self._data['channels'][cname][1]
+            percent = int(words) * 100.0 / int(total_words)
+            count += words
+            cpercent = int(count) * 100.0 / int(total_words)
+            cs[cname] = {'percent': percent, 'cpercent': cpercent}
+        self._data['channel_stats'] = cs
 
     def _finalize_stats(self):
         stats = {}
