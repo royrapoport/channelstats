@@ -36,10 +36,16 @@ class Accumulator(object):
         self.items = self.items[0:self.limit]
         self.min = self.method(self.items[-1])
 
+    def dump(self):
+        """
+        return items
+        """
+        return self.items
+
 class Report(object):
 
     # Where we keep the 'top X' of messages, what X should we go for?
-    top_limit = 100
+    top_limit = 10
 
     def __init__(self):
         self._data = {}
@@ -145,22 +151,10 @@ class Report(object):
         return("https://{}.slack.com/archives/{}/p{}".format(config.slack_name, cid,mid))
 
     def _finalize_reply_popularity(self):
-        self._data['reply_count'] = self.reply_accumulator.items
-        return
-        x = self._data['reply_count'][0]
-        print("Most replied message: {}".format(x))
-        print(self.make_url(x))
-        x = self._data['reply_count'][-1]
-        print("Least replied tracked message: {}".format(x))
-        print(self.make_url(x))
+        self._data['reply_count'] = self.reply_accumulator.dump()
 
     def _finalize_reaction_popularity(self):
-        self._data['reaction_count'] = self.reactions_accumulator.items
-        return
-        x = self._data['reaction_count'][0]
-        print("Most popular message: {}".format(x))
-        x = self._data['reaction_count'][-1]
-        print("Least popular tracked message: {}".format(x))
+        self._data['reaction_count'] = self.reactions_accumulator.dump()
 
     def _finalize_period_activity(self):
         # Two-step process:
@@ -168,7 +162,6 @@ class Report(object):
         # user_weekday_hour_per_user and convert them from message counts
         # to percentage of messages
         up = {}
-        print("data keys: {}".format(self._data.keys()))
         users = self._data['user_weekday_hour_per_user'].keys()
         for user in users:
             hourdict = self._data['user_weekday_hour_per_user'][user]
