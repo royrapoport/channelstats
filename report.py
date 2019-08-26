@@ -100,7 +100,7 @@ class Report(object):
             k = keys.pop(0)
             cur = cur[k]
         cur[0] += 1
-        cur[1] += message.get("wordcount", 0)
+        cur[1] += message.get("wordcount", 1)
 
     def accum_timestats(self, message):
         # print("accumulating data for {}".format(message))
@@ -330,6 +330,7 @@ class Report(object):
             user_names.sort(key = lambda x: users[x][elems[elem]])
             user_names.reverse()
             running_total = 0
+            rank = 1
             for user_name in user_names:
                 count = float(users[user_name][elems[elem]])
                 percentage = count * 100.0 / count_of
@@ -343,6 +344,8 @@ class Report(object):
                 self.create_key(["user_stats", user_name], {})
                 self._data['user_stats'][user_name]["percent_of_{}".format(elem)] = percentage
                 self._data['user_stats'][user_name]["cum_percent_of_{}".format(elem)] = running_percentage
+                self._data['user_stats'][user_name]['rank'] = rank
+                rank += 1
             midpoint_user = user_names[int(total_users/2)]
             midpoint_number = users[midpoint_user][elems[elem]]
             stats['median {}'.format(elem)] = midpoint_number
