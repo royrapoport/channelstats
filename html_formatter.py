@@ -13,7 +13,8 @@ class HTMLFormatter(object):
 
     def __init__(self):
         self.jinja_environment = jinja2.Environment(loader=jinja2.FileSystemLoader("."))
-        self.template = self.jinja_environment.get_template("general_report_template.html")
+        self.general_template = self.jinja_environment.get_template("general_report_template.html")
+        self.user_template = self.jinja_environment.get_template("user_report_template.html")
         self.user = user.User()
         self.channel = channel.Channel()
 
@@ -77,7 +78,7 @@ class HTMLFormatter(object):
             ret[uid] = user
         end = time.time()
         diff = end - start
-        print("Fetching users took {:.1f} seconds".format(diff))
+        # print("Fetching users took {:.1f} seconds".format(diff))
         return ret
 
     def popular_messages(self, messages, cinfo, uinfo):
@@ -99,8 +100,7 @@ class HTMLFormatter(object):
             ret.append(d)
         return ret
 
-    def format(self, report):
-
+    def enrich(self, report):
         # Get the canonical list of USER ids we might refer to.
         # That is all users who posted in all channels
         channels = report['channel_user'].keys()
@@ -126,8 +126,56 @@ class HTMLFormatter(object):
         report['replied_messages'] = self.popular_messages(report['reply_count'], channel_info, user_info)
         report['replied_messages'] = report['replied_messages'][0:10]
 
+    def user_format(self, report, uid):
+        self.enrich(report)
+        user = report['user_info'][uid]['label']
+        report['uid'] = uid
+        report['user'] = user
 
-        html_report = self.template.render(payload=report)
+        channel_list = []
+        for cid in report['channel_user']:
+            # print("Examining cid {}".format(cid))
+            channel = report['channel_user'][cid]
+            if uid not in channel:
+                continue
+            users = list(channel.keys())
+            users.sort(key = lambda x: channel[x][1])
+            users.reverse()
+            rank = 1
+            for i in users:
+                if i == uid:
+                    break
+                rank += 1
+            cname = report['channel_info'][cid]['name']
+            channel_messages = report['channels'][cid][0]
+            channel_words = report['channels'][cid][1]
+            messages = channel[uid][0]
+            words = channel[uid][1]
+            percent_words = words * 100.0 / channel_words
+            percent_messages = messages * 100.0 / channel_messages
+            c = {}
+            c['name'] = cname
+            c['rank'] = rank
+            c['words'] = words
+            c['messages'] = messages
+            c['percent'] = percent_words
+            channel_list.append(c)
+        channel_list.sort(key = lambda x: x['words'])
+        channel_list.reverse()
+        report['channels'] = channel_list
+        html_report = self.user_template.render(payload=report)
+        minified_html_report = htmlmin.minify(html_report,
+                              remove_comments=True,
+                              remove_empty_space=True,
+                              remove_all_empty_space=True,
+                              reduce_boolean_attributes=True
+                              )
+        return minified_html_report
+
+
+    def format(self, report):
+        self.enrich(report)
+        html_report = self.general_template.render(payload=report)
         minified_html_report = htmlmin.minify(html_report,
                               remove_comments=True,
                               remove_empty_space=True,
