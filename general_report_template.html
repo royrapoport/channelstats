@@ -204,6 +204,7 @@
                     </tr>
                     {% for channel in payload.channels %}
                     {% with ci = payload['channel_info'][channel] %}
+                        {% if ci['new'] or payload['channel_stats'][channel]["cpercent"] < 95 %}
                         <tr>
                             {% if ci['new'] %}
                                 <td bgcolor='#ffff00'>
@@ -220,7 +221,14 @@
                                 {{payload['channel_user'][channel]|length}} p <br/>
                                 {{
                                     '{:0.1f} w/p'.format(payload.channels[channel][1] / payload['channel_user'][channel].keys()|length)
-                                }}
+                                }} <br/>
+                                {{
+                                    '{:0.1f}%'.format(payload['channel_stats'][channel]['percent'])
+                                }} <br/>
+                                {{
+                                    '{:0.1f}% cumul'.format(payload['channel_stats'][channel]['cpercent'])
+                                }} <br/>
+
                             </td>
                             {% for user in payload['statistics']['50percent users for words'] %}
                                 {% if user in payload['channel_user'][channel] %}
@@ -234,6 +242,7 @@
                                 {% endif %}
                             {% endfor %}
                         </tr>
+                        {% endif %}
                     {% endwith %}
                     {% endfor %}
                 </tbody>
@@ -308,6 +317,26 @@
                                 </tr>
                                 {% endfor %}
                             </tbody>
+                        </table>
+                    </td>
+
+                    <td style="vertical-align: text-top;">
+                        <b>Top Ten Reactions:</b><br/>
+                        <table border="1">
+                            <tr>
+                                <td><b>Reactji</b></td>
+                                <td><b>Count</b></td>
+                            </tr>
+                            {% for reactji in payload.top_ten_reactions %}
+                                <tr>
+                                    <td>
+                                        :{{reactji}}:
+                                    </td>
+                                    <td>
+                                        {{payload.reaction[reactji]}}
+                                    </td>
+                                </tr>
+                                {% endfor %}
                         </table>
                     </td>
 
