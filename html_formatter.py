@@ -9,7 +9,7 @@ import channel
 import config
 import user
 
-class Formatter(object):
+class HTMLFormatter(object):
 
     def __init__(self):
         self.jinja_environment = jinja2.Environment(loader=jinja2.FileSystemLoader("."))
@@ -80,6 +80,25 @@ class Formatter(object):
         print("Fetching users took {:.1f} seconds".format(diff))
         return ret
 
+    def popular_messages(self, messages, cinfo, uinfo):
+        """
+        given a list of lists where each list is
+        [reaction count, timestamp, cid, uid]
+        convert to dict with 'reactions', 'dt', 'channel', 'user', 'url'
+        """
+        ret = []
+        for message in messages:
+            (reactions, timestamp, cid, uid) = message
+            d = {}
+            d['reactions'] = reactions
+            d['dt'] = time.strftime("%m/%d/%Y %H:%M", time.localtime(int(float(timestamp))))
+            d['channel'] = cinfo[cid]['name']
+            d['user'] = uinfo[uid]['label']
+            url = "https://{}.slack.com/archives/{}/p{}"
+            d['url'] = url.format(config.slack_name, cid, timestamp)
+            ret.append(d)
+        return ret
+
     def format(self, report):
 
         # Get the canonical list of USER ids we might refer to.
@@ -100,6 +119,13 @@ class Formatter(object):
         reactions = report['reaction']
         reactji = list(reactions.keys())
         report['top_ten_reactions'] = reactji[0:10]
+
+        report['reacted_messages'] = self.popular_messages(report['reaction_count'], channel_info, user_info)
+        report['reacted_messages'] = report['reacted_messages'][0:10]
+
+        report['replied_messages'] = self.popular_messages(report['reply_count'], channel_info, user_info)
+        report['replied_messages'] = report['replied_messages'][0:10]
+
 
         html_report = self.template.render(payload=report)
         minified_html_report = htmlmin.minify(html_report,
