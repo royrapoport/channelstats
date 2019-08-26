@@ -38,7 +38,7 @@ class ReportGenerator(object):
         if 'Items' not in response:
             print("I could not find any reports for {}/{}".format(start_day, days))
             return None
-        print("Found {} entries".format(len(response['Items'])))
+        # print("Found {} entries".format(len(response['Items'])))
         for item in response['Items']:
             r = item['report']
             return json.loads(item["report"])
@@ -60,7 +60,7 @@ class ReportGenerator(object):
         If user is specified, limit to messages from the user
         """
         if not force_generate:
-            print("Querying for {}/{}/{}".format(start_day, days, user))
+            # print("Querying for {}/{}/{}".format(start_day, days, user))
             report = self.query_report(start_day, days, user)
             if report:
                 return report
@@ -73,7 +73,7 @@ class ReportGenerator(object):
         Generate a channel stats report starting on start_day, which is
         formatted as yyyy-mm-dd, and for the period of DAYS duration
         """
-        print("Generating report for {}/{}/{}".format(start_day, days, user))
+        # print("Generating report for {}/{}/{}".format(start_day, days, user))
         dates = self.generate_dates(start_day, days)
         self.report_creator.set_start_date(dates[0])
         self.report_creator.set_end_date(dates[-1])
@@ -161,20 +161,25 @@ if __name__ == "__main__":
         rg = ReportGenerator()
         print("Generating report for {}/{}/{}".format(date,days,x))
         report = rg.report(date, days, x, force_generate=force_regen)
-        rg.summarize_report(report)
+        # rg.summarize_report(report)
         f = open("report.json", "w")
         f.write(json.dumps(report, indent=4))
         f.close()
         print("")
         mhtml = html_formatter_obj.format(report)
+        roy_mhtml = html_formatter_obj.user_format(report, roy)
         f = open("report.html", "w")
         f.write(mhtml)
         f.close()
-        s = time.time()
-        pdf = pdf_formatter_obj.convert(mhtml)
-        e = time.time()
-        d = e - s
-        print("PDF conversion took {:.1f} seconds".format(d))
-        f = open("report.pdf", "wb")
-        f.write(pdf)
+        f = open("roy_report.html", "w")
+        f.write(roy_mhtml)
         f.close()
+        if False:
+            s = time.time()
+            pdf = pdf_formatter_obj.convert(mhtml)
+            e = time.time()
+            d = e - s
+            print("PDF conversion took {:.1f} seconds".format(d))
+            f = open("report.pdf", "wb")
+            f.write(pdf)
+            f.close()
