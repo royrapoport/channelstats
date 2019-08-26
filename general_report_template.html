@@ -204,7 +204,7 @@
                     </tr>
                     {% for channel in payload.channels %}
                     {% with ci = payload['channel_info'][channel] %}
-                        {% if ci['new'] or payload['channel_stats'][channel]["cpercent"] < 95 %}
+                        {% if ci['new'] or payload['channel_stats'][channel]["cpercent"] <= 95 %}
                         <tr>
                             {% if ci['new'] %}
                                 <td bgcolor='#ffff00'>
@@ -342,14 +342,26 @@
 
                     <td style="vertical-align: text-top;">
                         <b>Most reacted-to messages:</b><br/>
-                        [% for message in payload.reacted_messages %]
-                            <a href="[[message.url]]">
-                                [[message.reaction_count]] reactions
+                        {% for message in payload.reacted_messages %}
+                            <a href="{{message.url}}">
+                                {{message.reactions}} reactions
+                                on {{message.dt}}
+                                by <b>{{message.user}}</b>
+                                in <b>{{message.channel}}</b><p/>
                             </a>
-                            [[message.text]]
-                            by <b>[[message.author]]</b>
-                            in <b>[[message.channel]]</b><p/>
-                        [% endfor %]
+                        {% endfor %}
+                    </td>
+
+                    <td style="vertical-align: text-top;">
+                        <b>Most replied messages:</b><br/>
+                        {% for message in payload.replied_messages %}
+                            <a href="{{message.url}}">
+                                {{message.reactions}} replies
+                                on {{message.dt}}
+                                by <b>{{message.user}}</b>
+                                in <b>{{message.channel}}</b><p/>
+                            </a>
+                        {% endfor %}
                     </td>
 
                     <td style="vertical-align: text-top;" nowrap>

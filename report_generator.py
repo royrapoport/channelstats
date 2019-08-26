@@ -3,12 +3,14 @@
 import datetime
 import json
 import sys
+import time
 
 from boto3.dynamodb.conditions import Key, Attr
 
 import channel
 import ddb
-import formatter
+import html_formatter
+import pdf_formatter
 import messagetablefactory
 import report
 import user
@@ -144,7 +146,8 @@ class ReportGenerator(object):
         return dates
 
 if __name__ == "__main__":
-    formatter_obj = formatter.Formatter()
+    html_formatter_obj = html_formatter.HTMLFormatter()
+    pdf_formatter_obj = pdf_formatter.PDFFormatter()
     noemi = "UHWD9BHPD"
     roy = "U06NSQT34"
     jenna =  "U8MEPG4Q7"
@@ -163,7 +166,15 @@ if __name__ == "__main__":
         f.write(json.dumps(report, indent=4))
         f.close()
         print("")
-        mhtml = formatter_obj.format(report)
+        mhtml = html_formatter_obj.format(report)
         f = open("report.html", "w")
         f.write(mhtml)
+        f.close()
+        s = time.time()
+        pdf = pdf_formatter_obj.convert(mhtml)
+        e = time.time()
+        d = e - s
+        print("PDF conversion took {:.1f} seconds".format(d))
+        f = open("report.pdf", "wb")
+        f.write(pdf)
         f.close()
