@@ -1,11 +1,15 @@
 import pdfcrowd
 
+import pdfcrowd_token
+
 class PDFFormatter(object):
     size="100in"
 
     def __init__(self):
         # create the API client instance
-        self.client = pdfcrowd.HtmlToPdfClient('royrapoport', 'cf8ff49e6afceb2ec756a71d0b4f42b0')
+        u = pdfcrowd_token.uname
+        k = pdfcrowd_token.key
+        self.client = pdfcrowd.HtmlToPdfClient(u, k)
         self.client.setPageWidth(self.size)
         self.client.setPageHeight(self.size)
 
