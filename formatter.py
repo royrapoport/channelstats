@@ -97,6 +97,10 @@ class Formatter(object):
         report['user_info'] = user_info
         report['channel_info'] = channel_info
 
+        reactions = report['reaction']
+        reactji = list(reactions.keys())
+        report['top_ten_reactions'] = reactji[0:10]
+
         html_report = self.template.render(payload=report)
         minified_html_report = htmlmin.minify(html_report,
                               remove_comments=True,
