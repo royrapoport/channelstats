@@ -26,17 +26,13 @@ class DDB(object):
         self.table_name = config.prefix + "." + table_name
         self.table = None
 
-    def chunks(self, l, n):
-        n = max(1, n)
-        return (l[i:i+n] for i in range(0, len(l), n))
-
     def batch_hash_get(self, hashlist, hashkeyname=None):
         if not hashkeyname:
             if not self.attributes:
                 raise RuntimeError("Can't avoid specifying hashkeyname if created without explicit attributes")
             hashkeyname = self.attributes[0][0]
         ret = {}
-        for chunk in self.chunks(hashlist, 99):
+        for chunk in utils.chunks(hashlist, 99):
             miniret = self.mini_batch_hash_get(chunk, hashkeyname)
             for i in miniret:
                 ret[i] = miniret[i]
