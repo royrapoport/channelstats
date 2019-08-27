@@ -8,11 +8,11 @@ import time
 from boto3.dynamodb.conditions import Key, Attr
 
 import channel
-import ddb
 import html_formatter
 import pdf_formatter
 import messagetablefactory
 import report
+import report_store
 import user
 import utils
 
@@ -21,8 +21,7 @@ class ReportGenerator(object):
     def __init__(self):
         self.mtf = messagetablefactory.MessageTableFactory()
         self.report_creator = report.Report()
-        self.DDB = ddb.DDB("Report", [("report_id", "S")])
-        self.table = self.DDB.get_table()
+        self.report_store = report_store.ReportStore()
 
     def make_report_id(self, start_day, days, user):
         return "{}-{}-{}".format(start_day, days, user)
@@ -31,27 +30,17 @@ class ReportGenerator(object):
         """
         Query DDB for the report with the given parameters
         """
-        table = self.table
         rid = self.make_report_id(start_day, days, user)
-        c1 = Key("report_id").eq(rid)
-        response = table.query(KeyConditionExpression = c1)
-        if 'Items' not in response:
-            print("I could not find any reports for {}/{}".format(start_day, days))
+        report_string = self.report_store.get(rid)
+        if not report_string:
             return None
-        # print("Found {} entries".format(len(response['Items'])))
-        for item in response['Items']:
-            r = item['report']
-            return json.loads(item["report"])
-        return None
+        # print("Found a stored report for {}".format(rid))
+        return json.loads(report_string)
 
     def store_report(self, start_day, days, user, report):
         print("Storing report for {}/{}/{}".format(start_day, days, user))
         rid = self.make_report_id(start_day, days, user)
-        Item = {
-            'report_id': rid,
-            'report': json.dumps(report)
-        }
-        self.table.put_item(Item=Item)
+        self.report_store.set(rid, json.dumps(report))
 
     def report(self, start_day, days, user=None, force_generate=False):
         """
