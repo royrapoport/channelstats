@@ -36,3 +36,9 @@ def prune_empty(row):
         if row[k]:
             new_row[k] = row[k]
     return new_row
+
+def chunks(l, n):
+    n = max(1, n)
+    return (l[i:i+n] for i in range(0, len(l), n))
+
+
