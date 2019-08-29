@@ -131,6 +131,7 @@ class HTMLFormatter(object):
         report['replied_messages'] = report['replied_messages'][0:10]
 
     def user_format(self, report, uid):
+        print("Running report for {}".format(uid))
         self.enrich(report)
         user = report['user_info'][uid]['label']
         report['uid'] = uid
@@ -138,7 +139,7 @@ class HTMLFormatter(object):
 
         channel_list = []
         for cid in report['channel_user']:
-            # print("Examining cid {}".format(cid))
+            print("Examining cid {}".format(cid))
             channel = report['channel_user'][cid]
             if uid not in channel:
                 continue

@@ -1,5 +1,6 @@
 #! /usr/bin/env python3
 
+import copy
 import datetime
 import json
 import sys
@@ -151,33 +152,38 @@ class ReportGenerator(object):
 if __name__ == "__main__":
     html_formatter_obj = html_formatter.HTMLFormatter()
     pdf_formatter_obj = pdf_formatter.PDFFormatter()
-    noemi = "UHWD9BHPD"
-    roy = "U06NSQT34"
-    jenna =  "U8MEPG4Q7"
+    users = {}
+    users['noemi'] = "UHWD9BHPD"
+    users['roy'] = "U06NSQT34"
+    users['jenna'] =  "U8MEPG4Q7"
+    users['jude'] = "UCR03V5BP"
     date = "2019-08-18"
     days = 7
     force_regen = False
-    users = [noemi, roy, jenna]
     if len(sys.argv) > 1 and sys.argv[1] == "regen":
         force_regen = True
     # for x in [None, roy, jenna, noemi]:
     rg = ReportGenerator()
     print("users: {}".format(users))
     print("Generating report for {}/{}".format(date,days))
-    report = rg.report(date, days, users=users, force_generate=force_regen)
+    report = rg.report(date, days, users=users.values(), force_generate=force_regen)
     # rg.summarize_report(report)
     f = open("report.json", "w")
     f.write(json.dumps(report, indent=4))
     f.close()
     print("")
     mhtml = html_formatter_obj.format(report)
-    roy_mhtml = html_formatter_obj.user_format(report, roy)
     f = open("report.html", "w")
     f.write(mhtml)
     f.close()
-    f = open("roy_report.html", "w")
-    f.write(roy_mhtml)
-    f.close()
+    for u in users.keys():
+        cr = copy.deepcopy(report)
+        uid = users[u]
+        print("Running user report for {}/{}".format(u, uid))
+        u_html = html_formatter_obj.user_format(cr, uid)
+        f = open("{}_report.html".format(u), "w")
+        f.write(u_html)
+        f.close()
     if False:
         s = time.time()
         pdf = pdf_formatter_obj.convert(mhtml)
