@@ -85,13 +85,13 @@ class HTMLFormatter(object):
         """
         given a list of lists where each list is
         [reaction count, timestamp, cid, uid]
-        convert to dict with 'reactions', 'dt', 'channel', 'user', 'url'
+        convert to dict with 'count', 'dt', 'channel', 'user', 'url'
         """
         ret = []
         for message in messages:
             (reactions, timestamp, cid, uid) = message
             d = {}
-            d['reactions'] = reactions
+            d['count'] = reactions
             d['dt'] = time.strftime("%m/%d/%Y %H:%M", time.localtime(int(float(timestamp))))
             d['channel'] = cinfo[cid]['name']
             d['user'] = uinfo[uid]['label']
