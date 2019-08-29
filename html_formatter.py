@@ -187,7 +187,7 @@ class HTMLFormatter(object):
 
     def format(self, report):
         self.enrich(report)
-        html_report = self.general_template.render(payload=report)
+        html_report = self.general_template.render(payload=report, statistics=report['statistics'])
         minified_html_report = htmlmin.minify(html_report,
                               remove_comments=True,
                               remove_empty_space=True,

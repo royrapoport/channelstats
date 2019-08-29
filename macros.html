@@ -8,3 +8,19 @@
         in <b>{{message.channel}}</b><p/>
    </a>
 {%- endmacro %}
+
+{% macro percent(num, divider, showPercent=True) -%}
+    {% if showPercent %}
+        {{'{0:0.1f}%'.format(num * 100.0 / divider)}}
+    {% else %}
+        {{'{0:0.1f}'.format(num * 100.0 / divider)}}
+    {% endif %}
+{%- endmacro %}
+
+{% macro flprint(num, percent=True) -%}
+    {% if percent %}
+        {{'{0:0.1f}%'.format(num)}}
+    {% else %}
+        {{'{0:0.1f}'.format(num)}}
+    {% endif %}
+{%- endmacro %}

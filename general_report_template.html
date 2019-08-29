@@ -101,22 +101,20 @@
 
         <b>Note:</b>Yellow-background channels are new this week<p/>
 
-        <b>{{payload.statistics.posters}}/{{payload.statistics.active_users}}</b>
-        (or {{'{0:0.1f}%'.format(payload['statistics']['posters'] * 100.0 / payload['statistics']['active_users'])}})
+        <b>{{statistics.posters}}/{{statistics.active_users}}</b>
+        (or {{macros.percent(statistics.posters, statistics.active_users)}})
         users were active<p/>
 
         <b>Median message count</b> was
-        {{payload['statistics']['median messages']}}
+        {{statistics['median messages']}}
         <p/><p/>
 
         <b>Top ten posters contributed
-        {{
-            '{0:0.1f}%'.format(payload['statistics']['topten messages'])
-        }}
+        {{macros.flprint(statistics['topten messages'], percent=True)}}
         of messages </b> <p/>
 
         <b>Top
-            {{payload['statistics']['50percent of words']}}
+            {{statistics['50percent of words']}}
             posters accounted for about 50% of total volume
         </b><p/>
 
@@ -152,7 +150,7 @@
                         <td>
                             <b>TOTAL</b>
                         </td>
-                        {% for user in payload['statistics']['50percent users for words'] %}
+                        {% for user in statistics['50percent users for words'] %}
                             <td>
                                 <center>
                                     {{loop.index}}<br/>
@@ -175,31 +173,31 @@
                         </td>
                         <td>
                             <b>
-                                {{payload.statistics.words}} words <br/>
-                                {{payload.statistics.messages}} messages<br/>
+                                {{statistics.words}} words <br/>
+                                {{statistics.messages}} messages<br/>
                                 <!--
                                     We estimate approximately 500 words per page
                                 -->
-                                {{'{:0.1f}'.format(payload.statistics.words / 500)}} pages <br/>
-                                {{'{:0.1f}'.format(payload.statistics.words / payload.statistics.posters)}}
+                                {{macros.flprint(statistics.words / 500)}} pages <br/>
+                                {{macros.flprint(statistics.words / statistics.posters)}}
                                 w/p<br/>
-                                {{'{:0.1f}'.format(payload.statistics.messages / payload.statistics.posters)}}
+                                {{macros.flprint(statistics.messages / statistics.posters)}}
                                 m/p<br/>
-                                {{'{:0.1f}'.format(payload.statistics.words / payload.statistics.messages)}}
+                                {{macros.flprint(statistics.words / statistics.messages)}}
                                 w/m<br/>
 
                             </b>
                         </td>
-                        {% for user in payload['statistics']['50percent users for words'] %}
+                        {% for user in statistics['50percent users for words'] %}
                             <td style="vertical-align: text-top;">
                                 {% with us = payload['user_stats'][user] %}
                                     {{us.count.1}} w <br/>
                                     {{us.count.0}} m <br/>
-                                    {{'{:0.1f}'.format(us.percent_of_words)}}% of total <br/>
-                                    {{'{:0.1f}'.format(us.cum_percent_of_words)}}% running total <br/>
-                                    {{'{:0.1f}'.format(us.reactions * 100 / us.count.1)}} rphw <br/>
-                                    {{'{:0.1f}'.format(us.replies * 100 / us.count.1)}} replies/w <br/>
-                                    {{'{:0.1f}'.format(us.count.1 / us.count.0)}} w/m
+                                    {{macros.flprint(us.percent_of_words, True)}} of total <br/>
+                                    {{macros.flprint(us.cum_percent_of_words, True)}} running total <br/>
+                                    {{macros.percent(us.reactions, us.count.1, False)}} rphw <br/>
+                                    {{macros.percent(us.replies * 100, us.count.1, False)}} replies/w <br/>
+                                    {{macros.flprint(us.count.1 / us.count.0)}} w/m
                                 {% endwith %}
                             </td>
                         {% endfor %}
@@ -222,17 +220,17 @@
                                 {{payload.channels[channel][1]}} w <br/>
                                 {{payload['channel_user'][channel]|length}} p <br/>
                                 {{
-                                    '{:0.1f} w/p'.format(payload.channels[channel][1] / payload['channel_user'][channel].keys()|length)
+                                    macros.flprint(payload.channels[channel][1] / payload['channel_user'][channel].keys()|length, False)
+                                }} w/p<br/>
+                                {{
+                                    macros.flprint(payload['channel_stats'][channel]['percent'])
                                 }} <br/>
                                 {{
-                                    '{:0.1f}%'.format(payload['channel_stats'][channel]['percent'])
-                                }} <br/>
-                                {{
-                                    '{:0.1f}% cumul'.format(payload['channel_stats'][channel]['cpercent'])
-                                }} <br/>
+                                    macros.flprint(payload['channel_stats'][channel]['cpercent'])
+                                }} cumul<br/>
 
                             </td>
-                            {% for user in payload['statistics']['50percent users for words'] %}
+                            {% for user in statistics['50percent users for words'] %}
                                 {% if user in payload['channel_user'][channel] %}
                                     <td bgcolor='#00FF00'>
                                         {{payload['channel_user'][channel][user][0]}} m
