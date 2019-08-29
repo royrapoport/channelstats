@@ -31,7 +31,7 @@ class ChannelConfiguration(object):
             ExpressionAttributeValues={
                 ":t" : int(last_message_timestamp)
             },
-            ReturnValues="UPDATED_new"
+            ReturnValues="UPDATED_NEW"
         )
 
     def set_channel_config(self, slack_cid, last_message_timestamp, refetch=None):
