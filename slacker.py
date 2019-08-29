@@ -16,6 +16,10 @@ class Slacker(object):
         self.api_calls = 0
         self.api_wait = 0
 
+    def get_thread_responses(self, cid, thread_ts):
+        messages = self.paginated_lister("conversations.replies?channel={}&ts={}".format(cid, thread_ts))
+        return messages
+
     def get_messages(self, cid, timestamp, callback=None):
         timestamp = int(float(timestamp))
         # print("Getting messages from {} starting {}".format(cid, time.asctime(time.localtime(int(timestamp)))))
