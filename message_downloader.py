@@ -36,6 +36,8 @@ class Downloader(object):
 
     def download(self):
         cids = self.slack.get_all_channel_ids()
+        # cids = [self.channel.get("devops")["name"]]
+        cids = cids[17:]
         cid_count = len(cids)
         idx = 1
         for cid in cids:
@@ -50,6 +52,8 @@ class Downloader(object):
             messages = self.slack.get_messages(cid, timestamp)
             messages = self.filter_messages(messages)
             print("Got {} messages since {} in {}".format(len(messages), self.ts_print(timestamp), cid))
+            threads = 0
+            message_count = 0
             if messages:
                 max_ts = max([int(float(x['ts'])) for x in messages])
                 print("Setting max ts for {} to {}".format(cid, time.asctime(time.localtime(max_ts))))
@@ -58,8 +62,16 @@ class Downloader(object):
                 self.MessageWriter.write(messages, cid)
                 self.fp.set_channel(cid)
                 for message in messages:
+                    message_count += 1
                     self.fp.message(message)
+                    if message.get("thread_ts") == message.get("ts"): # thread head
+                        threads += 1
+                        thread_author = message['user']
+                        thread_messages = self.slack.get_thread_responses(cid, message['thread_ts'])
+                        thread_messages = [x for x in thread_messages if x['thread_ts'] != x['ts']]
+                        self.MessageWriter.write(thread_messages, cid, thread_author)
             # WRITE_MESSAGES(messages, cid)
+            print("Downloaded {} messages and {} threads".format(message_count, threads))
         self.fp.save()
 
 if __name__ == "__main__":

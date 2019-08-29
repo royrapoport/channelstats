@@ -9,11 +9,14 @@ class MessageWriter(object):
 
     def __init__(self):
         self.MessageTableFactory = messagetablefactory.MessageTableFactory()
+        seen = {}
 
-    def write(self, list_of_messages, cid):
+    def write(self, list_of_messages, cid, thread_author_uid=None):
         """
         Given the list of message JSONs, write them to DynamoDB
         cid is the Slack channel ID
+        if thread_author_uid is provided, this is the UID of the originator of the thread
+        of which this message is a part
         """
         # Map message table name to actual message table objects
         message_tables = {}
@@ -35,12 +38,12 @@ class MessageWriter(object):
             table = message_tables[table_name]
             with table.batch_writer() as batch:
                 for message in messages[table_name]:
-                    Row = self.make_row(message, cid)
+                    Row = self.make_row(message, cid, thread_author_uid)
                     if not Row:
                         continue
                     batch.put_item(Row)
 
-    def make_row(self, message, cid):
+    def make_row(self, message, cid, thread_author_uid):
         """
         create a Row dictionary for insertion into DynamoDB
         """
@@ -54,10 +57,12 @@ class MessageWriter(object):
         (reaction_count, reactions) = self.get_reactions(message)
         (reply_count, replies) = self.get_replies(message)
         files = json.dumps(message.get("files", None))
+        thread_ts = message.get("thread_ts")
         if files == 'null':
             files = None
         Row = {
             "timestamp": timestamp,
+            "thread_timestamp": thread_ts,
             "slack_cid": cid,
             "user_id": user_id,
             "wordcount": wordcount,
@@ -67,6 +72,11 @@ class MessageWriter(object):
             "reply_count": reply_count,
             "files": files
         }
+        if thread_author_uid:
+            Row['thread_author'] = thread_author_uid
+        else: # if it's a thread head, we want to capture that
+            if message.get("thread_ts") == message.get("ts"):
+                Row['thread_author'] = user_id
         Row = utils.prune_empty(Row)
         return Row
 
