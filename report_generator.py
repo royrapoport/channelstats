@@ -24,6 +24,8 @@ class ReportGenerator(object):
         self.report_store = report_store.ReportStore()
 
     def make_report_id(self, start_day, days, user):
+        if user is None:
+            return "{}-{}".format(start_day, days)
         return "{}-{}-{}".format(start_day, days, user)
 
     def query_report(self, start_day, days, user=None):
@@ -37,12 +39,12 @@ class ReportGenerator(object):
         # print("Found a stored report for {}".format(rid))
         return json.loads(report_string)
 
-    def store_report(self, start_day, days, user, report):
+    def store_report(self, start_day, days, report, user=None):
         print("Storing report for {}/{}/{}".format(start_day, days, user))
         rid = self.make_report_id(start_day, days, user)
         self.report_store.set(rid, json.dumps(report))
 
-    def report(self, start_day, days, user=None, force_generate=False):
+    def report(self, start_day, days, users=None, force_generate=False):
         """
         Generate a channel stats report starting on start_day, which is
         formatted as yyyy-mm-dd, and for the period of DAYS duration
@@ -50,19 +52,34 @@ class ReportGenerator(object):
         """
         if not force_generate:
             # print("Querying for {}/{}/{}".format(start_day, days, user))
-            report = self.query_report(start_day, days, user)
-            if report:
+            reports = {}
+            emptyReport = False
+            if users:
+                for user in users:
+                    report = self.query_report(start_day, days, user)
+                    if not report:
+                        emptyReport = True
+                    reports[user] = report
+            report = self.query_report(start_day, days)
+            report['enriched_user'] = reports
+            if report and not emptyReport:
+                print("Found all parts of the report in storage!")
                 return report
-        report = self.generate_report(start_day, days, user)
-        self.store_report(start_day, days, user, report)
+        report = self.generate_report(start_day, days, users)
+        enriched_users = report['enriched_user']
+        if enriched_users:
+            for user in enriched_users:
+                self.store_report(start_day, days, enriched_users[user], user=user)
+        self.store_report(start_day, days, report, user=None)
         return report
 
-    def generate_report(self, start_day, days, user=None):
+    def generate_report(self, start_day, days, users=[]):
         """
         Generate a channel stats report starting on start_day, which is
         formatted as yyyy-mm-dd, and for the period of DAYS duration
         """
         # print("Generating report for {}/{}/{}".format(start_day, days, user))
+        self.report_creator.set_users(users)
         dates = self.generate_dates(start_day, days)
         self.report_creator.set_start_date(dates[0])
         self.report_creator.set_end_date(dates[-1])
@@ -72,10 +89,7 @@ class ReportGenerator(object):
         for table in tables:
             messages = table.scan()["Items"]
             for message in messages:
-                if user is None:
-                    self.report_creator.message(message)
-                elif message['user_id'] == user:
-                    self.report_creator.message(message)
+                self.report_creator.message(message)
         self.report_creator.finalize()
         report = self.report_creator.data()
         return report
@@ -143,32 +157,33 @@ if __name__ == "__main__":
     date = "2019-08-18"
     days = 7
     force_regen = False
+    users = [noemi, roy, jenna]
     if len(sys.argv) > 1 and sys.argv[1] == "regen":
         force_regen = True
     # for x in [None, roy, jenna, noemi]:
-    for x in [None]:
-        rg = ReportGenerator()
-        print("Generating report for {}/{}/{}".format(date,days,x))
-        report = rg.report(date, days, x, force_generate=force_regen)
-        # rg.summarize_report(report)
-        f = open("report.json", "w")
-        f.write(json.dumps(report, indent=4))
+    rg = ReportGenerator()
+    print("users: {}".format(users))
+    print("Generating report for {}/{}".format(date,days))
+    report = rg.report(date, days, users=users, force_generate=force_regen)
+    # rg.summarize_report(report)
+    f = open("report.json", "w")
+    f.write(json.dumps(report, indent=4))
+    f.close()
+    print("")
+    mhtml = html_formatter_obj.format(report)
+    roy_mhtml = html_formatter_obj.user_format(report, roy)
+    f = open("report.html", "w")
+    f.write(mhtml)
+    f.close()
+    f = open("roy_report.html", "w")
+    f.write(roy_mhtml)
+    f.close()
+    if False:
+        s = time.time()
+        pdf = pdf_formatter_obj.convert(mhtml)
+        e = time.time()
+        d = e - s
+        print("PDF conversion took {:.1f} seconds".format(d))
+        f = open("report.pdf", "wb")
+        f.write(pdf)
         f.close()
-        print("")
-        mhtml = html_formatter_obj.format(report)
-        roy_mhtml = html_formatter_obj.user_format(report, roy)
-        f = open("report.html", "w")
-        f.write(mhtml)
-        f.close()
-        f = open("roy_report.html", "w")
-        f.write(roy_mhtml)
-        f.close()
-        if False:
-            s = time.time()
-            pdf = pdf_formatter_obj.convert(mhtml)
-            e = time.time()
-            d = e - s
-            print("PDF conversion took {:.1f} seconds".format(d))
-            f = open("report.pdf", "wb")
-            f.write(pdf)
-            f.close()

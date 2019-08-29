@@ -52,7 +52,14 @@ class Report(object):
         self.user = user.User()
         self.reactions_accumulator = Accumulator(self.top_limit, lambda x: x[0])
         self.reply_accumulator = Accumulator(self.top_limit, lambda x: x[0])
+        self.user_reply_accumulators = {}
+        self.user_reaction_accumulators = {}
         self.configuration = configuration.Configuration()
+
+    def set_users(self, users):
+        for user in users:
+            self.user_reply_accumulators[user] = Accumulator(self.top_limit, lambda x: x[0])
+            self.user_reaction_accumulators[user] = Accumulator(self.top_limit, lambda x: x[0])
 
     def data(self):
         return utils.dump(self._data)
@@ -152,9 +159,21 @@ class Report(object):
 
     def _finalize_reply_popularity(self):
         self._data['reply_count'] = self.reply_accumulator.dump()
+        if "enriched_user" not in self._data:
+            self._data['enriched_user'] = {}
+        for uid in self.user_reply_accumulators:
+            if uid not in self._data['enriched_user']:
+                self._data['enriched_user'][uid] = {}
+            self._data['enriched_user'][uid]['replies'] = self.user_reply_accumulators[uid].dump()
 
     def _finalize_reaction_popularity(self):
         self._data['reaction_count'] = self.reactions_accumulator.dump()
+        if "enriched_user" not in self._data:
+            self._data['enriched_user'] = {}
+        for uid in self.user_reaction_accumulators:
+            if uid not in self._data['enriched_user']:
+                self._data['enriched_user'][uid] = {}
+            self._data['enriched_user'][uid]['reactions'] = self.user_reaction_accumulators[uid].dump()
 
     def _finalize_period_activity(self):
         # Two-step process:
@@ -238,6 +257,9 @@ class Report(object):
         cid = message['slack_cid']
         mrecord = (reaction_count, mid, cid, uid)
         self.reactions_accumulator.append(mrecord)
+        if uid in self.user_reaction_accumulators:
+            self.user_reaction_accumulators[uid].append(mrecord)
+
 
     def accum_reply_count(self,  message):
         """
@@ -255,6 +277,8 @@ class Report(object):
 
         mrecord = (reply_count, mid, cid, uid)
         self.reply_accumulator.append(mrecord)
+        if uid in self.user_reaction_accumulators:
+            self.user_reaction_accumulators[uid].append(mrecord)
 
     def accum_channel(self, message):
         self.increment(["channels", message['slack_cid']], message)
