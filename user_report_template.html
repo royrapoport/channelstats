@@ -1,12 +1,15 @@
+{% import "macros.html" as macros %}
 <html>
     <head>
         <title>
             User Activity Report for {{payload.user}} from {{payload.start_date}} to {{payload.end_date}}
         </title>
+
         <style media="screen" type="text/css">
             .CSSTableGenerator {
                 margin:0px;padding:0px;
-                box-shadow: 10px 10px 5px #888888;
+                width:100%;     box-shadow: 10px 10px 5px #888888;
+                border:1px solid #000000;
 
                 -moz-border-radius-bottomleft:0px;
                 -webkit-border-bottom-left-radius:0px;
@@ -24,6 +27,7 @@
                 -webkit-border-top-left-radius:0px;
                 border-top-left-radius:0px;
             }.CSSTableGenerator table{
+                width:100%;
                 height:100%;
                 margin:0px;padding:0px;
             }.CSSTableGenerator tr:last-child td:last-child {
@@ -49,7 +53,7 @@
             }.CSSTableGenerator tr:nth-child(odd){ background-color:#e5e5e5; }
             .CSSTableGenerator tr:nth-child(even)    { background-color:#ffffff; }
             .CSSTableGenerator td{
-                vertical-align:middle;
+                vertical-align:top;
 
 
                 border:1px solid #000000;
@@ -68,7 +72,7 @@
                 border-width:0px 0px 0px 0px;
             }
             .CSSTableGenerator tr:fist-child td{
-                background:-o-linear-gradient(bottom, #4c4c4c 5%, #000000 100%);	background:-webkit-gradient( linear, left top, left bottom, color-stop(0.05, #4c4c4c), color-stop(1, #000000) );	background:-moz-linear-gradient( center top, #4c4c4c 5%, #000000 100% );	filter:progid:DXImageTransform.Microsoft.gradient(startColorstr="#4c4c4c", endColorstr="#000000");	background: -o-linear-gradient(top,#4c4c4c,000000);
+                background:-o-linear-gradient(bottom, #4c4c4c 5%, #000000 100%);        background:-webkit-gradient( linear, left top, left bottom, color-stop(0.05, #4c4c4c), color-stop(1, #000000) );        background:-moz-linear-gradient( center top, #4c4c4c 5%, #000000 100% );        filter:progid:DXImageTransform.Microsoft.gradient(startColorstr="#4c4c4c", endColorstr="#000000");      background: -o-linear-gradient(top,#4c4c4c,000000);
                 background-color:#4c4c4c;
                 border:0px solid #000000;
                 text-align:center;
@@ -79,7 +83,7 @@
                 color:#ffffff;
             }
             .CSSTableGenerator tr:fist-child:hover td{
-                background:-o-linear-gradient(bottom, #4c4c4c 5%, #000000 100%);	background:-webkit-gradient( linear, left top, left bottom, color-stop(0.05, #4c4c4c), color-stop(1, #000000) );	background:-moz-linear-gradient( center top, #4c4c4c 5%, #000000 100% );	filter:progid:DXImageTransform.Microsoft.gradient(startColorstr="#4c4c4c", endColorstr="#000000");	background: -o-linear-gradient(top,#4c4c4c,000000);
+                background:-o-linear-gradient(bottom, #4c4c4c 5%, #000000 100%);        background:-webkit-gradient( linear, left top, left bottom, color-stop(0.05, #4c4c4c), color-stop(1, #000000) );        background:-moz-linear-gradient( center top, #4c4c4c 5%, #000000 100% );        filter:progid:DXImageTransform.Microsoft.gradient(startColorstr="#4c4c4c", endColorstr="#000000");      background: -o-linear-gradient(top,#4c4c4c,000000);
                 background-color:#4c4c4c;
             }
             .CSSTableGenerator tr:first-child td:first-child{
@@ -106,26 +110,44 @@
         of this Slack's total volume.<p/>
 
         <div class="CSSTableGenerator">
-            <table border='1'>
-                <thead>
-                    <tr>
-                        <td>
-                        </td>
-                        <td><b>Rank</b></td>
-                        <td><b>Words</b></td>
-                        <td><b>Messages</b></td>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for channel in payload.channels %}
-                        <tr>
-                            <td>{{loop.index}} {{channel.name}}</td>
-                            <td>{{channel.rank}}</td>
-                            <td>{{channel.words}}</td>
-                            <td>{{channel.messages}}</td>
-                        </tr>
-                    {% endfor %}
-                </tbody>
+            <table borde='1'>
+                <tr>
+                    <td valign='top'>
+                        <table border='1'>
+                            <thead>
+                                <tr>
+                                    <td>
+                                    </td>
+                                    <td><b>Rank</b></td>
+                                    <td><b>Words</b></td>
+                                    <td><b>Messages</b></td>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for channel in payload.channels %}
+                                    <tr>
+                                        <td>{{loop.index}} {{channel.name}}</td>
+                                        <td>{{channel.rank}}</td>
+                                        <td>{{channel.words}}</td>
+                                        <td>{{channel.messages}}</td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </td>
+                    <td valign='top'>
+                       <b>Most reacted-to messages:</b><br/>
+                           {% for message in payload['enriched_user'][payload['uid']]['reactions'] %}
+                               {{ macros.print_message(message, "reactions", False) }}
+                           {% endfor %}
+                   </td>
+                   <td valign='top'>
+                       <b>Most replied-to messages:</b><br/>
+                           {% for message in payload['enriched_user'][payload['uid']]['replies'] %}
+                               {{ macros.print_message(message, "replies", False) }}
+                           {% endfor %}
+                    </td>
+                </tr>
             </table>
         </div>
     </body>

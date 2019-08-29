@@ -1,8 +1,10 @@
-{% macro print_message(message, label) -%}
+{% macro print_message(message, label, show_user=True) -%}
     <a href="{{message.url}}">
         {{message.count}} {{label}}
         on {{message.dt}}
-        by <b>{{message.user}}</b>
+        {% if show_user %}
+            by <b>{{message.user}}</b>
+        {% endif %}
         in <b>{{message.channel}}</b><p/>
    </a>
-{%- endmacro %} 
+{%- endmacro %}

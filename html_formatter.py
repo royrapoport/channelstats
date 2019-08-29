@@ -1,9 +1,11 @@
 #! /usr/bin/env python
 
 import datetime
+import json
+import time
+
 import jinja2
 import htmlmin
-import time
 
 import channel
 import config
@@ -89,6 +91,8 @@ class HTMLFormatter(object):
         """
         ret = []
         for message in messages:
+            if type(message) != list:
+                continue
             (reactions, timestamp, cid, uid) = message
             d = {}
             d['count'] = reactions
@@ -163,6 +167,14 @@ class HTMLFormatter(object):
         channel_list.sort(key = lambda x: x['words'])
         channel_list.reverse()
         report['channels'] = channel_list
+
+        ci = report['channel_info']
+        ui = report['user_info']
+        for user in report['enriched_user']:
+            for t in ['reactions', 'replies']:
+                messages = self.popular_messages(report['enriched_user'][user][t], ci, ui)
+                report['enriched_user'][user][t] = messages
+
         html_report = self.user_template.render(payload=report)
         minified_html_report = htmlmin.minify(html_report,
                               remove_comments=True,

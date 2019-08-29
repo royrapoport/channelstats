@@ -278,7 +278,7 @@ class Report(object):
         mrecord = (reply_count, mid, cid, uid)
         self.reply_accumulator.append(mrecord)
         if uid in self.user_reaction_accumulators:
-            self.user_reaction_accumulators[uid].append(mrecord)
+            self.user_reply_accumulators[uid].append(mrecord)
 
     def accum_channel(self, message):
         self.increment(["channels", message['slack_cid']], message)
