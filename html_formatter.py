@@ -15,7 +15,8 @@ class HTMLFormatter(object):
 
     def user_format(self, report, uid):
         self.enricher.user_enrich(report, uid)
-        html_report = self.user_template.render(payload=report, uid=uid)
+        user_stats = report['user_stats'][uid]
+        html_report = self.user_template.render(payload=report, user_stats=user_stats, uid=uid)
         minified_html_report = htmlmin.minify(html_report,
                               remove_comments=True,
                               remove_empty_space=True,

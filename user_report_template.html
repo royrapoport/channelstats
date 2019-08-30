@@ -100,14 +100,19 @@
         </h3></center>
 
         You posted
-        {{payload['user_stats'][payload['uid']]['count'][1]}} words in
-        {{payload['user_stats'][payload['uid']]['count'][0]}} messages
+        {{user_stats['count'][1]}} words in
+        {{user_stats['count'][0]}} messages
         during this period. <p/>
 
-        That made the {{payload['user_stats'][payload['uid']]['rank']}}-ranked
+        {% if user_stats.get("thread_messages") %}
+            You started threads that added {{user_stats['thread_messages']}} messages to total volume
+            <p/>
+        {% endif %}
+
+        That made the {{user_stats['rank']}}-ranked
         poster on the Slack and meant you contributed
-        <b>{{'{:.1f}%'.format(payload['user_stats'][payload['uid']]['percent_of_words'])}}
-        of this Slack's total volume.<p/>
+        <b>{{'{:.1f}%'.format(user_stats['percent_of_words'])}}
+        of this Slack's total volume.</b><p/>
 
         <div class="CSSTableGenerator">
             <table borde='1'>
@@ -137,15 +142,15 @@
                     </td>
                     <td valign='top'>
                        <b>Most reacted-to messages:</b><br/>
-                           {% for message in payload['reenriched_user'][payload['uid']]['reactions'] %}
+                           {% for message in payload['reenriched_user'][uid]['reactions'] %}
                                {{ macros.print_message(message, "reactions", False) }}
                            {% endfor %}
                        <p/>
                        <b>Most replied-to messages:</b><br/>
-                           {% for message in payload['reenriched_user'][payload['uid']]['replies'] %}
+                           {% for message in payload['reenriched_user'][uid]['replies'] %}
                                {{ macros.print_message(message, "replies", False) }}
                            {% endfor %}
-                        <b>You got {{payload['enriched_user'][payload['uid']]['reaction_count']}} reactions</b>
+                        <b>You got {{payload['enriched_user'][uid]['reaction_count']}} reactions</b>
                         <br/>
                         Top ten reactions to your messages:<br/>
                         <table>
