@@ -184,7 +184,7 @@ class Report(object):
 
     def _finalize_threads(self):
         for uid in self.track:
-            stats = self._data['user_stats'][uid]
+            stats = self._data['enriched_user'][uid]
             for k in ['author_thread_responded', 'thread_responders']:
                 if k in stats:
                     stats[k] = utils.make_ordered_dict(stats[k])
@@ -321,12 +321,12 @@ class Report(object):
         self._data['user_stats'][ta]['thread_messages'] += 1
 
         if uid in self.track:
-            self.create_key(["user_stats", uid, "author_thread_responded", ta], 0)
-            self._data['user_stats'][uid]['author_thread_responded'][ta] += 1
+            self.create_key(["enriched_user", uid, "author_thread_responded", ta], 0)
+            self._data['enriched_user'][uid]['author_thread_responded'][ta] += 1
 
         if ta in self.track:
-            self.create_key(["user_stats", ta, "thread_responders", uid], 0)
-            self._data['user_stats'][ta]['thread_responders'][uid] += 1
+            self.create_key(["enriched_user", ta, "thread_responders", uid], 0)
+            self._data['enriched_user'][ta]['thread_responders'][uid] += 1
 
     def accum_reply_count(self,  message):
         """
