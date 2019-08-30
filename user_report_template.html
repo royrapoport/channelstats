@@ -140,12 +140,28 @@
                            {% for message in payload['reenriched_user'][payload['uid']]['reactions'] %}
                                {{ macros.print_message(message, "reactions", False) }}
                            {% endfor %}
-                   </td>
-                   <td valign='top'>
+                       <p/>
                        <b>Most replied-to messages:</b><br/>
                            {% for message in payload['reenriched_user'][payload['uid']]['replies'] %}
                                {{ macros.print_message(message, "replies", False) }}
                            {% endfor %}
+                        <b>You got {{payload['enriched_user'][payload['uid']]['reaction_count']}} reactions</b>
+                        <br/>
+                        Top ten reactions:<br/>
+                        <table>
+                            {% for reaction in payload['enriched_user'][uid]['reaction_popularity'].keys() %}
+                                {% if loop.index < 10 %}
+                                    <tr>
+                                        <td>
+                                            {{":{}:".format(reaction)}}
+                                        </td>
+                                        <td>
+                                            {{payload['enriched_user'][uid]['reaction_popularity'][reaction]}}
+                                        </td>
+                                    </tr>
+                                {% endif %}
+                            {% endfor %}
+                        </table>
                     </td>
                 </tr>
             </table>

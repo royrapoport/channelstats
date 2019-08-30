@@ -178,7 +178,7 @@ class HTMLFormatter(object):
                 messages = self.popular_messages(report['enriched_user'][user][t], ci, ui)
                 report['reenriched_user'][user][t] = messages
 
-        html_report = self.user_template.render(payload=report)
+        html_report = self.user_template.render(payload=report, uid=uid)
         minified_html_report = htmlmin.minify(html_report,
                               remove_comments=True,
                               remove_empty_space=True,
