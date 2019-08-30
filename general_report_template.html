@@ -155,13 +155,7 @@
                             <td>
                                 <center>
                                     {{loop.index}}<br/>
-                                    <b>
-                                        <div title="{{payload['user_info'][user]['hover']}}">
-                                            <a href="{{payload['user_info'][user]['url']}}">
-                                                {{payload['user_info'][user]['label']}}
-                                            </a>
-                                        </div>
-                                    </b>
+                                    <b>{{macros.print_user(payload['user_info'][user])}}</b>
                                 </center>
                             </td>
                         {% endfor %}
