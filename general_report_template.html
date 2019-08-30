@@ -138,7 +138,8 @@
 
         numbers in parentheses after channel names are number of users in channel<p/>
 
-        'w' is words, 'm' is messages, 'p' is posters (people who posted a message during this period)
+        'w' is words, 'm' is messages, 't' is threaded messages in threads started by the user,
+        'p' is posters (people who posted a message during this period)
         <p/>
 
         <div class="CSSTableGenerator">
@@ -197,7 +198,8 @@
                                     {{macros.flprint(us.cum_percent_of_words, True)}} running total <br/>
                                     {{macros.percent(us.reactions, us.count.1, False)}} rphw <br/>
                                     {{macros.percent(us.replies * 100, us.count.1, False)}} replies/w <br/>
-                                    {{macros.flprint(us.count.1 / us.count.0)}} w/m
+                                    {{macros.flprint(us.count.1 / us.count.0)}} w/m <br/>
+                                    {{us['thread_messages']}} t
                                 {% endwith %}
                             </td>
                         {% endfor %}

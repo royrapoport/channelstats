@@ -56,6 +56,7 @@ class Report(object):
         self.user_reaction_accumulators = {}
         self.reactions = {}
         self.configuration = configuration.Configuration()
+        self.accum_methods = [x for x in dir(self) if x.find("accum_") == 0]
 
     def set_users(self, users):
         for user in users:
@@ -73,8 +74,7 @@ class Report(object):
         self._data['end_date'] = end_date
 
     def message(self, message):
-        accum_methods = [x for x in dir(self) if x.find("accum_") == 0]
-        for accum_method in accum_methods:
+        for accum_method in self.accum_methods:
             method = "self.{}(message)".format(accum_method)
             eval(method)
 
@@ -287,6 +287,15 @@ class Report(object):
         if uid in self.user_reaction_accumulators:
             self.user_reaction_accumulators[uid].append(mrecord)
 
+
+    def accum_threads(self, message):
+        ta = message.get("thread_author")
+        uid = message['user_id']
+        if not ta:
+            return
+        if ta != message['user_id']:
+            self.create_key(["user_stats", uid, "thread_messages"], 0)
+            self._data['user_stats'][uid]['thread_messages'] += 1
 
     def accum_reply_count(self,  message):
         """
