@@ -54,12 +54,14 @@ class Report(object):
         self.reply_accumulator = Accumulator(self.top_limit, lambda x: x[0])
         self.user_reply_accumulators = {}
         self.user_reaction_accumulators = {}
+        self.reactions = {}
         self.configuration = configuration.Configuration()
 
     def set_users(self, users):
         for user in users:
             self.user_reply_accumulators[user] = Accumulator(self.top_limit, lambda x: x[0])
             self.user_reaction_accumulators[user] = Accumulator(self.top_limit, lambda x: x[0])
+            self.reactions[user] = {}
 
     def data(self):
         return utils.dump(self._data)
@@ -157,6 +159,24 @@ class Report(object):
         cid = mrecord[2]
         return("https://{}.slack.com/archives/{}/p{}".format(config.slack_name, cid,mid))
 
+    def _finalize_reactions(self):
+        for uid in self.reactions:
+            redict = collections.OrderedDict()
+            reactions = self.reactions[uid]
+            k = list(reactions.keys())
+            k.sort(key = lambda x: reactions[x])
+            k.reverse()
+            c = 0
+            for i in k:
+                redict[i] = reactions[i]
+                c += reactions[i]
+            if 'enriched_user' not in self._data:
+                self._data['enriched_user'] = {}
+            if uid not in self._data['enriched_user']:
+                self._data['enriched_user'][uid] = {}
+            self._data['enriched_user'][uid]['reaction_popularity'] = redict
+            self._data['enriched_user'][uid]['reaction_count'] = c
+
     def _finalize_reply_popularity(self):
         self._data['reply_count'] = self.reply_accumulator.dump()
         if "enriched_user" not in self._data:
@@ -226,6 +246,7 @@ class Report(object):
         """
         keep track of most popular reacjis
         """
+        uid = message['user_id']
         reactions = message.get("reactions")
         if not reactions:
             return
@@ -236,6 +257,12 @@ class Report(object):
             elements = reaction.split(":")
             reaction_name = elements.pop(0)
             count = len(elements)
+            if uid in self.user_reaction_accumulators:
+                if uid not in self.reactions:
+                    self.reactions[uid] = {}
+                if reaction_name not in self.reactions[uid]:
+                    self.reactions[uid][reaction_name] = 0
+                self.reactions[uid][reaction_name] += count
             self.create_key(["reaction", reaction_name], 0)
             self._data['reaction'][reaction_name] += count
 
