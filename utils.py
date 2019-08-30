@@ -3,6 +3,7 @@
 import collections
 import decimal
 import json
+import re
 
 # Helper class to convert a DynamoDB item to JSON.
 class DecimalEncoder(json.JSONEncoder):
@@ -54,3 +55,11 @@ def make_ordered_dict(d):
     for i in k:
         nd[i] = d[i]
     return nd
+
+def find_user_mentions(text):
+    """
+    Given message text, returns what users are mentioned
+    (may be empty list)
+    """
+    # text is of the form "whatever <@UID> and also ..."
+    return [x[2:-1] for x in re.findall("<@U[A-Z0-9]+>", text)]
