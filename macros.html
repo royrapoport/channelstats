@@ -24,3 +24,19 @@
         {{'{0:0.1f}'.format(num)}}
     {% endif %}
 {%- endmacro %}
+
+{% macro btr(list_of_headers) -%}
+    <tr>
+        {% for header in list_of_headers %}
+            <td><b>{{header}}</b></td>
+        {% endfor %}
+    </tr>
+{%- endmacro %}
+
+{% macro print_user(user) -%}
+    <div title="{{user['hover']}}">
+        <a href="{{user['url']}}">
+            {{user['label']}}
+        </a>
+    </div>
+{%- endmacro %}    
