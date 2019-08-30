@@ -169,98 +169,24 @@
                                 {% endfor %}
                             {% endwith %}
                         </table><br/>
+
                         <b>The people who most responded to you are</b>
-                        <table>
-                            {{macros.btr(["Person", "# Reactions"])}}
-                            {% with reactions_from = payload['enriched_user'][uid]['reactions_from'] %}
-                                {% for reactor in reactions_from.keys() %}
-                                    {% if loop.index < 10 %}
-                                        <tr>
-                                            <td>{{macros.print_user(payload['user_info'][reactor])}}</td>
-                                            <td>{{reactions_from[reactor]}}</td>
-                                        </tr>
-                                    {% endif %}
-                                {% endfor %}
-                            {% endwith %}
-                        </table>
+                        {{macros.topten(payload['enriched_user'][uid]['reactions_from'], payload)}}
+
                         <b>The people you most responded to are</b>
-                        <table>
-                            {{macros.btr(["Person", "# Reactions"])}}
-                            {% with reactions_to = payload['enriched_user'][uid]['reactions_to'] %}
-                                {% for reactor in reactions_to.keys() %}
-                                    {% if loop.index < 10 %}
-                                        <tr>
-                                            <td>{{macros.print_user(payload['user_info'][reactor])}}</td>
-                                            <td>{{reactions_to[reactor]}}</td>
-                                        </tr>
-                                    {% endif %}
-                                {% endfor %}
-                            {% endwith %}
-                        </table>
+                        {{macros.topten(payload['enriched_user'][uid]['reactions_to'], payload)}}
 
                         <b>Reaction Affinity (The people with whom you 'exchanged' most reactjis)</b>
-                        <table>
-                            {{macros.btr(["Person", "# Reactions"])}}
-                            {% with reactions_combined = payload['enriched_user'][uid]['reactions_combined'] %}
-                                {% for reactor in reactions_combined.keys() %}
-                                    {% if loop.index < 10 %}
-                                        <tr>
-                                            <td>{{macros.print_user(payload['user_info'][reactor])}}</td>
-                                            <td>{{reactions_combined[reactor]}}</td>
-                                        </tr>
-                                    {% endif %}
-                                {% endfor %}
-                            {% endwith %}
-                        </table>
-                        <br/>
+                        {{macros.topten(payload['enriched_user'][uid]['reactions_combined'], payload)}}
 
                         <b>Authors whose threads you responded to the most</b>
-                        <table>
-                            {{macros.btr(["Person", "# Reactions"])}}
-                            {% with authors = payload['enriched_user'][uid]['author_thread_responded'] %}
-                                {% for author in authors.keys() %}
-                                    {% if loop.index < 10 %}
-                                        <tr>
-                                            <td>{{macros.print_user(payload['user_info'][author])}}</td>
-                                            <td>{{authors[author]}}</td>
-                                        </tr>
-                                    {% endif %}
-                                {% endfor %}
-                            {% endwith %}
-                        </table>
-                        <br/>
+                        {{macros.topten(payload['enriched_user'][uid]['author_thread_responded'], payload)}}
 
                         <b>Posters who most often responded in threads you launched</b>
-                        <table>
-                            {{macros.btr(["Person", "# Reactions"])}}
-                            {% with authors = payload['enriched_user'][uid]['thread_responders'] %}
-                                {% for author in authors.keys() %}
-                                    {% if loop.index < 10 %}
-                                        <tr>
-                                            <td>{{macros.print_user(payload['user_info'][author])}}</td>
-                                            <td>{{authors[author]}}</td>
-                                        </tr>
-                                    {% endif %}
-                                {% endfor %}
-                            {% endwith %}
-                        </table>
-                        <br/>
+                        {{macros.topten(payload['enriched_user'][uid]['thread_responders'], payload)}}
 
                         <b>Thread Affinity</b>
-                        <table>
-                            {{macros.btr(["Person", "# Reactions"])}}
-                            {% with authors = payload['enriched_user'][uid]['threads_combined'] %}
-                                {% for author in authors.keys() %}
-                                    {% if loop.index < 10 %}
-                                        <tr>
-                                            <td>{{macros.print_user(payload['user_info'][author])}}</td>
-                                            <td>{{authors[author]}}</td>
-                                        </tr>
-                                    {% endif %}
-                                {% endfor %}
-                            {% endwith %}
-                        </table>
-                        <br/>
+                        {{macros.topten(payload['enriched_user'][uid]['threads_combined'], payload)}}
 
                     </td>
                 </tr>

@@ -39,4 +39,19 @@
             {{user['label']}}
         </a>
     </div>
-{%- endmacro %}    
+{%- endmacro %}
+
+{% macro topten(d, payload) -%}
+    <table>
+        {{btr(["Person", "# Reactions"])}}
+        {% for uid in d.keys() %}
+            {% if loop.index < 10 %}
+                <tr>
+                    <td>{{print_user(payload['user_info'][uid])}}</td>
+                    <td>{{d[uid]}}</td>
+                </tr>
+            {% endif %}
+        {% endfor %}
+    </table>
+    <br/>
+{%- endmacro %}
