@@ -62,9 +62,9 @@ class ReportGenerator(object):
                         emptyReport = True
                     reports[user] = report
             report = self.query_report(start_day, days)
-            report['enriched_user'] = reports
             if report and not emptyReport:
                 print("Found all parts of the report in storage!")
+                report['enriched_user'] = reports
                 return report
         report = self.generate_report(start_day, days, users)
         enriched_users = report['enriched_user']
@@ -177,10 +177,9 @@ if __name__ == "__main__":
     f.write(mhtml)
     f.close()
     for u in users.keys():
-        cr = copy.deepcopy(report)
         uid = users[u]
         print("Running user report for {}/{}".format(u, uid))
-        u_html = html_formatter_obj.user_format(cr, uid)
+        u_html = html_formatter_obj.user_format(report, uid)
         f = open("{}_report.html".format(u), "w")
         f.write(u_html)
         f.close()

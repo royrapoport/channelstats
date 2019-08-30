@@ -139,7 +139,7 @@ class HTMLFormatter(object):
 
         channel_list = []
         for cid in report['channel_user']:
-            print("Examining cid {}".format(cid))
+            # print("Examining cid {}".format(cid))
             channel = report['channel_user'][cid]
             if uid not in channel:
                 continue
@@ -167,14 +167,16 @@ class HTMLFormatter(object):
             channel_list.append(c)
         channel_list.sort(key = lambda x: x['words'])
         channel_list.reverse()
-        report['channels'] = channel_list
+        report['enriched_channels'] = channel_list
 
         ci = report['channel_info']
         ui = report['user_info']
+        report['reenriched_user'] = {}
         for user in report['enriched_user']:
+            report['reenriched_user'][user] = {}
             for t in ['reactions', 'replies']:
                 messages = self.popular_messages(report['enriched_user'][user][t], ci, ui)
-                report['enriched_user'][user][t] = messages
+                report['reenriched_user'][user][t] = messages
 
         html_report = self.user_template.render(payload=report)
         minified_html_report = htmlmin.minify(html_report,
