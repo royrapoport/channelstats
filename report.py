@@ -59,6 +59,7 @@ class Report(object):
         self.reactions_to = {} # People to whom the people we're tracking react
         self.configuration = configuration.Configuration()
         self.accum_methods = [x for x in dir(self) if x.find("accum_") == 0]
+        self.track = {}
 
     def set_users(self, users):
         for user in users:
@@ -67,6 +68,8 @@ class Report(object):
             self.reactions[user] = {}
             self.reactions_from[user] = {}
             self.reactions_to[user] = {}
+            self.track[user] = 1
+            self.create_key(["enriched_user", user], {})
 
     def data(self):
         return utils.dump(self._data)
@@ -179,22 +182,21 @@ class Report(object):
                 combined[key] = enriched['reactions_to'].get(key, 0) + enriched['reactions_from'].get(key, 0)
             enriched['reactions_combined'] = utils.make_ordered_dict(combined)
 
+    def _finalize_threads(self):
+        for uid in self.track:
+            stats = self._data['user_stats'][uid]
+            for k in ['author_thread_responded', 'thread_responders']:
+                if k in stats:
+                    stats[k] = utils.make_ordered_dict(stats[k])
+
     def _finalize_reply_popularity(self):
         self._data['reply_count'] = self.reply_accumulator.dump()
-        if "enriched_user" not in self._data:
-            self._data['enriched_user'] = {}
         for uid in self.user_reply_accumulators:
-            if uid not in self._data['enriched_user']:
-                self._data['enriched_user'][uid] = {}
             self._data['enriched_user'][uid]['replies'] = self.user_reply_accumulators[uid].dump()
 
     def _finalize_reaction_popularity(self):
         self._data['reaction_count'] = self.reactions_accumulator.dump()
-        if "enriched_user" not in self._data:
-            self._data['enriched_user'] = {}
         for uid in self.user_reaction_accumulators:
-            if uid not in self._data['enriched_user']:
-                self._data['enriched_user'][uid] = {}
             self._data['enriched_user'][uid]['reactions'] = self.user_reaction_accumulators[uid].dump()
 
     def _finalize_period_activity(self):
@@ -313,9 +315,18 @@ class Report(object):
         uid = message['user_id']
         if not ta:
             return
-        if ta != message['user_id']:
-            self.create_key(["user_stats", uid, "thread_messages"], 0)
-            self._data['user_stats'][uid]['thread_messages'] += 1
+        if ta == message['user_id']:
+            return
+        self.create_key(["user_stats", ta, "thread_messages"], 0)
+        self._data['user_stats'][ta]['thread_messages'] += 1
+
+        if uid in self.track:
+            self.create_key(["user_stats", uid, "author_thread_responded", ta], 0)
+            self._data['user_stats'][uid]['author_thread_responded'][ta] += 1
+
+        if ta in self.track:
+            self.create_key(["user_stats", ta, "thread_responders", uid], 0)
+            self._data['user_stats'][ta]['thread_responders'][uid] += 1
 
     def accum_reply_count(self,  message):
         """
