@@ -1,5 +1,6 @@
 #! /usr/bin/env python2.7
 
+import collections
 import decimal
 import json
 
@@ -41,4 +42,15 @@ def chunks(l, n):
     n = max(1, n)
     return (l[i:i+n] for i in range(0, len(l), n))
 
-
+def make_ordered_dict(d):
+    """
+    Turn a {k:v} dictionary into an ordered dictionary ordered from largest
+    v to smallest
+    """
+    k =  list(d.keys())
+    k.sort(key = lambda x: d[x])
+    k.reverse()
+    nd = collections.OrderedDict()
+    for i in k:
+        nd[i] = d[i]
+    return nd
