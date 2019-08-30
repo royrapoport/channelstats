@@ -110,10 +110,18 @@ class HTMLFormatter(object):
         channels = report['channel_user'].keys()
         users = {} # We need a list, but this makes deduping easier
         channel_list = []
+        # Collect list of userIDs we might refer to
         for channel in channels:
             channel_list.append(channel)
             for user in report['channel_user'][channel]:
                 users[user] = 1
+        for uid in report['enriched_user']:
+            enriched = report['enriched_user'][uid]
+            for elem in ['reactions_to', 'reactions_from']:
+                reactors = enriched[elem].keys()
+                for user in reactors:
+                    users[user] = 1
+
         users = list(users.keys())
         channel_info = self.get_channels(channel_list, report['start_date'])
         user_info = self.get_users(users)
