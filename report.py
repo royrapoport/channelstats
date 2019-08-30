@@ -173,6 +173,11 @@ class Report(object):
             enriched['reaction_count'] = count
             enriched['reactions_to'] = utils.make_ordered_dict(self.reactions_to[uid])
             enriched['reactions_from'] = utils.make_ordered_dict(self.reactions_from[uid])
+            # Show combined reactions
+            combined = {}
+            for key in list(enriched['reactions_to'].keys()) + list(enriched['reactions_from']):
+                combined[key] = enriched['reactions_to'].get(key, 0) + enriched['reactions_from'].get(key, 0)
+            enriched['reactions_combined'] = utils.make_ordered_dict(combined)
 
     def _finalize_reply_popularity(self):
         self._data['reply_count'] = self.reply_accumulator.dump()

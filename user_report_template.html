@@ -187,7 +187,7 @@
                         <table>
                             {{macros.btr(["Person", "# Reactions"])}}
                             {% with reactions_to = payload['enriched_user'][uid]['reactions_to'] %}
-                                {% for reactor in reactions_to .keys() %}
+                                {% for reactor in reactions_to.keys() %}
                                     {% if loop.index < 10 %}
                                         <tr>
                                             <td>{{macros.print_user(payload['user_info'][reactor])}}</td>
@@ -198,6 +198,20 @@
                             {% endwith %}
                         </table>
 
+                        <b>Reaction Affinity (The people with whom you 'exchanged' most reactjis)</b>
+                        <table>
+                            {{macros.btr(["Person", "# Reactions"])}}
+                            {% with reactions_combined = payload['enriched_user'][uid]['reactions_combined'] %}
+                                {% for reactor in reactions_combined.keys() %}
+                                    {% if loop.index < 10 %}
+                                        <tr>
+                                            <td>{{macros.print_user(payload['user_info'][reactor])}}</td>
+                                            <td>{{reactions_combined[reactor]}}</td>
+                                        </tr>
+                                    {% endif %}
+                                {% endfor %}
+                            {% endwith %}
+                        </table>
 
                     </td>
                 </tr>
