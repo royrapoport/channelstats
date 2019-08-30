@@ -54,6 +54,7 @@ class MessageWriter(object):
             print("How the hell no user? {}".format(json.dumps(message, indent=4)))
             return None
         wordcount = len(message['text'].split())
+        mentions = utils.find_user_mentions(message['text'])
         (reaction_count, reactions) = self.get_reactions(message)
         (reply_count, replies) = self.get_replies(message)
         files = json.dumps(message.get("files", None))
@@ -74,6 +75,8 @@ class MessageWriter(object):
         }
         if thread_author_uid:
             Row['thread_author'] = thread_author_uid
+        if mentions:
+            Row['mentions'] = ":".join(mentions)
         else: # if it's a thread head, we want to capture that
             if message.get("thread_ts") == message.get("ts"):
                 Row['thread_author'] = user_id
