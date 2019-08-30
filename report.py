@@ -184,10 +184,14 @@ class Report(object):
 
     def _finalize_threads(self):
         for uid in self.track:
-            stats = self._data['enriched_user'][uid]
+            enriched = self._data['enriched_user'][uid]
             for k in ['author_thread_responded', 'thread_responders']:
-                if k in stats:
-                    stats[k] = utils.make_ordered_dict(stats[k])
+                if k in enriched:
+                    enriched[k] = utils.make_ordered_dict(enriched[k])
+            combined = {}
+            for key in list(enriched['author_thread_responded'].keys()) + list(enriched['thread_responders']):
+                combined[key] = enriched['author_thread_responded'].get(key, 0) + enriched['thread_responders'].get(key, 0)
+            enriched['threads_combined'] = utils.make_ordered_dict(combined)
 
     def _finalize_reply_popularity(self):
         self._data['reply_count'] = self.reply_accumulator.dump()
