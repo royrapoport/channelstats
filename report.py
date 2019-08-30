@@ -55,6 +55,8 @@ class Report(object):
         self.user_reply_accumulators = {}
         self.user_reaction_accumulators = {}
         self.reactions = {}
+        self.reactions_from = {} # People who react to the people we're tracking
+        self.reactions_to = {} # People to whom the people we're tracking react
         self.configuration = configuration.Configuration()
         self.accum_methods = [x for x in dir(self) if x.find("accum_") == 0]
 
@@ -63,6 +65,8 @@ class Report(object):
             self.user_reply_accumulators[user] = Accumulator(self.top_limit, lambda x: x[0])
             self.user_reaction_accumulators[user] = Accumulator(self.top_limit, lambda x: x[0])
             self.reactions[user] = {}
+            self.reactions_from[user] = {}
+            self.reactions_to[user] = {}
 
     def data(self):
         return utils.dump(self._data)
@@ -161,21 +165,14 @@ class Report(object):
 
     def _finalize_reactions(self):
         for uid in self.reactions:
-            redict = collections.OrderedDict()
             reactions = self.reactions[uid]
-            k = list(reactions.keys())
-            k.sort(key = lambda x: reactions[x])
-            k.reverse()
-            c = 0
-            for i in k:
-                redict[i] = reactions[i]
-                c += reactions[i]
-            if 'enriched_user' not in self._data:
-                self._data['enriched_user'] = {}
-            if uid not in self._data['enriched_user']:
-                self._data['enriched_user'][uid] = {}
-            self._data['enriched_user'][uid]['reaction_popularity'] = redict
-            self._data['enriched_user'][uid]['reaction_count'] = c
+            reactions = utils.make_ordered_dict(reactions)
+            count = sum(reactions.values())
+            self.create_key(['enriched_user', uid], {})
+            self._data['enriched_user'][uid]['reaction_popularity'] = reactions
+            self._data['enriched_user'][uid]['reaction_count'] = count
+            self._data['enriched_user'][uid]['reactions_to'] = self.reactions_to[uid]
+            self._data['enriched_user'][uid]['reactions_from'] = self.reactions_from[uid]
 
     def _finalize_reply_popularity(self):
         self._data['reply_count'] = self.reply_accumulator.dump()
@@ -256,6 +253,19 @@ class Report(object):
         for reaction in reaction_list:
             elements = reaction.split(":")
             reaction_name = elements.pop(0)
+            reactors = elements
+            if uid in self.reactions_from:
+                # The UID of the person who wrote the message is someone
+                # we're tracking
+                for reactor in reactors:
+                    if reactor not in self.reactions_from[uid]:
+                        self.reactions_from[uid][reactor] = 0
+                    self.reactions_from[uid][reactor] += 1
+            for reactor in reactors:
+                if reactor in self.reactions_to:
+                    if uid not in self.reactions_to[reactor]:
+                        self.reactions_to[reactor][uid] = 0
+                    self.reactions_to[reactor][uid] += 1
             count = len(elements)
             if uid in self.user_reaction_accumulators:
                 if uid not in self.reactions:
