@@ -212,6 +212,39 @@
                                 {% endfor %}
                             {% endwith %}
                         </table>
+                        <br/>
+
+                        <b>Authors whose threads you responded to the most</b>
+                        <table>
+                            {{macros.btr(["Person", "# Reactions"])}}
+                            {% with authors = payload['enriched_user'][uid]['author_thread_responded'] %}
+                                {% for author in authors.keys() %}
+                                    {% if loop.index < 10 %}
+                                        <tr>
+                                            <td>{{macros.print_user(payload['user_info'][author])}}</td>
+                                            <td>{{authors[author]}}</td>
+                                        </tr>
+                                    {% endif %}
+                                {% endfor %}
+                            {% endwith %}
+                        </table>
+                        <br/>
+
+                        <b>Posters who most often responded in threads you launched</b>
+                        <table>
+                            {{macros.btr(["Person", "# Reactions"])}}
+                            {% with authors = payload['enriched_user'][uid]['thread_responders'] %}
+                                {% for author in authors.keys() %}
+                                    {% if loop.index < 10 %}
+                                        <tr>
+                                            <td>{{macros.print_user(payload['user_info'][author])}}</td>
+                                            <td>{{authors[author]}}</td>
+                                        </tr>
+                                    {% endif %}
+                                {% endfor %}
+                            {% endwith %}
+                        </table>
+                        <br/>
 
                     </td>
                 </tr>
