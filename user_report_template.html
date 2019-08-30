@@ -149,18 +149,20 @@
                         <br/>
                         Top ten reactions:<br/>
                         <table>
-                            {% for reaction in payload['enriched_user'][uid]['reaction_popularity'].keys() %}
-                                {% if loop.index < 10 %}
-                                    <tr>
-                                        <td>
-                                            {{":{}:".format(reaction)}}
-                                        </td>
-                                        <td>
-                                            {{payload['enriched_user'][uid]['reaction_popularity'][reaction]}}
-                                        </td>
-                                    </tr>
-                                {% endif %}
-                            {% endfor %}
+                            {% with reaction_popularity = payload['enriched_user'][uid]['reaction_popularity'] %}
+                                {% for reaction in reaction_popularity.keys() %}
+                                    {% if loop.index < 10 %}
+                                        <tr>
+                                            <td>
+                                                {{":{}:".format(reaction)}}
+                                            </td>
+                                            <td>
+                                                {{reaction_popularity[reaction]}}
+                                            </td>
+                                        </tr>
+                                    {% endif %}
+                                {% endfor %}
+                            {% endwith %}
                         </table>
                     </td>
                 </tr>
