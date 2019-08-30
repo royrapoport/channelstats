@@ -254,6 +254,11 @@ class Report(object):
             elements = reaction.split(":")
             reaction_name = elements.pop(0)
             reactors = elements
+            # reactions are sometimes e.g. point_up_2::skin-tone-3
+            # which means that some of the reactors might be blank
+            # and some may be 'skin-tone-X".  Remove these since
+            # they're not actually reactors
+            reactors = [x for x in reactors if (x and x[0] == "U")]
             if uid in self.reactions_from:
                 # The UID of the person who wrote the message is someone
                 # we're tracking
