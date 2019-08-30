@@ -101,8 +101,9 @@ class Report(object):
                     cur[k] = {}
                 else:
                     cur[k] = default_value
-                    return
+                    return cur[k]
             cur = cur[k]
+        return cur
 
     def increment(self, keys, message):
         """
@@ -165,14 +166,13 @@ class Report(object):
 
     def _finalize_reactions(self):
         for uid in self.reactions:
-            reactions = self.reactions[uid]
-            reactions = utils.make_ordered_dict(reactions)
+            enriched = self.create_key(['enriched_user', uid], {})
+            reactions = utils.make_ordered_dict(self.reactions[uid])
             count = sum(reactions.values())
-            self.create_key(['enriched_user', uid], {})
-            self._data['enriched_user'][uid]['reaction_popularity'] = reactions
-            self._data['enriched_user'][uid]['reaction_count'] = count
-            self._data['enriched_user'][uid]['reactions_to'] = self.reactions_to[uid]
-            self._data['enriched_user'][uid]['reactions_from'] = self.reactions_from[uid]
+            enriched['reaction_popularity'] = reactions
+            enriched['reaction_count'] = count
+            enriched['reactions_to'] = utils.make_ordered_dict(self.reactions_to[uid])
+            enriched['reactions_from'] = utils.make_ordered_dict(self.reactions_from[uid])
 
     def _finalize_reply_popularity(self):
         self._data['reply_count'] = self.reply_accumulator.dump()
