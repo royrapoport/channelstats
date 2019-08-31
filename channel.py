@@ -1,6 +1,6 @@
-
 import ddb
 import utils
+
 
 class Channel(object):
     table_name = "Channel"

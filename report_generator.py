@@ -15,6 +15,7 @@ import report_store
 import user
 import utils
 
+
 class ReportGenerator(object):
 
     def __init__(self):
@@ -68,7 +69,8 @@ class ReportGenerator(object):
         enriched_users = report['enriched_user']
         if enriched_users:
             for user in enriched_users:
-                self.store_report(start_day, days, enriched_users[user], user=user)
+                self.store_report(
+                    start_day, days, enriched_users[user], user=user)
         self.store_report(start_day, days, report, user=None)
         return report
 
@@ -108,12 +110,12 @@ class ReportGenerator(object):
             # print(utils.dumps(report[item]))
             # print("")
         print("user activity by hour:")
-        for x in range(0,24):
+        for x in range(0, 24):
             print("{}: {}".format(x, report['user_weekday_hour'].get(str(x))))
 
         print("user activity by timezone:")
         tzs = list(report['timezone'].keys())
-        tzs.sort(key = lambda x: report['timezone'][x])
+        tzs.sort(key=lambda x: report['timezone'][x])
         tzs.reverse()
         for tz in tzs:
             print("{}: {}".format(tz, report['timezone'][tz]))
@@ -130,11 +132,15 @@ class ReportGenerator(object):
     def reaction_summary(self, top=10):
         rdict = report['reaction']
         reactions = list(rdict.keys())
-        reactions.sort(key = lambda x: rdict[x])
+        reactions.sort(key=lambda x: rdict[x])
         reactions.reverse()
         reactions = reactions[0:top]
         for reaction in reactions:
-            print(":{}: `:{}:` :{}".format(reaction, reaction, rdict[reaction]))
+            print(
+                ":{}: `:{}:` :{}".format(
+                    reaction,
+                    reaction,
+                    rdict[reaction]))
 
     def generate_dates(self, start_day, days):
         dates = []

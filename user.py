@@ -7,6 +7,7 @@ import utils
 import userhash
 import configuration
 
+
 class User(object):
     table_name = "User"
 
@@ -24,7 +25,7 @@ class User(object):
     def get(self, key):
         if key in self.users:
             return self.users[key]
-        response = self.table.get_item(Key={'id':key})
+        response = self.table.get_item(Key={'id': key})
         item = response.get("Item")
         self.users[key] = item
         return item
@@ -35,7 +36,7 @@ class User(object):
             ":D": row["deleted"],
             ":o": row["tz_offset"]
         }
-        expr="set deleted=:D, tz=:t, tz_offset=:o, "
+        expr = "set deleted=:D, tz=:t, tz_offset=:o, "
         if row['real_name']:
             expr += "real_name=:r, "
             values[":r"] = row["real_name"]
@@ -50,7 +51,7 @@ class User(object):
         print("Row: {}".format(row))
         self.table.update_item(
             Key={
-                'id':row['id']
+                'id': row['id']
             },
             UpdateExpression=expr,
             ExpressionAttributeValues=values,
@@ -91,7 +92,7 @@ class User(object):
                 Row['insert_timestamp'] = now
                 Row = utils.prune_empty(Row)
                 insert_users.append(Row)
-            else: # user already exists.  Updated?
+            else:  # user already exists.  Updated?
                 updated = user['updated']
                 if updated > last_run:
                     print("Updating {}".format(Row))

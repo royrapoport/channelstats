@@ -8,6 +8,7 @@ import channel
 import config
 import user
 
+
 class Enricher(object):
 
     def __init__(self):
@@ -93,12 +94,13 @@ class Enricher(object):
         """
         ret = []
         for message in messages:
-            if type(message) != list:
+            if not isinstance(message, list):
                 continue
             (reactions, timestamp, cid, uid) = message
             d = {}
             d['count'] = reactions
-            d['dt'] = time.strftime("%m/%d/%Y %H:%M", time.localtime(int(float(timestamp))))
+            d['dt'] = time.strftime("%m/%d/%Y %H:%M",
+                                    time.localtime(int(float(timestamp))))
             d['channel'] = cinfo[cid]['name']
             d['user'] = uinfo[uid]['label']
             url = "https://{}.slack.com/archives/{}/p{}"
@@ -110,7 +112,7 @@ class Enricher(object):
         # Get the canonical list of USER ids we might refer to.
         # That is all users who posted in all channels
         channels = report['channel_user'].keys()
-        users = {} # We need a list, but this makes deduping easier
+        users = {}  # We need a list, but this makes deduping easier
         channel_list = []
         # Collect list of userIDs we might refer to
         for channel in channels:
@@ -134,10 +136,12 @@ class Enricher(object):
         reactji = list(reactions.keys())
         report['top_ten_reactions'] = reactji[0:10]
 
-        report['reacted_messages'] = self.popular_messages(report['reaction_count'], channel_info, user_info)
+        report['reacted_messages'] = self.popular_messages(
+            report['reaction_count'], channel_info, user_info)
         report['reacted_messages'] = report['reacted_messages'][0:10]
 
-        report['replied_messages'] = self.popular_messages(report['reply_count'], channel_info, user_info)
+        report['replied_messages'] = self.popular_messages(
+            report['reply_count'], channel_info, user_info)
         report['replied_messages'] = report['replied_messages'][0:10]
 
     def user_enrich(self, report, uid):
@@ -153,7 +157,7 @@ class Enricher(object):
             if uid not in channel:
                 continue
             users = list(channel.keys())
-            users.sort(key = lambda x: channel[x][1])
+            users.sort(key=lambda x: channel[x][1])
             users.reverse()
             rank = 1
             for i in users:
@@ -174,7 +178,7 @@ class Enricher(object):
             c['messages'] = messages
             c['percent'] = percent_words
             channel_list.append(c)
-        channel_list.sort(key = lambda x: x['words'])
+        channel_list.sort(key=lambda x: x['words'])
         channel_list.reverse()
         report['enriched_channels'] = channel_list
 
@@ -184,5 +188,6 @@ class Enricher(object):
         for user in report['enriched_user']:
             report['reenriched_user'][user] = {}
             for t in ['reactions', 'replies']:
-                messages = self.popular_messages(report['enriched_user'][user][t], ci, ui)
+                messages = self.popular_messages(
+                    report['enriched_user'][user][t], ci, ui)
                 report['reenriched_user'][user][t] = messages

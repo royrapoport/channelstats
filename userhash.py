@@ -4,6 +4,7 @@ import time
 import ddb
 import utils
 
+
 class UserHash(object):
     table_name = "UserHash"
 
@@ -16,7 +17,7 @@ class UserHash(object):
     def get(self, key):
         if key in self.cache:
             return self.cache[key]
-        response = self.table.get_item(Key={'key':key})
+        response = self.table.get_item(Key={'key': key})
         item = response.get("Item")
         self.cache[key] = item
         return item

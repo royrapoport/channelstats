@@ -6,6 +6,8 @@ import json
 import re
 
 # Helper class to convert a DynamoDB item to JSON.
+
+
 class DecimalEncoder(json.JSONEncoder):
     def default(self, o):
         if isinstance(o, decimal.Decimal):
@@ -22,12 +24,14 @@ def dumps(j, indent=4):
     """
     return json.dumps(j, indent=indent, cls=DecimalEncoder)
 
+
 def dump(j):
     """
     json.dump(j), but deal with Decimal encoding
     """
     j = dumps(j)
     return json.loads(j)
+
 
 def prune_empty(row):
     """
@@ -39,22 +43,25 @@ def prune_empty(row):
             new_row[k] = row[k]
     return new_row
 
+
 def chunks(l, n):
     n = max(1, n)
-    return (l[i:i+n] for i in range(0, len(l), n))
+    return (l[i:i + n] for i in range(0, len(l), n))
+
 
 def make_ordered_dict(d):
     """
     Turn a {k:v} dictionary into an ordered dictionary ordered from largest
     v to smallest
     """
-    k =  list(d.keys())
-    k.sort(key = lambda x: d[x])
+    k = list(d.keys())
+    k.sort(key=lambda x: d[x])
     k.reverse()
     nd = collections.OrderedDict()
     for i in k:
         nd[i] = d[i]
     return nd
+
 
 def find_user_mentions(text):
     """

@@ -3,6 +3,7 @@ import ddb
 
 import config
 
+
 class ChannelConfiguration(object):
     table_name = "ChannelConfiguration"
 
@@ -25,16 +26,20 @@ class ChannelConfiguration(object):
 
         self.table.update_item(
             Key={
-                'slack_cid':slack_cid
+                'slack_cid': slack_cid
             },
             UpdateExpression="set last_message_timestamp=:t",
             ExpressionAttributeValues={
-                ":t" : int(last_message_timestamp)
+                ":t": int(last_message_timestamp)
             },
             ReturnValues="UPDATED_NEW"
         )
 
-    def set_channel_config(self, slack_cid, last_message_timestamp, refetch=None):
+    def set_channel_config(
+            self,
+            slack_cid,
+            last_message_timestamp,
+            refetch=None):
         """
         Sets configuration for the given slack_cid
         """
@@ -44,9 +49,9 @@ class ChannelConfiguration(object):
 
         self.table.put_item(
             Item={
-                'slack_cid':slack_cid,
-                'last_message_timestamp':str(last_message_timestamp),
-                'refetch':refetch
+                'slack_cid': slack_cid,
+                'last_message_timestamp': str(last_message_timestamp),
+                'refetch': refetch
             }
         )
 
@@ -62,7 +67,7 @@ class ChannelConfiguration(object):
             }
         )
         if 'Item' not in response:
-            return (0,0)
+            return (0, 0)
         item = response['Item']
         last_message_timestamp = item['last_message_timestamp']
         refetch = int(item['refetch'])

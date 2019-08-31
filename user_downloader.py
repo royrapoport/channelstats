@@ -6,6 +6,7 @@ import slack_token
 import slacker
 import user
 
+
 class UserDownloader(object):
 
     def __init__(self, sname, stoken):
@@ -16,6 +17,7 @@ class UserDownloader(object):
         users = self.slack.get_all_users()
         print("found {} users".format(len(users)))
         self.user.batch_upload(users)
+
 
 if __name__ == "__main__":
     user_downloader = UserDownloader("rands-leadership", slack_token.token)

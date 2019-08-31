@@ -6,6 +6,7 @@ import sys
 import messagetablefactory
 import utils
 
+
 class MessageWriter(object):
 
     def __init__(self):
@@ -28,9 +29,11 @@ class MessageWriter(object):
             if message.get("type") != "message":
                 continue
             timestamp = message['ts']
-            table_name = self.MessageTableFactory.get_message_table_name(timestamp)
+            table_name = self.MessageTableFactory.get_message_table_name(
+                timestamp)
             if table_name not in message_tables:
-                message_tables[table_name] = self.MessageTableFactory.get_message_table(timestamp)
+                message_tables[table_name] = self.MessageTableFactory.get_message_table(
+                    timestamp)
                 messages[table_name] = []
             messages[table_name].append(message)
 
@@ -51,8 +54,12 @@ class MessageWriter(object):
         timestamp = message['ts']
         try:
             user_id = message['user']
-        except:
-            print("How the hell no user? {}".format(json.dumps(message, indent=4)))
+        except BaseException:
+            print(
+                "How the hell no user? {}".format(
+                    json.dumps(
+                        message,
+                        indent=4)))
             return None
         wordcount = len(message['text'].split())
         mentions = utils.find_user_mentions(message['text'])
@@ -78,7 +85,7 @@ class MessageWriter(object):
             Row['thread_author'] = thread_author_uid
         if mentions:
             Row['mentions'] = ":".join(mentions)
-        else: # if it's a thread head, we want to capture that
+        else:  # if it's a thread head, we want to capture that
             if message.get("thread_ts") == message.get("ts"):
                 Row['thread_author'] = user_id
         Row = utils.prune_empty(Row)

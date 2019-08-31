@@ -10,6 +10,7 @@ import configuration
 import user
 import utils
 
+
 class Accumulator(object):
     """
     Accumulator accumulates a list of objects, which will
@@ -17,6 +18,7 @@ class Accumulator(object):
     top LIMIT objects, where the size of object is determined
     by running METHOD(object)
     """
+
     def __init__(self, limit, method):
         self.limit = limit
         self.method = method
@@ -31,7 +33,7 @@ class Accumulator(object):
         # If we're here, then this is bigger than the minimum
         # current size, and that means we'll definitely add it
         self.items.append(item)
-        self.items.sort(key = lambda x: self.method(x))
+        self.items.sort(key=lambda x: self.method(x))
         self.items.reverse()
         self.items = self.items[0:self.limit]
         self.min = self.method(self.items[-1])
@@ -42,6 +44,7 @@ class Accumulator(object):
         """
         return self.items
 
+
 class Report(object):
 
     # Where we keep the 'top X' of messages, what X should we go for?
@@ -50,20 +53,23 @@ class Report(object):
     def __init__(self):
         self._data = {}
         self.user = user.User()
-        self.reactions_accumulator = Accumulator(self.top_limit, lambda x: x[0])
+        self.reactions_accumulator = Accumulator(
+            self.top_limit, lambda x: x[0])
         self.reply_accumulator = Accumulator(self.top_limit, lambda x: x[0])
         self.user_reply_accumulators = {}
         self.user_reaction_accumulators = {}
         self.reactions = {}
-        self.reactions_from = {} # People who react to the people we're tracking
+        self.reactions_from = {}  # People who react to the people we're tracking
         self.configuration = configuration.Configuration()
         self.accum_methods = [x for x in dir(self) if x.find("accum_") == 0]
         self.track = {}
 
     def set_users(self, users):
         for user in users:
-            self.user_reply_accumulators[user] = Accumulator(self.top_limit, lambda x: x[0])
-            self.user_reaction_accumulators[user] = Accumulator(self.top_limit, lambda x: x[0])
+            self.user_reply_accumulators[user] = Accumulator(
+                self.top_limit, lambda x: x[0])
+            self.user_reaction_accumulators[user] = Accumulator(
+                self.top_limit, lambda x: x[0])
             self.reactions[user] = {}
             self.track[user] = 1
             self.create_key(["enriched_user", user], {})
@@ -114,7 +120,7 @@ class Report(object):
         and increment its message_count by one, word_count by wordcount
         in message
         """
-        self.create_key(keys, [0,0])
+        self.create_key(keys, [0, 0])
         cur = self._data
         while keys:
             k = keys.pop(0)
@@ -134,7 +140,7 @@ class Report(object):
         self.increment(["hour", hour], message)
         # Now, adjust stats to the authors' timezone
         user = self.user.get(uid)
-        if not user: # Weird.  We couldn't find this user.  Oh well.
+        if not user:  # Weird.  We couldn't find this user.  Oh well.
             print("Couldn't find user {}".format(message['user_id']))
             return
         if 'tz_offset' not in user or 'tz' not in user:
@@ -148,7 +154,7 @@ class Report(object):
         hour = localtime.tm_hour
         wday = localtime.tm_wday
         self.increment(["user_weekday", wday], message)
-        if wday < 5: # We only look at weekday activity
+        if wday < 5:  # We only look at weekday activity
             # print("Incrementing user_weekday_hour because wday is {}".format(wday))
             self.increment(["user_weekday_hour", hour], message)
             self.increment(["user_weekday_hour_per_user", uid, hour], message)
@@ -162,7 +168,7 @@ class Report(object):
     def make_url(self, mrecord):
         mid = mrecord[1]
         cid = mrecord[2]
-        return("https://{}.slack.com/archives/{}/p{}".format(config.slack_name, cid,mid))
+        return("https://{}.slack.com/archives/{}/p{}".format(config.slack_name, cid, mid))
 
     def _finalize_reactions(self):
         for uid in self.reactions:
@@ -171,7 +177,8 @@ class Report(object):
             count = sum(reactions.values())
             enriched['reaction_popularity'] = reactions
             enriched['reaction_count'] = count
-            self.order_and_combine(enriched, '', 'reactions_from', 'reactions_combined')
+            self.order_and_combine(
+                enriched, '', 'reactions_from', 'reactions_combined')
 
     def order_and_combine(self, d, k1, k2, label):
         """
@@ -190,18 +197,27 @@ class Report(object):
                 d[k] = utils.make_ordered_dict(d[k])
         combined = {}
         for key in list(d.get(k1, {}).keys()) + list(d.get(k2, {}).keys()):
-            combined[key] = d.get(k1, {}).get(key, 0) + d.get(k2, {}).get(key, 0)
+            combined[key] = d.get(k1, {}).get(key, 0) + \
+                d.get(k2, {}).get(key, 0)
         d[label] = utils.make_ordered_dict(combined)
 
     def _finalize_mentions(self):
         for uid in self.track:
             enriched = self._data['enriched_user'][uid]
-            self.order_and_combine(enriched, 'you_mentioned', 'mentioned_you', 'mentions_combined')
+            self.order_and_combine(
+                enriched,
+                'you_mentioned',
+                'mentioned_you',
+                'mentions_combined')
 
     def _finalize_threads(self):
         for uid in self.track:
             enriched = self._data['enriched_user'][uid]
-            self.order_and_combine(enriched, 'author_thread_responded', 'thread_responders', 'threads_combined')
+            self.order_and_combine(
+                enriched,
+                'author_thread_responded',
+                'thread_responders',
+                'threads_combined')
 
     def _finalize_reply_popularity(self):
         self._data['reply_count'] = self.reply_accumulator.dump()
@@ -227,7 +243,7 @@ class Report(object):
                 messagecount = hourdict[hour][0]
                 total += hourdict[hour][0]
             percdict = {}
-            for hour in range(0,24):
+            for hour in range(0, 24):
                 if hour not in hourdict:
                     percdict[hour] = 0.0
                     continue
@@ -241,7 +257,7 @@ class Report(object):
         hour_stats = {}
         # print("Average of messages sent by users per hour of the day:")
         period_stats = {}
-        for hour in range(0,24):
+        for hour in range(0, 24):
             stats = [up[x][hour] for x in up.keys()]
             total = sum(stats)
             avg = total / (len(stats) * 1.0)
@@ -284,11 +300,13 @@ class Report(object):
                 # The UID of the person who wrote the message is someone
                 # we're tracking
                 for reactor in reactors:
-                    self.create_key(['enriched_user', uid, 'reactions_from', reactor], 0)
+                    self.create_key(
+                        ['enriched_user', uid, 'reactions_from', reactor], 0)
                     self._data['enriched_user'][uid]['reactions_from'][reactor] += 1
             for reactor in reactors:
                 if reactor in self.track:
-                    self.create_key(['enriched_user', reactor, 'reacted_to', uid], 0)
+                    self.create_key(
+                        ['enriched_user', reactor, 'reacted_to', uid], 0)
                     self._data['enriched_user'][reactor]['reacted_to'][uid] += 1
             count = len(elements)
             if uid in self.track:
@@ -321,7 +339,6 @@ class Report(object):
         if uid in self.user_reaction_accumulators:
             self.user_reaction_accumulators[uid].append(mrecord)
 
-
     def accum_mentions(self, message):
         uid = message['user_id']
         mentions = message.get("mentions")
@@ -333,16 +350,17 @@ class Report(object):
             for mention in mentions:
                 if mention == uid:
                     continue
-                self.create_key(["enriched_user", uid, "you_mentioned", mention], 0)
+                self.create_key(
+                    ["enriched_user", uid, "you_mentioned", mention], 0)
                 self._data['enriched_user'][uid]['you_mentioned'][mention] += 1
 
         for mention in mentions:
             if mention == uid:
                 continue
             if mention in self.track:
-                self.create_key(["enriched_user", mention, "mentioned_you", uid], 0)
+                self.create_key(
+                    ["enriched_user", mention, "mentioned_you", uid], 0)
                 self._data['enriched_user'][mention]['mentioned_you'][uid] += 1
-
 
     def accum_threads(self, message):
         ta = message.get("thread_author")
@@ -355,14 +373,15 @@ class Report(object):
         self._data['user_stats'][ta]['thread_messages'] += 1
 
         if uid in self.track:
-            self.create_key(["enriched_user", uid, "author_thread_responded", ta], 0)
+            self.create_key(
+                ["enriched_user", uid, "author_thread_responded", ta], 0)
             self._data['enriched_user'][uid]['author_thread_responded'][ta] += 1
 
         if ta in self.track:
             self.create_key(["enriched_user", ta, "thread_responders", uid], 0)
             self._data['enriched_user'][ta]['thread_responders'][uid] += 1
 
-    def accum_reply_count(self,  message):
+    def accum_reply_count(self, message):
         """
         keep track of the longest  threads
         """
@@ -392,9 +411,9 @@ class Report(object):
         dk = list(d.keys())
         first_elem = d[dk[0]]
         if type(first_elem) in [tuple, list]:
-            dk.sort(key = lambda k: d[k][1])
+            dk.sort(key=lambda k: d[k][1])
         else:
-            dk.sort(key = lambda k: d[k])
+            dk.sort(key=lambda k: d[k])
         dk.reverse()
         nk = collections.OrderedDict()
         for k in dk:
@@ -445,7 +464,7 @@ class Report(object):
             count_of = float(sum([x[elems[elem]] for x in users.values()]))
             stats[elem] = count_of
             stats["average {}".format(elem)] = count_of / total_users
-            user_names.sort(key = lambda x: users[x][elems[elem]])
+            user_names.sort(key=lambda x: users[x][elems[elem]])
             user_names.reverse()
             running_total = 0
             rank = 1
@@ -460,11 +479,13 @@ class Report(object):
                     report_user_names.append(user_name)
                     include = False
                 self.create_key(["user_stats", user_name], {})
-                self._data['user_stats'][user_name]["percent_of_{}".format(elem)] = percentage
-                self._data['user_stats'][user_name]["cum_percent_of_{}".format(elem)] = running_percentage
+                self._data['user_stats'][user_name]["percent_of_{}".format(
+                    elem)] = percentage
+                self._data['user_stats'][user_name]["cum_percent_of_{}".format(
+                    elem)] = running_percentage
                 self._data['user_stats'][user_name]['rank'] = rank
                 rank += 1
-            midpoint_user = user_names[int(total_users/2)]
+            midpoint_user = user_names[int(total_users / 2)]
             midpoint_number = users[midpoint_user][elems[elem]]
             stats['median {}'.format(elem)] = midpoint_number
             # What percent of messages/words did the top ten users account for?

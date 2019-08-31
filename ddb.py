@@ -5,6 +5,7 @@ import json
 import config
 import utils
 
+
 class DDB(object):
 
     def __init__(self, table_name, attributes=None):
@@ -15,11 +16,17 @@ class DDB(object):
         local is boolean, whether we're using local dynamodb
         """
         if config.local:
-            self.dynamodb_resource = boto3.resource('dynamodb', region_name=config.region, endpoint_url="http://localhost:8000")
-            self.dynamodb_client = boto3.client('dynamodb', region_name=config.region, endpoint_url="http://localhost:8000")
+            self.dynamodb_resource = boto3.resource(
+                'dynamodb', region_name=config.region, endpoint_url="http://localhost:8000")
+            self.dynamodb_client = boto3.client(
+                'dynamodb',
+                region_name=config.region,
+                endpoint_url="http://localhost:8000")
         else:
-            self.dynamodb_resource = boto3.resource('dynamodb', region_name=config.region)
-            self.dynamodb_client = boto3.client('dynamodb', region_name=config.region)
+            self.dynamodb_resource = boto3.resource(
+                'dynamodb', region_name=config.region)
+            self.dynamodb_client = boto3.client(
+                'dynamodb', region_name=config.region)
         self.attributes = attributes
         if attributes:
             self.validate_attributes()
@@ -29,7 +36,8 @@ class DDB(object):
     def batch_hash_get(self, hashlist, hashkeyname=None):
         if not hashkeyname:
             if not self.attributes:
-                raise RuntimeError("Can't avoid specifying hashkeyname if created without explicit attributes")
+                raise RuntimeError(
+                    "Can't avoid specifying hashkeyname if created without explicit attributes")
             hashkeyname = self.attributes[0][0]
         ret = {}
         for chunk in utils.chunks(hashlist, 99):
@@ -43,7 +51,8 @@ class DDB(object):
         given a list of hashkeys, return all matching items from the table using batch operations
         """
         if len(hashlist) > 99:
-            raise RuntimeError("mini_batch_hash_get must be called with no more than 99 items")
+            raise RuntimeError(
+                "mini_batch_hash_get must be called with no more than 99 items")
 
             # print("Given no hashkeyname, defaulted to {}".format(hashkeyname))
         RequestItems = {}
@@ -51,7 +60,8 @@ class DDB(object):
         RequestItems[self.table_name]['Keys'] = []
         for i in hashlist:
             RequestItems[self.table_name]['Keys'].append({hashkeyname: i})
-        response = self.dynamodb_resource.batch_get_item(RequestItems=RequestItems)
+        response = self.dynamodb_resource.batch_get_item(
+            RequestItems=RequestItems)
         items = response['Responses'][self.table_name]
         item_dict = {}
         for i in items:
@@ -80,9 +90,10 @@ class DDB(object):
         try:
             self.dynamodb_client.describe_table(TableName=self.table_name)
             table = self.dynamodb_resource.Table(self.table_name)
-        except:
+        except BaseException:
             if not self.attributes:
-                raise RuntimeError("Given no attributes, I cannot create a table")
+                raise RuntimeError(
+                    "Given no attributes, I cannot create a table")
             table = self.create_table()
         self.table = table
         return table
@@ -116,14 +127,16 @@ class DDB(object):
         hash = self.attributes[0]
         hash_name = hash[0]
         hash_type = hash[1]
-        keyschema.append({'AttributeName':hash_name, 'KeyType':'HASH'})
-        attributedefinitions.append({'AttributeName':hash_name, 'AttributeType':hash_type})
+        keyschema.append({'AttributeName': hash_name, 'KeyType': 'HASH'})
+        attributedefinitions.append(
+            {'AttributeName': hash_name, 'AttributeType': hash_type})
         if len(self.attributes) > 1:
             range = self.attributes[1]
             range_name = range[0]
             range_type = range[1]
-            keyschema.append({'AttributeName':range_name, 'KeyType':'RANGE'})
-            attributedefinitions.append({'AttributeName':range_name, 'AttributeType':range_type})
+            keyschema.append({'AttributeName': range_name, 'KeyType': 'RANGE'})
+            attributedefinitions.append(
+                {'AttributeName': range_name, 'AttributeType': range_type})
 
         table = self.dynamodb_resource.create_table(
             TableName=self.table_name,
@@ -131,5 +144,6 @@ class DDB(object):
             AttributeDefinitions=attributedefinitions,
             BillingMode='PAY_PER_REQUEST'
         )
-        self.dynamodb_client.get_waiter('table_exists').wait(TableName=self.table_name)
+        self.dynamodb_client.get_waiter(
+            'table_exists').wait(TableName=self.table_name)
         return table

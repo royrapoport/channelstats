@@ -4,6 +4,7 @@
 import ddb
 import utils
 
+
 class ReportStore(object):
 
     def __init__(self, max_size=300000):
@@ -15,7 +16,7 @@ class ReportStore(object):
         """
         Store the report; if necessary, chop it up
         """
-        assert type(report) == str
+        assert isinstance(report, str)
         if len(report) > self.max_size:
             # print("Report size is too large -- chunking it up")
             self.store_chunks(report_id, report)
@@ -66,14 +67,13 @@ class ReportStore(object):
             # Done!
             return
         item = response['Item']
-        if 'value' not in item: # Chunk or unchunked report
+        if 'value' not in item:  # Chunk or unchunked report
             for k in item.keys():
-                if k != "report_id": # It's an index
+                if k != "report_id":  # It's an index
                     index_name = item[k]
                     self.delete(index_name)
         # print("Deleting item {}".format(report_id))
         self.table.delete_item(Key={'report_id': report_id})
-
 
     def get(self, report_id):
         """
@@ -83,14 +83,13 @@ class ReportStore(object):
         if 'Item' not in response:
             return None
         item = response['Item']
-        if 'value' in item: # This was an unchunke report
+        if 'value' in item:  # This was an unchunke report
             return item['value']
         # If we got here, then we have a chunked report
         # print("chunked item: {}".format(item))
         chunked_report_ids = []
-        chunks = [int(x) for x in item.keys() if x != "report_id"]
+        chunks = sorted([int(x) for x in item.keys() if x != "report_id"])
         # print("Chunks: {}".format(chunks))
-        chunks.sort()
         for kname in chunks:
             chunked_report_ids.append(item[str(kname)])
         report_chunks = self.DDB.batch_hash_get(chunked_report_ids)

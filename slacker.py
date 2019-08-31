@@ -17,13 +17,17 @@ class Slacker(object):
         self.api_wait = 0
 
     def get_thread_responses(self, cid, thread_ts):
-        messages = self.paginated_lister("conversations.replies?channel={}&ts={}".format(cid, thread_ts))
+        messages = self.paginated_lister(
+            "conversations.replies?channel={}&ts={}".format(
+                cid, thread_ts))
         return messages
 
     def get_messages(self, cid, timestamp, callback=None):
         timestamp = int(float(timestamp))
         # print("Getting messages from {} starting {}".format(cid, time.asctime(time.localtime(int(timestamp)))))
-        messages = self.paginated_lister("conversations.history?channel={}&oldest={}".format(cid, timestamp), callback=callback)
+        messages = self.paginated_lister(
+            "conversations.history?channel={}&oldest={}".format(
+                cid, timestamp), callback=callback)
         return messages
 
     def get_all_users(self):
@@ -31,7 +35,8 @@ class Slacker(object):
         return users
 
     def get_all_channels(self):
-        channels = self.paginated_lister("conversations.list?types=public_channel")
+        channels = self.paginated_lister(
+            "conversations.list?types=public_channel")
         return channels
 
     def get_all_channel_ids(self):
@@ -39,7 +44,10 @@ class Slacker(object):
         return [x['id'] for x in channels]
 
     def report(self):
-        print("{} API calls performed in {} seconds".format(self.api_calls, self.api_wait))
+        print(
+            "{} API calls performed in {} seconds".format(
+                self.api_calls,
+                self.api_wait))
 
     def discover_element_name(self, response):
         """
@@ -48,11 +56,12 @@ class Slacker(object):
         or raise an error if more than one exists
         """
 
-        lists = [k for k in response if type(response[k]) == list]
+        lists = [k for k in response if isinstance(response[k], list)]
         if len(lists) == 0:
             raise RuntimeError("No list of objects found")
         if len(lists) > 1:
-            raise RuntimeError("Multiple response objects corresponding to lists found: {}".format(lists))
+            raise RuntimeError(
+                "Multiple response objects corresponding to lists found: {}".format(lists))
         return lists[0]
 
     def paginated_lister(self, api_call, limit=200, callback=None):
@@ -84,12 +93,15 @@ class Slacker(object):
             else:
                 results += interim_results[element_name]
             # print("I now have {} results".format(len(results)))
-            cursor = interim_results.get("response_metadata", {}).get("next_cursor", "")
+            cursor = interim_results.get(
+                "response_metadata", {}).get(
+                "next_cursor", "")
             if not cursor:
                 done = True
         end = time.time()
         diff = end - start
-        # print "Loaded {} {} in {:.1f} seconds".format(len(results), element_name, diff)
+        # print "Loaded {} {} in {:.1f} seconds".format(len(results),
+        # element_name, diff)
         return results
 
     def use_separator(self, url):
@@ -101,7 +113,15 @@ class Slacker(object):
             separator = "&"
         return separator
 
-    def retry_api_call(self, method, url, json, headers, delay=1, increment=2, max_delay=120):
+    def retry_api_call(
+            self,
+            method,
+            url,
+            json,
+            headers,
+            delay=1,
+            increment=2,
+            max_delay=120):
         while True:
             try:
                 start = time.time()
@@ -112,13 +132,20 @@ class Slacker(object):
                 self.api_wait += diff
                 return payload
             except Exception:
-                print("Failed to retrieve {} : {}.  Sleeping {} seconds".format(url, Exception, delay))
+                print(
+                    "Failed to retrieve {} : {}.  Sleeping {} seconds".format(
+                        url, Exception, delay))
                 time.sleep(delay)
                 if delay < max_delay:
                     delay += increment
                     # print "Incrementing delay to {}".format(delay)
 
-    def api_call(self, api_endpoint, method=requests.get, json=None, header_for_token=False):
+    def api_call(
+            self,
+            api_endpoint,
+            method=requests.get,
+            json=None,
+            header_for_token=False):
         url = "https://{}.slack.com/api/{}".format(self.slack, api_endpoint)
         headers = {}
         if header_for_token:
@@ -132,7 +159,8 @@ class Slacker(object):
         # print "url: {}".format(url)
         done = False
         while not done:
-            response = self.retry_api_call(method, url, json=json, headers=headers)
+            response = self.retry_api_call(
+                method, url, json=json, headers=headers)
             if response.status_code == 200:
                 done = True
             if response.status_code == 429:
@@ -143,5 +171,6 @@ class Slacker(object):
                 time.sleep(retry_after)
         payload = response.json()
         # print "json: {} headers: {}".format(json, headers)
-        # print "status code: {} payload: {}".format(response.status_code, payload)
+        # print "status code: {} payload: {}".format(response.status_code,
+        # payload)
         return payload

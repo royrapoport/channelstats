@@ -7,6 +7,7 @@ import time
 import ddb
 import configuration
 
+
 class FirstPost(object):
     table_name = "FirstPost"
 
@@ -20,7 +21,7 @@ class FirstPost(object):
     def get(self, key):
         if key in self.users:
             return self.users[key]
-        response = self.table.get_item(Key={'key':key})
+        response = self.table.get_item(Key={'key': key})
         item = response.get("Item")
         if item:
             item['ts'] = int(item['ts'])
@@ -65,10 +66,10 @@ class FirstPost(object):
                 entry['message_id'] = str(mid)
         else:
             self.users[uid] = {
-                "key":uid,
-                "channel":self.channel,
-                "message_id":str(mid),
-                "ts":int(float(ts))
+                "key": uid,
+                "channel": self.channel,
+                "message_id": str(mid),
+                "ts": int(float(ts))
             }
         return message
 
@@ -79,9 +80,9 @@ class FirstPost(object):
         if cid in self.saved:
             return
         row = {
-            "key":cid,
-            "channel":cid,
-            "ts":0
+            "key": cid,
+            "channel": cid,
+            "ts": 0
         }
         print("Saving {}".format(row))
         self.saved[cid] = 1

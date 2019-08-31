@@ -3,6 +3,7 @@ import time
 
 import ddb
 
+
 class Configuration(object):
     table_name = "Configuration"
 
@@ -14,7 +15,7 @@ class Configuration(object):
     def get(self, key):
         if key in self.cache:
             return self.cache[key]
-        response = self.table.get_item(Key={'key':key})
+        response = self.table.get_item(Key={'key': key})
         item = response.get("Item")
         self.cache[key] = item
         return item
@@ -22,11 +23,11 @@ class Configuration(object):
     def set_count(self, count_label, value):
         self.table.update_item(
             Key={
-                'key':'counts'
+                'key': 'counts'
             },
             UpdateExpression="set {}=:v".format(count_label),
             ExpressionAttributeValues={
-                ":v" : int(value)
+                ":v": int(value)
             },
             ReturnValues="UPDATED_NEW"
         )
