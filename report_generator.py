@@ -6,8 +6,6 @@ import json
 import sys
 import time
 
-from boto3.dynamodb.conditions import Key, Attr
-
 import channel
 import html_formatter
 import pdf_formatter
@@ -139,7 +137,6 @@ class ReportGenerator(object):
             print(":{}: `:{}:` :{}".format(reaction, reaction, rdict[reaction]))
 
     def generate_dates(self, start_day, days):
-
         dates = []
         yyyy, mm, dd = [int(x) for x in start_day.split("-")]
         current_day = datetime.date(yyyy, mm, dd)
@@ -148,50 +145,3 @@ class ReportGenerator(object):
             days -= 1
             current_day += datetime.timedelta(days=1)
         return dates
-
-if __name__ == "__main__":
-    html_formatter_obj = html_formatter.HTMLFormatter()
-    pdf_formatter_obj = pdf_formatter.PDFFormatter()
-    users = {}
-    users['noemi'] = "UHWD9BHPD"
-    users['roy'] = "U06NSQT34"
-    users['jenna'] =  "U8MEPG4Q7"
-    users['jude'] = "UCR03V5BP"
-    users['moj_hoss'] = "UD9M2GA2J"
-    date = "2019-07-02"
-    days = 55
-    # date = "2019-08-01"
-    # days = 21
-    force_regen = False
-    if len(sys.argv) > 1 and sys.argv[1] == "regen":
-        force_regen = True
-    # for x in [None, roy, jenna, noemi]:
-    rg = ReportGenerator()
-    print("users: {}".format(users))
-    print("Generating report for {}/{}".format(date,days))
-    report = rg.report(date, days, users=users.values(), force_generate=force_regen)
-    # rg.summarize_report(report)
-    f = open("report.json", "w")
-    f.write(json.dumps(report, indent=4))
-    f.close()
-    print("")
-    mhtml = html_formatter_obj.format(report)
-    f = open("report.html", "w")
-    f.write(mhtml)
-    f.close()
-    for u in users.keys():
-        uid = users[u]
-        print("Running user report for {}/{}".format(u, uid))
-        u_html = html_formatter_obj.user_format(report, uid)
-        f = open("{}_report.html".format(u), "w")
-        f.write(u_html)
-        f.close()
-    if False:
-        s = time.time()
-        pdf = pdf_formatter_obj.convert(mhtml)
-        e = time.time()
-        d = e - s
-        print("PDF conversion took {:.1f} seconds".format(d))
-        f = open("report.pdf", "wb")
-        f.write(pdf)
-        f.close()
