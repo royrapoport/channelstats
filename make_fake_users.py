@@ -29,7 +29,7 @@ for u in users:
     u['profile']['real_name_normalized'] = name
 
 # print("Now I have {} users".format(len(users)))
-roy = "U06NSQT34"
+# roy = "U06NSQT34"
 # print("Roy: {}".format([x for x in users if x['id'] == roy]))
 
 
