@@ -99,7 +99,6 @@ class User(object):
 
         with self.table.batch_writer() as batch:
             for row in insert_users:
-                print("Inserting new {}".format(row))
                 batch.put_item(row)
 
         self.userhash.finish_registration()
