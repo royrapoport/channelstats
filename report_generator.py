@@ -18,7 +18,8 @@ import utils
 
 class ReportGenerator(object):
 
-    def __init__(self):
+    def __init__(self, fake=False):
+        self.fake = fake
         self.mtf = messagetablefactory.MessageTableFactory()
         self.report_creator = report.Report()
         self.report_store = report_store.ReportStore()

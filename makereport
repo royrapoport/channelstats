@@ -7,7 +7,8 @@ import html_formatter
 import pdf_formatter
 import report_generator
 
-html_formatter_obj = html_formatter.HTMLFormatter()
+fake = True
+html_formatter_obj = html_formatter.HTMLFormatter(fake=fake)
 pdf_formatter_obj = pdf_formatter.PDFFormatter()
 users = {}
 users['noemi'] = "UHWD9BHPD"
@@ -23,7 +24,7 @@ force_regen = False
 if len(sys.argv) > 1 and sys.argv[1] == "regen":
     force_regen = True
 # for x in [None, roy, jenna, noemi]:
-rg = report_generator.ReportGenerator()
+rg = report_generator.ReportGenerator(fake=fake)
 print("users: {}".format(users))
 print("Generating report for {}/{}".format(date,days))
 report = rg.report(date, days, users=users.values(), force_generate=force_regen)

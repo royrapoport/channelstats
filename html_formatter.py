@@ -8,14 +8,15 @@ import enricher
 
 class HTMLFormatter(object):
 
-    def __init__(self):
+    def __init__(self, fake=False):
+        self.fake = fake
         self.jinja_environment = jinja2.Environment(
             loader=jinja2.FileSystemLoader("."))
         self.general_template = self.jinja_environment.get_template(
             "general_report_template.html")
         self.user_template = self.jinja_environment.get_template(
             "user_report_template.html")
-        self.enricher = enricher.Enricher()
+        self.enricher = enricher.Enricher(fake=fake)
 
     def user_format(self, report, uid):
         self.enricher.user_enrich(report, uid)

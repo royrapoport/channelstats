@@ -11,8 +11,9 @@ import user
 
 class Enricher(object):
 
-    def __init__(self):
-        self.user = user.User()
+    def __init__(self, fake=False):
+        self.fake = fake
+        self.user = user.User(fake=fake)
         self.channel = channel.Channel()
 
     def pick_name(self, user):
