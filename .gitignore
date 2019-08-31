@@ -1,0 +1,8 @@
+__pycache__
+
+.idea
+
+slack_token.py
+
+dynamodb_local_latest
+
