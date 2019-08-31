@@ -59,15 +59,23 @@ class Enricher(object):
             'hover': The text to show when hovering over the label
             'url': The URL to link to for more information about the user
         """
+
+        dummy = {
+            'tz_offset': -25200,
+            'insert_timestamp': 1567210676,
+            'user_name': 'dummy',
+            'tz': 'America/Los_Angeles',
+            'real_name': 'Dummy User',
+            'display_name': 'Dummy User'}
+
         ret = {}
         start = time.time()
         entries = self.user.batch_get_user(list_of_userids)
         for uid in list_of_userids:
-            entry = entries[uid]
-            # print("entry: {}".format(entry))
+            entry = entries.get(uid, dummy)
             user = {}
             user['label'] = '@' + self.pick_name(entry)
-            user['hover'] = entry['real_name']
+            user['hover'] = entry.get("real_name", "")
             url = "https://{}.slack.com/team/{}"
             url = url.format(config.slack_name, uid)
             user['url'] = url
