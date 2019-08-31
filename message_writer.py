@@ -26,6 +26,8 @@ class MessageWriter(object):
         messages = {}
 
         for message in list_of_messages:
+            if 'subtype' in message:
+                continue
             if message.get("type") != "message":
                 continue
             timestamp = message['ts']
