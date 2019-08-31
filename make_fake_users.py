@@ -13,10 +13,12 @@ def make_username(name):
 rn = random_name.RandomName()
 ud = user_downloader.UserDownloader("rands-leadership", slack_token.token)
 users = ud.slack.get_all_users()
-print("I have {} users".format(len(users)))
+# print("I have {} users".format(len(users)))
 for u in users:
     name = rn.name()
     uname = make_username(name)
+    if u['name'] == uname:
+        raise RuntimeError("NAME COLLISION? WHAT THE HECK")
     u['name'] = uname
     u['real_name'] = name
     if 'profile' not in u:
@@ -26,9 +28,9 @@ for u in users:
     u['profile']['real_name'] = name
     u['profile']['real_name_normalized'] = name
 
-print("Now I have {} users".format(len(users)))
+# print("Now I have {} users".format(len(users)))
 roy = "U06NSQT34"
-print("Roy: {}".format([x for x in users if x['id'] == roy]))
+# print("Roy: {}".format([x for x in users if x['id'] == roy]))
 
 
 fake_user = user.User(fake=True)
