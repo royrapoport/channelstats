@@ -2,7 +2,7 @@
 <html>
     <head>
         <title>
-            User Activity Report for {{payload.user}} from {{payload.start_date}} to {{payload.end_date}}
+            User Public Activity Report for {{payload.user}} from {{payload.start_date}} to {{payload.end_date}}
         </title>
 
         <style media="screen" type="text/css">
@@ -96,23 +96,23 @@
     </head>
     <body>
         <h3><center>
-            User Activity Report for {{payload.user}} from {{payload.start_date}} to {{payload.end_date}}
+            User Public Activity Report for {{payload.user}} from {{payload.start_date}} to {{payload.end_date}}
         </h3></center>
 
         You posted
         {{user_stats['count'][1]}} words in
-        {{user_stats['count'][0]}} messages
+        {{user_stats['count'][0]}} public messages
         during this period. <p/>
 
         {% if user_stats.get("thread_messages") %}
-            You started threads that added {{user_stats['thread_messages']}} messages by other people to total volume
+            You started public threads that added {{user_stats['thread_messages']}} messages by other people to total volume
             <p/>
         {% endif %}
 
         That made the {{user_stats['rank']}}-ranked
         poster on the Slack and meant you contributed
         <b>{{'{:.1f}%'.format(user_stats['percent_of_words'])}}
-        of this Slack's total volume.</b><p/>
+        of this Slack's total public volume.</b><p/>
 
         <div class="CSSTableGenerator">
             <table borde='1'>
