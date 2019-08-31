@@ -26,8 +26,6 @@ class MessageWriter(object):
         messages = {}
 
         for message in list_of_messages:
-            if 'subtype' in message:
-                continue
             if message.get("type") != "message":
                 continue
             timestamp = message['ts']
@@ -65,6 +63,7 @@ class MessageWriter(object):
             return None
         wordcount = len(message['text'].split())
         mentions = utils.find_user_mentions(message['text'])
+        mentions = [x for x in mentions if x != user_id]
         (reaction_count, reactions) = self.get_reactions(message)
         (reply_count, replies) = self.get_replies(message)
         files = json.dumps(message.get("files", None))
@@ -83,6 +82,7 @@ class MessageWriter(object):
             "reply_count": reply_count,
             "files": files
         }
+        Row['subtype'] = message.get("subtype")
         if thread_author_uid:
             Row['thread_author'] = thread_author_uid
         if mentions:

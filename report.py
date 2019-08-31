@@ -84,6 +84,8 @@ class Report(object):
         self._data['end_date'] = end_date
 
     def message(self, message):
+        if 'subtype' in message:
+            return
         for accum_method in self.accum_methods:
             method = "self.{}(message)".format(accum_method)
             eval(method)
