@@ -71,7 +71,7 @@
             }.CSSTableGenerator tr:last-child td:last-child{
                 border-width:0px 0px 0px 0px;
             }
-            .CSSTableGenerator tr:fist-child td{
+            .CSSTableGenerator tr:first-child td{
                 background:-o-linear-gradient(bottom, #4c4c4c 5%, #000000 100%);	background:-webkit-gradient( linear, left top, left bottom, color-stop(0.05, #4c4c4c), color-stop(1, #000000) );	background:-moz-linear-gradient( center top, #4c4c4c 5%, #000000 100% );	filter:progid:DXImageTransform.Microsoft.gradient(startColorstr="#4c4c4c", endColorstr="#000000");	background: -o-linear-gradient(top,#4c4c4c,000000);
                 background-color:#4c4c4c;
                 border:0px solid #000000;
@@ -82,7 +82,7 @@
                 font-weight:bold;
                 color:#ffffff;
             }
-            .CSSTableGenerator tr:fist-child:hover td{
+            .CSSTableGenerator tr:first-child:hover td{
                 background:-o-linear-gradient(bottom, #4c4c4c 5%, #000000 100%);	background:-webkit-gradient( linear, left top, left bottom, color-stop(0.05, #4c4c4c), color-stop(1, #000000) );	background:-moz-linear-gradient( center top, #4c4c4c 5%, #000000 100% );	filter:progid:DXImageTransform.Microsoft.gradient(startColorstr="#4c4c4c", endColorstr="#000000");	background: -o-linear-gradient(top,#4c4c4c,000000);
                 background-color:#4c4c4c;
             }
@@ -92,12 +92,15 @@
             .CSSTableGenerator tr:first-child td:last-child{
                 border-width:0px 0px 1px 1px;
             }
+            a:visited {
+                color: #0000EE;
+            }
         </style>
     </head>
     <body>
-        <h3><center>
+        <h3>
             Channel/User Activity {{payload.start_date}} to {{payload.end_date}}
-        </h3></center>
+        </h3>
 
         <b>Note:</b>Yellow-background channels are new this week<p/>
 
