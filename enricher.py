@@ -119,7 +119,7 @@ class Enricher(object):
                 users[user] = 1
         for uid in report['enriched_user']:
             enriched = report['enriched_user'][uid]
-            for elem in ['reactions_to', 'reactions_from']:
+            for elem in ['reacted_to', 'reactions_from']:
                 reactors = enriched[elem].keys()
                 for user in reactors:
                     users[user] = 1

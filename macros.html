@@ -43,7 +43,7 @@
 
 {% macro topten(d, payload) -%}
     <table>
-        {{btr(["Person", "# Reactions"])}}
+        {{btr(["Person", "#"])}}
         {% for uid in d.keys() %}
             {% if loop.index < 10 %}
                 <tr>

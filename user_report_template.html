@@ -174,7 +174,7 @@
                         {{macros.topten(payload['enriched_user'][uid]['reactions_from'], payload)}}
 
                         <b>The people you most responded to are</b>
-                        {{macros.topten(payload['enriched_user'][uid]['reactions_to'], payload)}}
+                        {{macros.topten(payload['enriched_user'][uid]['reacted_to'], payload)}}
 
                         <b>Reaction Affinity (The people with whom you 'exchanged' most reactjis)</b>
                         {{macros.topten(payload['enriched_user'][uid]['reactions_combined'], payload)}}
@@ -187,6 +187,15 @@
 
                         <b>Thread Affinity</b>
                         {{macros.topten(payload['enriched_user'][uid]['threads_combined'], payload)}}
+
+                        <b>The people you mentioned the most are</b>
+                        {{macros.topten(payload['enriched_user'][uid]['you_mentioned'], payload)}}
+
+                        <b>The people who mentioned you the most are</b>
+                        {{macros.topten(payload['enriched_user'][uid]['mentioned_you'], payload)}}
+
+                        <b>Mention Affinity</b>
+                        {{macros.topten(payload['enriched_user'][uid]['mentions_combined'], payload)}}
 
                     </td>
                 </tr>

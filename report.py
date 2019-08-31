@@ -56,7 +56,6 @@ class Report(object):
         self.user_reaction_accumulators = {}
         self.reactions = {}
         self.reactions_from = {} # People who react to the people we're tracking
-        self.reactions_to = {} # People to whom the people we're tracking react
         self.configuration = configuration.Configuration()
         self.accum_methods = [x for x in dir(self) if x.find("accum_") == 0]
         self.track = {}
@@ -66,8 +65,6 @@ class Report(object):
             self.user_reply_accumulators[user] = Accumulator(self.top_limit, lambda x: x[0])
             self.user_reaction_accumulators[user] = Accumulator(self.top_limit, lambda x: x[0])
             self.reactions[user] = {}
-            self.reactions_from[user] = {}
-            self.reactions_to[user] = {}
             self.track[user] = 1
             self.create_key(["enriched_user", user], {})
 
@@ -174,24 +171,37 @@ class Report(object):
             count = sum(reactions.values())
             enriched['reaction_popularity'] = reactions
             enriched['reaction_count'] = count
-            enriched['reactions_to'] = utils.make_ordered_dict(self.reactions_to[uid])
-            enriched['reactions_from'] = utils.make_ordered_dict(self.reactions_from[uid])
-            # Show combined reactions
-            combined = {}
-            for key in list(enriched['reactions_to'].keys()) + list(enriched['reactions_from']):
-                combined[key] = enriched['reactions_to'].get(key, 0) + enriched['reactions_from'].get(key, 0)
-            enriched['reactions_combined'] = utils.make_ordered_dict(combined)
+            self.order_and_combine(enriched, '', 'reactions_from', 'reactions_combined')
+
+    def order_and_combine(self, d, k1, k2, label):
+        """
+        Given k1 and k2, which are keys into d and point into their own {k:v}
+        dictionaries,
+        first, convert their dictionaries to OrderedDicts going from highest v to lowest
+        Then create a combined dictionary of all keys in k1 and k2, with values being
+        sum of values
+        so
+        k1: {1: 2, 2: 3} and k2: {2: 5, 5: 6}
+        would be combined into {1:2, 2:8, 5:6}
+        combined dictionary is saved under key LABEL in d
+        """
+        for k in [k1, k2]:
+            if k in d:
+                d[k] = utils.make_ordered_dict(d[k])
+        combined = {}
+        for key in list(d.get(k1, {}).keys()) + list(d.get(k2, {}).keys()):
+            combined[key] = d.get(k1, {}).get(key, 0) + d.get(k2, {}).get(key, 0)
+        d[label] = utils.make_ordered_dict(combined)
+
+    def _finalize_mentions(self):
+        for uid in self.track:
+            enriched = self._data['enriched_user'][uid]
+            self.order_and_combine(enriched, 'you_mentioned', 'mentioned_you', 'mentions_combined')
 
     def _finalize_threads(self):
         for uid in self.track:
             enriched = self._data['enriched_user'][uid]
-            for k in ['author_thread_responded', 'thread_responders']:
-                if k in enriched:
-                    enriched[k] = utils.make_ordered_dict(enriched[k])
-            combined = {}
-            for key in list(enriched['author_thread_responded'].keys()) + list(enriched['thread_responders']):
-                combined[key] = enriched['author_thread_responded'].get(key, 0) + enriched['thread_responders'].get(key, 0)
-            enriched['threads_combined'] = utils.make_ordered_dict(combined)
+            self.order_and_combine(enriched, 'author_thread_responded', 'thread_responders', 'threads_combined')
 
     def _finalize_reply_popularity(self):
         self._data['reply_count'] = self.reply_accumulator.dump()
@@ -270,20 +280,18 @@ class Report(object):
             # and some may be 'skin-tone-X".  Remove these since
             # they're not actually reactors
             reactors = [x for x in reactors if (x and x[0] == "U")]
-            if uid in self.reactions_from:
+            if uid in self.track:
                 # The UID of the person who wrote the message is someone
                 # we're tracking
                 for reactor in reactors:
-                    if reactor not in self.reactions_from[uid]:
-                        self.reactions_from[uid][reactor] = 0
-                    self.reactions_from[uid][reactor] += 1
+                    self.create_key(['enriched_user', uid, 'reactions_from', reactor], 0)
+                    self._data['enriched_user'][uid]['reactions_from'][reactor] += 1
             for reactor in reactors:
-                if reactor in self.reactions_to:
-                    if uid not in self.reactions_to[reactor]:
-                        self.reactions_to[reactor][uid] = 0
-                    self.reactions_to[reactor][uid] += 1
+                if reactor in self.track:
+                    self.create_key(['enriched_user', reactor, 'reacted_to', uid], 0)
+                    self._data['enriched_user'][reactor]['reacted_to'][uid] += 1
             count = len(elements)
-            if uid in self.user_reaction_accumulators:
+            if uid in self.track:
                 if uid not in self.reactions:
                     self.reactions[uid] = {}
                 if reaction_name not in self.reactions[uid]:
@@ -312,6 +320,24 @@ class Report(object):
         self.reactions_accumulator.append(mrecord)
         if uid in self.user_reaction_accumulators:
             self.user_reaction_accumulators[uid].append(mrecord)
+
+
+    def accum_mentions(self, message):
+        uid = message['user_id']
+        mentions = message.get("mentions")
+        if not mentions:
+            return
+        mentions = mentions.split(":")
+
+        if uid in self.track:
+            for mention in mentions:
+                self.create_key(["enriched_user", uid, "you_mentioned", mention], 0)
+                self._data['enriched_user'][uid]['you_mentioned'][mention] += 1
+
+        for mention in mentions:
+            if mention in self.track:
+                self.create_key(["enriched_user", mention, "mentioned_you", uid], 0)
+                self._data['enriched_user'][mention]['mentioned_you'][uid] += 1
 
 
     def accum_threads(self, message):
