@@ -345,6 +345,9 @@ class Report(object):
         if not mentions:
             return
         mentions = mentions.split(":")
+        # Due to a bug, about 800 messages have a mention that is the
+        # message's UID.  We'll fix that later, but for now, filter this out
+        mentions = [x for x in mentions if x != uid]
 
         if uid in self.track:
             for mention in mentions:
