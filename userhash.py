@@ -53,7 +53,7 @@ class UserHash(object):
     def finish_registration(self):
         with self.table.batch_writer() as batch:
             for k in self.modified:
-                print("Saving hash key {}".format(k))
+                # print("Saving hash key {}".format(k))
                 Row = self.cache[k]
                 batch.put_item(Row)
 
