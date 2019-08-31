@@ -159,6 +159,8 @@ if __name__ == "__main__":
     users['jude'] = "UCR03V5BP"
     date = "2019-08-18"
     days = 7
+    # date = "2019-08-01"
+    # days = 21
     force_regen = False
     if len(sys.argv) > 1 and sys.argv[1] == "regen":
         force_regen = True
