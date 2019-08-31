@@ -157,8 +157,9 @@ if __name__ == "__main__":
     users['roy'] = "U06NSQT34"
     users['jenna'] =  "U8MEPG4Q7"
     users['jude'] = "UCR03V5BP"
-    date = "2019-08-18"
-    days = 7
+    users['moj_hoss'] = "UD9M2GA2J"
+    date = "2019-07-02"
+    days = 55
     # date = "2019-08-01"
     # days = 21
     force_regen = False
