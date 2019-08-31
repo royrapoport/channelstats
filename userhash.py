@@ -7,8 +7,12 @@ import utils
 
 class UserHash(object):
     table_name = "UserHash"
+    fake_table_name = "FakeUserHash"
 
-    def __init__(self):
+    def __init__(self, fake=False):
+        self.fake = fake
+        if fake:
+            self.table_name = self.fake_table_name
         self.ddb = ddb.DDB(self.table_name, [('key', 'S')])
         self.table = self.ddb.get_table()
         self.modified = {}

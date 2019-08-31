@@ -10,13 +10,17 @@ import configuration
 
 class User(object):
     table_name = "User"
+    fake_table_name = "FakeUser"
 
-    def __init__(self):
+    def __init__(self, fake=False):
+        self.fake = fake
+        if fake:
+            self.table_name = self.fake_table_name
         self.ddb = ddb.DDB(self.table_name, [('id', 'S')])
         self.table = self.ddb.get_table()
         self.users = {}
-        self.userhash = userhash.UserHash()
-        self.configuration = configuration.Configuration()
+        self.userhash = userhash.UserHash(fake=fake)
+        self.configuration = configuration.Configuration(fake=fake)
         self.modified = {}
 
     def batch_get_user(self, userids):
