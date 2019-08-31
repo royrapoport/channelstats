@@ -331,10 +331,14 @@ class Report(object):
 
         if uid in self.track:
             for mention in mentions:
+                if mention == uid:
+                    continue
                 self.create_key(["enriched_user", uid, "you_mentioned", mention], 0)
                 self._data['enriched_user'][uid]['you_mentioned'][mention] += 1
 
         for mention in mentions:
+            if mention == uid:
+                continue
             if mention in self.track:
                 self.create_key(["enriched_user", mention, "mentioned_you", uid], 0)
                 self._data['enriched_user'][mention]['mentioned_you'][uid] += 1
