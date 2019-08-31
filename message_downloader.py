@@ -1,5 +1,6 @@
 #! /usr/bin/env python3
 
+import sys
 import time
 
 import config
@@ -37,9 +38,12 @@ class Downloader(object):
         return new_messages
 
     def download(self):
-        cids = self.slack.get_all_channel_ids()
+        if len(sys.argv) > 1:
+            cids = [self.channel.get(sys.argv[1])['name']]
+        else:
+            cids = self.slack.get_all_channel_ids()
         # cids = [self.channel.get("devops")["name"]]
-        cids = cids[17:]
+        #cids = cids[17:]
         cid_count = len(cids)
         idx = 1
         for cid in cids:
