@@ -102,7 +102,7 @@ class FirstPost(object):
                     channels[channel] = 1
                 if uid in self.saved:
                     continue
-                print("Inserting new {}".format(row))
+                # print("Inserting new {}".format(row))
                 batch.put_item(row)
                 self.saved[uid] = 1
         for channel in channels.keys():
