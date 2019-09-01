@@ -1,205 +1,245 @@
 {% import "macros.html" as macros %}
 <html>
-    <head>
-        <title>
-            User Public Activity Report for {{payload.user}} from {{payload.start_date}} to {{payload.end_date}}
-        </title>
+<head>
+    <title>
+        User Public Activity Report for {{payload.user}} from {{payload.start_date}} to {{payload.end_date}}
+    </title>
 
-        <style media="screen" type="text/css">
-            .CSSTableGenerator {
-                margin:0px;padding:0px;
-                width:100%;     box-shadow: 10px 10px 5px #888888;
-                border:1px solid #000000;
+    <style media="screen" type="text/css">
+        .CSSTableGenerator {
+            margin: 0px;
+            padding: 0px;
+            width: 100%;
+            box-shadow: 10px 10px 5px #888888;
+            border: 1px solid #000000;
 
-                -moz-border-radius-bottomleft:0px;
-                -webkit-border-bottom-left-radius:0px;
-                border-bottom-left-radius:0px;
+            -moz-border-radius-bottomleft: 0px;
+            -webkit-border-bottom-left-radius: 0px;
+            border-bottom-left-radius: 0px;
 
-                -moz-border-radius-bottomright:0px;
-                -webkit-border-bottom-right-radius:0px;
-                border-bottom-right-radius:0px;
+            -moz-border-radius-bottomright: 0px;
+            -webkit-border-bottom-right-radius: 0px;
+            border-bottom-right-radius: 0px;
 
-                -moz-border-radius-topright:0px;
-                -webkit-border-top-right-radius:0px;
-                border-top-right-radius:0px;
+            -moz-border-radius-topright: 0px;
+            -webkit-border-top-right-radius: 0px;
+            border-top-right-radius: 0px;
 
-                -moz-border-radius-topleft:0px;
-                -webkit-border-top-left-radius:0px;
-                border-top-left-radius:0px;
-            }.CSSTableGenerator table{
-                width:100%;
-                height:100%;
-                margin:0px;padding:0px;
-            }.CSSTableGenerator tr:last-child td:last-child {
-                -moz-border-radius-bottomright:0px;
-                -webkit-border-bottom-right-radius:0px;
-                border-bottom-right-radius:0px;
-            }
-            .CSSTableGenerator table tr:first-child td:first-child {
-                -moz-border-radius-topleft:0px;
-                -webkit-border-top-left-radius:0px;
-                border-top-left-radius:0px;
-            }
-            .CSSTableGenerator table tr:first-child td:last-child {
-                -moz-border-radius-topright:0px;
-                -webkit-border-top-right-radius:0px;
-                border-top-right-radius:0px;
-            }.CSSTableGenerator tr:last-child td:first-child{
-                -moz-border-radius-bottomleft:0px;
-                -webkit-border-bottom-left-radius:0px;
-                border-bottom-left-radius:0px;
-            }.CSSTableGenerator tr:hover td{
+            -moz-border-radius-topleft: 0px;
+            -webkit-border-top-left-radius: 0px;
+            border-top-left-radius: 0px;
+        }
 
-            }.CSSTableGenerator tr:nth-child(odd){ background-color:#e5e5e5; }
-            .CSSTableGenerator tr:nth-child(even)    { background-color:#ffffff; }
-            .CSSTableGenerator td{
-                vertical-align:top;
+        .CSSTableGenerator table {
+            width: 100%;
+            height: 100%;
+            margin: 0px;
+            padding: 0px;
+        }
 
+        .CSSTableGenerator tr:last-child td:last-child {
+            -moz-border-radius-bottomright: 0px;
+            -webkit-border-bottom-right-radius: 0px;
+            border-bottom-right-radius: 0px;
+        }
 
-                border:1px solid #000000;
-                border-width:0px 1px 1px 0px;
-                text-align:left;
-                padding:7px;
-                font-size:10px;
-                font-family:arial;
-                font-weight:normal;
-                color:#000000;
-            }.CSSTableGenerator tr:last-child td{
-                border-width:0px 1px 0px 0px;
-            }.CSSTableGenerator tr td:last-child{
-                border-width:0px 0px 1px 0px;
-            }.CSSTableGenerator tr:last-child td:last-child{
-                border-width:0px 0px 0px 0px;
-            }
-            .CSSTableGenerator tr:fist-child td{
-                background:-o-linear-gradient(bottom, #4c4c4c 5%, #000000 100%);        background:-webkit-gradient( linear, left top, left bottom, color-stop(0.05, #4c4c4c), color-stop(1, #000000) );        background:-moz-linear-gradient( center top, #4c4c4c 5%, #000000 100% );        filter:progid:DXImageTransform.Microsoft.gradient(startColorstr="#4c4c4c", endColorstr="#000000");      background: -o-linear-gradient(top,#4c4c4c,000000);
-                background-color:#4c4c4c;
-                border:0px solid #000000;
-                text-align:center;
-                border-width:0px 0px 1px 1px;
-                font-size:14px;
-                font-family:arial;
-                font-weight:bold;
-                color:#ffffff;
-            }
-            .CSSTableGenerator tr:fist-child:hover td{
-                background:-o-linear-gradient(bottom, #4c4c4c 5%, #000000 100%);        background:-webkit-gradient( linear, left top, left bottom, color-stop(0.05, #4c4c4c), color-stop(1, #000000) );        background:-moz-linear-gradient( center top, #4c4c4c 5%, #000000 100% );        filter:progid:DXImageTransform.Microsoft.gradient(startColorstr="#4c4c4c", endColorstr="#000000");      background: -o-linear-gradient(top,#4c4c4c,000000);
-                background-color:#4c4c4c;
-            }
-            .CSSTableGenerator tr:first-child td:first-child{
-                border-width:0px 0px 1px 0px;
-            }
-            .CSSTableGenerator tr:first-child td:last-child{
-                border-width:0px 0px 1px 1px;
-            }
-        </style>
-    </head>
-    <body>
-        <h3><center>
-            User Public Activity Report for {{payload.user}} from {{payload.start_date}} to {{payload.end_date}}
-        </h3></center>
+        .CSSTableGenerator table tr:first-child td:first-child {
+            -moz-border-radius-topleft: 0px;
+            -webkit-border-top-left-radius: 0px;
+            border-top-left-radius: 0px;
+        }
 
-        You posted
-        {{user_stats['count'][1]}} words in
-        {{user_stats['count'][0]}} public messages
-        during this period. <p/>
+        .CSSTableGenerator table tr:first-child td:last-child {
+            -moz-border-radius-topright: 0px;
+            -webkit-border-top-right-radius: 0px;
+            border-top-right-radius: 0px;
+        }
 
-        {% if user_stats.get("thread_messages") %}
-            You started public threads that added {{user_stats['thread_messages']}} messages by other people to total volume
-            <p/>
-        {% endif %}
+        .CSSTableGenerator tr:last-child td:first-child {
+            -moz-border-radius-bottomleft: 0px;
+            -webkit-border-bottom-left-radius: 0px;
+            border-bottom-left-radius: 0px;
+        }
 
-        That made the {{user_stats['rank']}}-ranked
-        poster on the Slack and meant you contributed
-        <b>{{'{:.1f}%'.format(user_stats['percent_of_words'])}}
-        of this Slack's total public volume.</b><p/>
+        .CSSTableGenerator tr:hover td {
 
-        <div class="CSSTableGenerator">
-            <table borde='1'>
-                <tr>
-                    <td valign='top'>
-                        <table border='1'>
-                            <thead>
-                                <tr>
-                                    <td>
-                                    </td>
-                                    <td><b>Rank</b></td>
-                                    <td><b>Words</b></td>
-                                    <td><b>Messages</b></td>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {% for channel in payload.enriched_channels %}
-                                    <tr>
-                                        <td>{{loop.index}} {{channel.name}}</td>
-                                        <td>{{channel.rank}}</td>
-                                        <td>{{channel.words}}</td>
-                                        <td>{{channel.messages}}</td>
-                                    </tr>
-                                {% endfor %}
-                            </tbody>
-                        </table>
-                    </td>
-                    <td valign='top'>
-                       <b>Most reacted-to messages:</b><br/>
-                           {% for message in payload['reenriched_user'][uid]['reactions'] %}
-                               {{ macros.print_message(message, "reactions", False) }}
-                           {% endfor %}
-                       <p/>
-                       <b>Most replied-to messages:</b><br/>
-                           {% for message in payload['reenriched_user'][uid]['replies'] %}
-                               {{ macros.print_message(message, "replies", False) }}
-                           {% endfor %}
-                        <b>You got {{payload['enriched_user'][uid]['reaction_count']}} reactions</b>
-                        <br/>
-                        Top ten reactions to your messages:<br/>
-                        <table>
-                            {% with reaction_popularity = payload['enriched_user'][uid]['reaction_popularity'] %}
-                                {% for reaction in reaction_popularity.keys() %}
-                                    {% if loop.index < 10 %}
-                                        <tr>
-                                            <td>
-                                                {{":{}:".format(reaction)}}
-                                            </td>
-                                            <td>
-                                                {{reaction_popularity[reaction]}}
-                                            </td>
-                                        </tr>
-                                    {% endif %}
-                                {% endfor %}
-                            {% endwith %}
-                        </table><br/>
+        }
 
-                        <b>The people who most responded to you are</b>
-                        {{macros.topten(payload['enriched_user'][uid]['reactions_from'], payload)}}
+        .CSSTableGenerator tr:nth-child(odd) {
+            background-color: #e5e5e5;
+        }
 
-                        <b>The people you most responded to are</b>
-                        {{macros.topten(payload['enriched_user'][uid]['reacted_to'], payload)}}
+        .CSSTableGenerator tr:nth-child(even) {
+            background-color: #ffffff;
+        }
 
-                        <b>Reaction Affinity (The people with whom you 'exchanged' most reactjis)</b>
-                        {{macros.topten(payload['enriched_user'][uid]['reactions_combined'], payload)}}
+        .CSSTableGenerator td {
+            vertical-align: top;
 
-                        <b>Authors whose threads you responded to the most</b>
-                        {{macros.topten(payload['enriched_user'][uid]['author_thread_responded'], payload)}}
+            border: 1px solid #000000;
+            border-width: 0px 1px 1px 0px;
+            text-align: left;
+            padding: 7px;
+            font-size: 10px;
+            font-family: arial;
+            font-weight: normal;
+            color: #000000;
+        }
 
-                        <b>Posters who most often responded in threads you launched</b>
-                        {{macros.topten(payload['enriched_user'][uid]['thread_responders'], payload)}}
+        .CSSTableGenerator tr:last-child td {
+            border-width: 0px 1px 0px 0px;
+        }
 
-                        <b>Thread Affinity</b>
-                        {{macros.topten(payload['enriched_user'][uid]['threads_combined'], payload)}}
+        .CSSTableGenerator tr td:last-child {
+            border-width: 0px 0px 1px 0px;
+        }
 
-                        <b>The people you mentioned the most are</b>
-                        {{macros.topten(payload['enriched_user'][uid].get("you_mentioned", {}), payload)}}
+        .CSSTableGenerator tr:last-child td:last-child {
+            border-width: 0px 0px 0px 0px;
+        }
 
-                        <b>The people who mentioned you the most are</b>
-                        {{macros.topten(payload['enriched_user'][uid].get("mentioned_you", {}), payload)}}
+        .CSSTableGenerator tr:first-child td {
+            background: -o-linear-gradient(bottom, #4c4c4c 5%, #000000 100%);
+            background: -webkit-gradient(linear, left top, left bottom, color-stop(0.05, #4c4c4c), color-stop(1, #000000));
+            background: -moz-linear-gradient(center top, #4c4c4c 5%, #000000 100%);
+            filter: progid:DXImageTransform.Microsoft.gradient(startColorstr="#4c4c4c", endColorstr="#000000");
+            background: -o-linear-gradient(top, #4c4c4c, 000000);
+            background-color: #4c4c4c;
+            border: 0px solid #000000;
+            text-align: center;
+            border-width: 0px 0px 1px 1px;
+            font-size: 14px;
+            font-family: arial;
+            font-weight: bold;
+            color: #ffffff;
+        }
 
-                        <b>Mention Affinity</b>
-                        {{macros.topten(payload['enriched_user'][uid]['mentions_combined'], payload)}}
+        .CSSTableGenerator tr:first-child:hover td {
+            background: -o-linear-gradient(bottom, #4c4c4c 5%, #000000 100%);
+            background: -webkit-gradient(linear, left top, left bottom, color-stop(0.05, #4c4c4c), color-stop(1, #000000));
+            background: -moz-linear-gradient(center top, #4c4c4c 5%, #000000 100%);
+            filter: progid:DXImageTransform.Microsoft.gradient(startColorstr="#4c4c4c", endColorstr="#000000");
+            background: -o-linear-gradient(top, #4c4c4c, 000000);
+            background-color: #4c4c4c;
+        }
 
-                    </td>
-                </tr>
-            </table>
-        </div>
-    </body>
+        .CSSTableGenerator tr:first-child td:first-child {
+            border-width: 0px 0px 1px 0px;
+        }
+
+        .CSSTableGenerator tr:first-child td:last-child {
+            border-width: 0px 0px 1px 1px;
+        }
+    </style>
+</head>
+<body>
+<h3>
+    User Public Activity Report for {{payload.user}} from {{payload.start_date}} to {{payload.end_date}}
+</h3>
+
+You posted
+{{user_stats['count'][1]}} words in
+{{user_stats['count'][0]}} public messages
+during this period. <p/>
+
+{% if user_stats.get("thread_messages") %}
+You started public threads that added {{user_stats['thread_messages']}} messages by other people to total volume
+<p/>
+{% endif %}
+
+That made the {{user_stats['rank']}}-ranked
+poster on the Slack and meant you contributed
+<b>{{'{:.1f}%'.format(user_stats['percent_of_words'])}}
+    of this Slack's total public volume.</b>
+<p/>
+
+<div class="CSSTableGenerator">
+    <table border='1'>
+        <tr>
+            <td valign='top'>
+                <table border='1'>
+                    <thead>
+                    <tr>
+                        <td>
+                        </td>
+                        <td><b>Rank</b></td>
+                        <td><b>Words</b></td>
+                        <td><b>Messages</b></td>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    {% for channel in payload.enriched_channels %}
+                    <tr>
+                        <td>{{loop.index}} {{channel.name}}</td>
+                        <td>{{channel.rank}}</td>
+                        <td>{{channel.words}}</td>
+                        <td>{{channel.messages}}</td>
+                    </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </td>
+            <td valign='top'>
+                <b>Most reacted-to messages:</b><br/>
+                {% for message in payload['reenriched_user'][uid]['reactions'] %}
+                {{ macros.print_message(message, "reactions", False) }}
+                {% endfor %}
+                <p/>
+                <b>Most replied-to messages:</b><br/>
+                {% for message in payload['reenriched_user'][uid]['replies'] %}
+                {{ macros.print_message(message, "replies", False) }}
+                {% endfor %}
+                <b>You got {{payload['enriched_user'][uid]['reaction_count']}} reactions</b>
+                <br/>
+                Top ten reactions to your messages:<br/>
+                <table>
+                    {% with reaction_popularity = payload['enriched_user'][uid]['reaction_popularity'] %}
+                    {% for reaction in reaction_popularity.keys() %}
+                    {% if loop.index < 10 %}
+                    <tr>
+                        <td>
+                            {{":{}:".format(reaction)}}
+                        </td>
+                        <td>
+                            {{reaction_popularity[reaction]}}
+                        </td>
+                    </tr>
+                    {% endif %}
+                    {% endfor %}
+                    {% endwith %}
+                </table>
+                <br/>
+
+                <b>The people who most responded to you are</b>
+                {{macros.topten(payload['enriched_user'][uid]['reactions_from'], payload)}}
+
+                <b>The people you most responded to are</b>
+                {{macros.topten(payload['enriched_user'][uid]['reacted_to'], payload)}}
+
+                <b>Reaction Affinity (The people with whom you 'exchanged' most reactjis)</b>
+                {{macros.topten(payload['enriched_user'][uid]['reactions_combined'], payload)}}
+
+                <b>Authors whose threads you responded to the most</b>
+                {{macros.topten(payload['enriched_user'][uid]['author_thread_responded'], payload)}}
+
+                <b>Posters who most often responded in threads you launched</b>
+                {{macros.topten(payload['enriched_user'][uid]['thread_responders'], payload)}}
+
+                <b>Thread Affinity</b>
+                {{macros.topten(payload['enriched_user'][uid]['threads_combined'], payload)}}
+
+                <b>The people you mentioned the most are</b>
+                {{macros.topten(payload['enriched_user'][uid].get("you_mentioned", {}), payload)}}
+
+                <b>The people who mentioned you the most are</b>
+                {{macros.topten(payload['enriched_user'][uid].get("mentioned_you", {}), payload)}}
+
+                <b>Mention Affinity</b>
+                {{macros.topten(payload['enriched_user'][uid]['mentions_combined'], payload)}}
+
+            </td>
+        </tr>
+    </table>
+</div>
+</body>
 </html>
