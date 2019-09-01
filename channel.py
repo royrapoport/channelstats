@@ -21,13 +21,13 @@ class Channel(object):
                 members = channel['num_members']
                 values = {'created': created, 'members': members}
                 for k, v in [[cid, cname], [cname, cid]]:
-                    Row = {}
-                    Row['key'] = k
-                    Row['name'] = v
+                    row = dict()
+                    row['key'] = k
+                    row['name'] = v
                     for i in values:
-                        Row[i] = values[i]
-                    Row = utils.prune_empty(Row)
-                    batch.put_item(Row)
+                        row[i] = values[i]
+                    row = utils.prune_empty(row)
+                    batch.put_item(row)
 
     def get(self, key):
         response = self.table.get_item(Key={'key': key})

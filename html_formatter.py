@@ -13,9 +13,9 @@ class HTMLFormatter(object):
         self.jinja_environment = jinja2.Environment(
             loader=jinja2.FileSystemLoader("."))
         self.general_template = self.jinja_environment.get_template(
-            "general_report_template.html")
+            "templates/general.html")
         self.user_template = self.jinja_environment.get_template(
-            "user_report_template.html")
+            "templates/user.html")
         self.enricher = enricher.Enricher(fake=fake)
 
     def user_format(self, report, uid):

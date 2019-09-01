@@ -137,14 +137,11 @@
     User Public Activity Report for {{payload.user}} from {{payload.start_date}} to {{payload.end_date}}
 </h3>
 
-You posted
-{{user_stats['count'][1]}} words in
-{{user_stats['count'][0]}} public messages
-during this period. <p/>
+<p>
+    You posted {{ user_stats['count'][1] }} words in {{ user_stats['count'][0] }} public messages during this period.</p>
 
 {% if user_stats.get("thread_messages") %}
-You started public threads that added {{user_stats['thread_messages']}} messages by other people to total volume
-<p/>
+    <p>You started public threads that added {{user_stats['thread_messages']}} messages by other people to total volume</p>
 {% endif %}
 
 That made the {{user_stats['rank']}}-ranked
