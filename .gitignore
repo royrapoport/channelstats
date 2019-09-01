@@ -3,7 +3,10 @@ __pycache__
 .DS_Store
 .idea
 
+pdfcrowd_token.py
 slack_token.py
+
+reports
 
 dynamodb_local_latest
 
