@@ -180,7 +180,7 @@ class Report(object):
             enriched['reaction_popularity'] = reactions
             enriched['reaction_count'] = count
             self.order_and_combine(
-                enriched, '', 'reactions_from', 'reactions_combined')
+                enriched, 'reacted_to', 'reactions_from', 'reactions_combined')
 
     def order_and_combine(self, d, k1, k2, label):
         """
@@ -324,8 +324,8 @@ class Report(object):
         """
         make sure all user_stats structures have all the fields we expect
         """
-        self.fill_in_values(self._data['user_stats']) 
-        self.fill_in_values(self._data['enriched_user']) 
+        self.fill_in_values(self._data['user_stats'])
+        self.fill_in_values(self._data['enriched_user'])
 
     def fill_in_values(self, d):
         """
