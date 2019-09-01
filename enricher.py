@@ -1,7 +1,6 @@
 #! /usr/bin/env python
 
 import datetime
-import json
 import time
 
 import channel
@@ -16,7 +15,8 @@ class Enricher(object):
         self.user = user.User(fake=fake)
         self.channel = channel.Channel()
 
-    def pick_name(self, user):
+    @staticmethod
+    def pick_name(user):
         """
         given a user structure from user.get(), return the name we should
         show people -- this should ideally be the name they see people
@@ -75,19 +75,20 @@ class Enricher(object):
         entries = self.user.batch_get_user(list_of_userids)
         for uid in list_of_userids:
             entry = entries.get(uid, dummy)
-            user = {}
-            user['label'] = '@' + self.pick_name(entry)
-            user['hover'] = entry.get("real_name", "")
             url = "https://{}.slack.com/team/{}"
             url = url.format(config.slack_name, uid)
-            user['url'] = url
-            ret[uid] = user
+            ret[uid] = {
+                'label': '@' + Enricher.pick_name(entry),
+                'hover': entry.get("real_name", ""),
+                'url': url
+            }
         end = time.time()
         diff = end - start
         # print("Fetching users took {:.1f} seconds".format(diff))
         return ret
 
-    def popular_messages(self, messages, cinfo, uinfo):
+    @staticmethod
+    def popular_messages(messages, cinfo, uinfo):
         """
         given a list of lists where each list is
         [reaction count, timestamp, cid, uid]
@@ -98,15 +99,14 @@ class Enricher(object):
             if not isinstance(message, list):
                 continue
             (reactions, timestamp, cid, uid) = message
-            d = {}
-            d['count'] = reactions
-            d['dt'] = time.strftime("%m/%d/%Y %H:%M",
-                                    time.localtime(int(float(timestamp))))
-            d['channel'] = cinfo[cid]['name']
-            d['user'] = uinfo[uid]['label']
             url = "https://{}.slack.com/archives/{}/p{}"
-            d['url'] = url.format(config.slack_name, cid, timestamp)
-            ret.append(d)
+            ret.append({
+                'count': reactions,
+                'dt': time.strftime("%m/%d/%Y %H:%M", time.localtime(int(float(timestamp)))),
+                'channel': cinfo[cid]['name'],
+                'user': uinfo[uid]['label'],
+                'url': url.format(config.slack_name, cid, timestamp)
+            })
         return ret
 
     def enrich(self, report):
@@ -137,11 +137,11 @@ class Enricher(object):
         reactji = list(reactions.keys())
         report['top_ten_reactions'] = reactji[0:10]
 
-        report['reacted_messages'] = self.popular_messages(
+        report['reacted_messages'] = Enricher.popular_messages(
             report['reaction_count'], channel_info, user_info)
         report['reacted_messages'] = report['reacted_messages'][0:10]
 
-        report['replied_messages'] = self.popular_messages(
+        report['replied_messages'] = Enricher.popular_messages(
             report['reply_count'], channel_info, user_info)
         report['replied_messages'] = report['replied_messages'][0:10]
 
@@ -172,12 +172,13 @@ class Enricher(object):
             words = channel[uid][1]
             percent_words = words * 100.0 / channel_words
             percent_messages = messages * 100.0 / channel_messages
-            c = {}
-            c['name'] = cname
-            c['rank'] = rank
-            c['words'] = words
-            c['messages'] = messages
-            c['percent'] = percent_words
+            c = {
+                'name': cname,
+                'rank': rank,
+                'words': words,
+                'messages': messages,
+                'percent': percent_words
+            }
             channel_list.append(c)
         channel_list.sort(key=lambda x: x['words'])
         channel_list.reverse()
@@ -189,6 +190,6 @@ class Enricher(object):
         for user in report['enriched_user']:
             report['reenriched_user'][user] = {}
             for t in ['reactions', 'replies']:
-                messages = self.popular_messages(
+                messages = Enricher.popular_messages(
                     report['enriched_user'][user][t], ci, ui)
                 report['reenriched_user'][user][t] = messages

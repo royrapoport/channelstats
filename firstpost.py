@@ -17,6 +17,8 @@ class FirstPost(object):
         self.users = {}
         self.modified = {}
         self.saved = {}
+        self.count = None
+        self.channel = None
 
     def get(self, key):
         if key in self.users:

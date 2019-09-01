@@ -55,13 +55,13 @@ class DDB(object):
                 "mini_batch_hash_get must be called with no more than 99 items")
 
             # print("Given no hashkeyname, defaulted to {}".format(hashkeyname))
-        RequestItems = {}
-        RequestItems[self.table_name] = {}
-        RequestItems[self.table_name]['Keys'] = []
+        request_items = dict()
+        request_items[self.table_name] = {}
+        request_items[self.table_name]['Keys'] = []
         for i in hashlist:
-            RequestItems[self.table_name]['Keys'].append({hashkeyname: i})
+            request_items[self.table_name]['Keys'].append({hashkeyname: i})
         response = self.dynamodb_resource.batch_get_item(
-            RequestItems=RequestItems)
+            RequestItems=request_items)
         items = response['Responses'][self.table_name]
         item_dict = {}
         for i in items:
@@ -124,16 +124,16 @@ class DDB(object):
         """
         keyschema = []
         attributedefinitions = []
-        hash = self.attributes[0]
-        hash_name = hash[0]
-        hash_type = hash[1]
+        hash_attribute = self.attributes[0]
+        hash_name = hash_attribute[0]
+        hash_type = hash_attribute[1]
         keyschema.append({'AttributeName': hash_name, 'KeyType': 'HASH'})
         attributedefinitions.append(
             {'AttributeName': hash_name, 'AttributeType': hash_type})
         if len(self.attributes) > 1:
-            range = self.attributes[1]
-            range_name = range[0]
-            range_type = range[1]
+            range_attribute = self.attributes[1]
+            range_name = range_attribute[0]
+            range_type = range_attribute[1]
             keyschema.append({'AttributeName': range_name, 'KeyType': 'RANGE'})
             attributedefinitions.append(
                 {'AttributeName': range_name, 'AttributeType': range_type})
