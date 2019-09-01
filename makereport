@@ -16,15 +16,12 @@ users['roy'] = "U06NSQT34"
 users['jenna'] =  "U8MEPG4Q7"
 users['jude'] = "UCR03V5BP"
 users['moj_hoss'] = "UD9M2GA2J"
-<<<<<<< Updated upstream
+
 date = "2019-07-02"
 days = 55
-=======
->>>>>>> Stashed changes
 date = "2019-08-11"
 days = 7
-# date = "2019-08-01"
-# days = 21
+
 force_regen = False
 if len(sys.argv) > 1 and sys.argv[1] == "regen":
     force_regen = True
@@ -32,7 +29,7 @@ if len(sys.argv) > 1 and sys.argv[1] == "regen":
 rg = report_generator.ReportGenerator(fake=fake)
 print("users: {}".format(users))
 print("Generating report for {}/{}".format(date,days))
-report = rg.report(date, days, users=users.values(), force_generate=force_regen)
+(report, previous_report) = rg.report(date, days, users=users.values(), force_generate=force_regen)
 # rg.summarize_report(report)
 f = open("report.json", "w")
 f.write(json.dumps(report, indent=4))

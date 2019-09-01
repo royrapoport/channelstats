@@ -320,21 +320,32 @@ class Report(object):
             self.create_key(["reaction", reaction_name], 0)
             self._data['reaction'][reaction_name] += count
 
-    def _dfinalize_user_stats(self):
+    def _finalize_user_stats(self):
         """
         make sure all user_stats structures have all the fields we expect
         """
+        self.fill_in_values(self._data['user_stats']) 
+        self.fill_in_values(self._data['enriched_user']) 
+
+    def fill_in_values(self, d):
+        """
+        presuming that d is {k: somedict} iterate through
+        all k and find the complete set of keys that might be
+        available in somedict, then iterate again, and fill them in
+        if missing
+        """
         # What fields do we expect?
         expect = {}
-        for uid in self._data['user_stats']:
-            for i in self._data['user_stats'][uid].keys():
-                expect[i] = 1
-        expected_keys = list(expect.keys())
-        for uid in self._data['user_stats']:
-            struct = self._data['user_stats'][uid]
-            for expected_key in expected_keys:
-                if expected_key not in struct:
-                    struct[expected_key] = 0
+        for k in d:
+            v = d[k]
+            if type(v) == int:
+                expect[k] = 0
+            elif type(v) in [dict, collections.OrderedDict]:
+                expect[k] = {}
+        for k in d:
+            for ek in expect.keys():
+                if ek not in d[k]:
+                    d[k][ek] = expect[ek]
 
     def accum_reaction_count(self, message):
         """

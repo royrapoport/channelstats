@@ -64,7 +64,7 @@ class ReportGenerator(object):
         """
         current_report = self.get_report(start_day, days, users, force_generate)
         previous_report = self.previous_report(start_day, days, users, force_generate)
-        return current_report
+        return (current_report, previous_report)
 
     def get_report(self, start_day, days, users=None, force_generate=False):
         """
