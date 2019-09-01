@@ -189,10 +189,10 @@
                         {{macros.topten(payload['enriched_user'][uid]['threads_combined'], payload)}}
 
                         <b>The people you mentioned the most are</b>
-                        {{macros.topten(payload['enriched_user'][uid]['you_mentioned'], payload)}}
+                        {{macros.topten(payload['enriched_user'][uid].get("you_mentioned", {}), payload)}}
 
                         <b>The people who mentioned you the most are</b>
-                        {{macros.topten(payload['enriched_user'][uid]['mentioned_you'], payload)}}
+                        {{macros.topten(payload['enriched_user'][uid].get("mentioned_you", {}), payload)}}
 
                         <b>Mention Affinity</b>
                         {{macros.topten(payload['enriched_user'][uid]['mentions_combined'], payload)}}
