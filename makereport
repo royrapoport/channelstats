@@ -16,8 +16,11 @@ users['roy'] = "U06NSQT34"
 users['jenna'] =  "U8MEPG4Q7"
 users['jude'] = "UCR03V5BP"
 users['moj_hoss'] = "UD9M2GA2J"
+<<<<<<< Updated upstream
 date = "2019-07-02"
 days = 55
+=======
+>>>>>>> Stashed changes
 date = "2019-08-11"
 days = 7
 # date = "2019-08-01"
