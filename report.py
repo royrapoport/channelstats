@@ -106,7 +106,7 @@ class Report(object):
             k = nk.pop(0)
             if k not in cur:
                 if nk:
-                    cur[k] = {}
+                    cur[k] = collections.defaultdict(int)
                 else:
                     cur[k] = default_value
                     return cur[k]
