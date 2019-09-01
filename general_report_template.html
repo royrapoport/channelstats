@@ -99,51 +99,50 @@
     </head>
     <body>
         <h3>
-            Channel/User Activity {{payload.start_date}} to {{payload.end_date}}
+            Channel/User Activity {{ payload.start_date }} to {{ payload.end_date }}
         </h3>
 
-        <b>Note:</b>Yellow-background channels are new this week<p/>
+        <p><b>Note:</b>Yellow-background channels are new this week</p>
 
-        <b>{{statistics.posters}}/{{statistics.active_users}}</b>
-        (or {{macros.percent(statistics.posters, statistics.active_users)}})
-        users were active<p/>
+        <p><b>{{ statistics.posters }}/{{ statistics.active_users }}</b>
+        (or {{ macros.percent(statistics.posters, statistics.active_users) }})
+        users were active</p>
 
-        <b>Median message count</b> was
-        {{statistics['median messages']}}
-        <p/><p/>
+        <p><b>Median message count</b> was {{ statistics['median messages'] }}</p>
 
-        <b>Top ten posters contributed
-        {{macros.flprint(statistics['topten messages'], percent=True)}}
-        of messages </b> <p/>
+        <p><b>Top ten posters contributed
+         {{ macros.flprint(statistics['topten messages'], percent=True) }}
+        of messages</b></p>
 
-        <b>Top
-            {{statistics['50percent of words']}}
+        <p><b>Top
+            {{ statistics['50percent of words'] }}
             posters accounted for about 50% of total volume
-        </b><p/>
+        </b></p>
 
         <h3>Legend</h3>
-        For each user's total message cell, the first number is their
-        total number of words sent, the second is the percent of total
-        words their messages represent, and the third is the running
-        percent of words from all the people ahead of them plus theirs.
+        <p>
+            For each user's total message cell, the first number is their total number of words sent, the second is the percent of total
+            words their messages represent, and the third is the running
+            percent of words from all the people ahead of them plus theirs.
+        </p>
         <br/>
-        For example, if the 2nd person had 870, 3.5%, 7.8%, that means
-        that they sent 870 words; 870 words represented 3.5% of total
-        words; and total words from them and the #1 poster represented
-        7.8% of total volume
-        <p/>
+        <p>
+            For example, if the 2nd person had 870, 3.5%, 7.8%, that means
+            that they sent 870 words; 870 words represented 3.5% of total
+            words; and total words from them and the #1 poster represented
+            7.8% of total volume</p>
 
-        <b>rphw</b> is reactions per 100 words -- an indication of
-        how many reactions your words got on average<p/>
+        <p><b>rphw</b> is reactions per 100 words -- an indication of
+        how many reactions your words got on average</p>
 
-        <b>wpm</b> is average words per message<p/>
-        The last number is the total number of messages sent by this user.<p/>
+        <p><b>wpm</b> is average words per message</p>
+        <p>The last number is the total number of messages sent by this user.</p>
 
-        numbers in parentheses after channel names are number of users in channel<p/>
+        <p>numbers in parentheses after channel names are number of users in channel</p>
 
-        'w' is words, 'm' is messages, 't' is threaded messages in threads started by the user,
+        <p>'w' is words, 'm' is messages, 't' is threaded messages in threads started by the user,
         'p' is posters (people who posted a message during this period)
-        <p/>
+        </p>
 
         <div class="CSSTableGenerator">
             <table border='1'>
@@ -372,6 +371,5 @@
                 </tr>
             </tbody>
         </table>
-        <p/>
     </body>
 </html>
