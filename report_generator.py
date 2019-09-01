@@ -63,7 +63,11 @@ class ReportGenerator(object):
         Returns (current_report, previous_report)
         """
         current_report = self.get_report(start_day, days, users, force_generate)
-        previous_report = self.previous_report(start_day, days, users, force_generate)
+        try:
+            previous_report = self.previous_report(start_day, days, users, force_generate)
+        except Exception:
+            print("Exception: {}".format(Exception))
+            previous_report = None
         return (current_report, previous_report)
 
     def get_report(self, start_day, days, users=None, force_generate=False):
