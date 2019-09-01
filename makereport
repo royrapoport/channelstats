@@ -7,7 +7,7 @@ import html_formatter
 import pdf_formatter
 import report_generator
 
-fake = True
+fake = False
 html_formatter_obj = html_formatter.HTMLFormatter(fake=fake)
 pdf_formatter_obj = pdf_formatter.PDFFormatter()
 users = {}
@@ -18,6 +18,8 @@ users['jude'] = "UCR03V5BP"
 users['moj_hoss'] = "UD9M2GA2J"
 date = "2019-07-02"
 days = 55
+date = "2019-08-11"
+days = 7
 # date = "2019-08-01"
 # days = 21
 force_regen = False
