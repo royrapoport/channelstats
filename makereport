@@ -19,8 +19,8 @@ users['moj_hoss'] = "UD9M2GA2J"
 
 date = "2019-07-02"
 days = 55
-date = "2019-08-11"
-days = 7
+#date = "2019-08-11"
+#days = 7
 
 force_regen = False
 if len(sys.argv) > 1 and sys.argv[1] == "regen":
