@@ -34,4 +34,6 @@ class Channel(object):
         response = self.table.get_item(Key={'channel_key': key})
         if 'Item' not in response:
             return None
-        return response['Item']
+        result = response['Item']
+        result['name'] = result.get('channel_name')
+        return result
