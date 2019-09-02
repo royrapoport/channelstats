@@ -67,7 +67,10 @@ class ReportGenerator(object):
         y, m, d = [int(x) for x in latest.split('-')]
         dt = datetime.date(y, m, d)
         weekday = dt.weekday()
-        proposed = dt - datetime.timedelta(days = (weekday + 1))
+        if weekday == 6:
+            proposed = dt - datetime.timedelta(days = (weekday + 1 ))
+        else:
+            proposed = dt - datetime.timedelta(days = (weekday + 1 + 7 ))
         proposed_s = proposed.strftime("%Y-%m-%d")
         return proposed_s
 
