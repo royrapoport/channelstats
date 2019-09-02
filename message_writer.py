@@ -106,9 +106,6 @@ class MessageWriter(object):
             reply_count += 1
             reply_string = "{}:{}".format(reply['user'], reply['ts'])
             replies.append(reply_string)
-        # Fun fact: DynamoDB does not allow empty strings in attributevalues.
-        # So if we can't find any replies, we'll insert the string 'none'
-        # (This is lame)
         if replies:
             replies = ",".join(replies)
         else:
