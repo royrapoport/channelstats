@@ -44,13 +44,11 @@ class Enricher(object):
         ret = {}
         for cid in entries:
             entry = entries[cid]
-            # print("Entry: {}".format(entry))
-            name = entry['name']
+            name = entry['channel_name']
             created = int(entry['created'])
             new = created > report_start_timestamp
             members = entry.get("members", 0)
-            entry = {'name': name, 'new': new, 'members': members}
-            ret[cid] = entry
+            ret[cid] = {'name': name, 'new': new, 'members': members}
         return ret
 
     def get_users(self, list_of_userids):

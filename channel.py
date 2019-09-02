@@ -6,7 +6,7 @@ class Channel(object):
     table_name = "Channel"
 
     def __init__(self):
-        self.ddb = ddb.DDB(self.table_name, [('key', 'S')])
+        self.ddb = ddb.DDB(self.table_name, [('channel_key', 'S')])
         self.table = self.ddb.get_table()
 
     def batch_get_channel(self, cids):
@@ -21,17 +21,17 @@ class Channel(object):
                 members = channel['num_members']
                 values = {'created': created, 'members': members}
                 for k, v in [[cid, cname], [cname, cid]]:
-                    row = dict()
-                    row['key'] = k
-                    row['name'] = v
+                    row = {
+                        'channel_key': k,
+                        'channel_name': v
+                    }
                     for i in values:
                         row[i] = values[i]
                     row = utils.prune_empty(row)
                     batch.put_item(row)
 
     def get(self, key):
-        response = self.table.get_item(Key={'key': key})
+        response = self.table.get_item(Key={'channel_key': key})
         if 'Item' not in response:
             return None
-        item = response['Item']
-        return item
+        return response['Item']

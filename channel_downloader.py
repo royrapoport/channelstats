@@ -24,4 +24,4 @@ class ChannelDownloader(object):
 if __name__ == "__main__":
     channel_downloader = ChannelDownloader(
         "rands-leadership", slack_token.token)
-    channel_downloader.download()
+    channel_downloader.download(include_private=True)
