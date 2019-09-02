@@ -58,16 +58,32 @@ class ReportGenerator(object):
         new_start_day = dt.strftime("%Y-%m-%d")
         return self.get_report(new_start_day, days, users, force_generate)
 
+    def latest_week_start(self):
+        """
+        return yyyy-mm-dd of the latest week for which we have a whole week's data
+        """
+        latest = self.mtf.latest_date()
+        y, m, d = [int(x) for x in latest.split('-')]
+        dt = datetime.date(y, m, d)
+        weekday = dt.weekday()
+        if weekday == 6:
+            return latest
+        proposed = dt - datetime.timedelta(days = (weekday + 1))
+        proposed_s = proposed.strftime("%Y-%m-%d")
+        return proposed_s
+
     def validate(self, start_day, days):
         """
         start_day must 1. Be after when we started collecting stats;
         2. If days = 7, start_day must be Sunday
         """
+        # Make sure our start date is not before we started collecting data
         earliest = self.mtf.earliest_date()
         if start_day < earliest:
             m = "Earliest available start date is {}, later than requested report start date {}"
             m = m.format(earliest, start_day)
             raise RuntimeError(m)
+        # Make sure our calculated end date is not after we started collecting data
         y, m, d = [int(x) for x in start_day.split('-')]
         dt = datetime.date(y, m, d)
         delta = datetime.timedelta(days=days)
@@ -78,6 +94,8 @@ class ReportGenerator(object):
             m = "Latest available start date is {}, sooner than calculated report end date {}"
             m = m.format(latest, end_day)
             raise RuntimeError(m)
+
+        # Make sure that for 7-day (weekly) reports, we start on a Sunday
         weekday = dt.weekday()
         if weekday != 6 and days == 7:
             proposed = dt - datetime.timedelta(days = (weekday + 1))
