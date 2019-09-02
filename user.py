@@ -48,6 +48,7 @@ class User(object):
         """
 
         dummy = {
+            'id': 'USLACKBOT',
             'tz_offset': -25200,
             'insert_timestamp': 1567210676,
             'user_name': 'dummy',
