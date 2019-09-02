@@ -68,7 +68,7 @@ class ReportGenerator(object):
         except Exception:
             print("Exception: {}".format(Exception))
             previous_report = None
-        return (current_report, previous_report)
+        return current_report, previous_report
 
     def get_report(self, start_day, days, users=None, force_generate=False):
         """
@@ -79,15 +79,15 @@ class ReportGenerator(object):
         if not force_generate:
             # print("Querying for {}/{}/{}".format(start_day, days, user))
             reports = {}
-            emptyReport = False
+            empty_report = False
             if users:
                 for user in users:
                     user_report = self.query_report(start_day, days, user)
                     if not user_report:
-                        emptyReport = True
+                        empty_report = True
                     reports[user] = user_report
             general_report = self.query_report(start_day, days)
-            if general_report and not emptyReport:
+            if general_report and not empty_report:
                 print("Found all parts of the report in storage!")
                 general_report['enriched_user'] = reports
                 return general_report
