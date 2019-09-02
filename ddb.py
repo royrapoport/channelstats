@@ -33,6 +33,20 @@ class DDB(object):
         self.table_name = config.prefix + "." + table_name
         self.table = None
 
+    def delete_empty_tables(self):
+        """
+        In case we accidentally created some empty tables in this
+        namespace, find them and delete them
+        """
+        table_names = self.list_tables()
+        for table_name in table_names:
+            d = DDB(table_name)
+            prefixed_table_name = d.table_name
+            description = d.dynamodb_client.describe_table(TableName=prefixed_table_name)
+            count = description['Table']['ItemCount']
+            if count == 0:
+                d.get_table().delete()
+
     def list_tables(self):
         done = False
         start_table = None
