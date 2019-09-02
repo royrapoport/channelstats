@@ -37,6 +37,11 @@ class Downloader(object):
             "subtype") != "bot_message"]
         return new_messages
 
+    def dt(self, timestamp):
+        tl = time.localtime(timestamp)
+        s = time.strftime("%Y-%m-%d %H:%M", tl)
+        return s
+
     def download(self):
         if len(sys.argv) > 1:
             cids = [self.channel.get(sys.argv[1])['name']]
@@ -48,28 +53,30 @@ class Downloader(object):
         idx = 1
         for cid in cids:
             print("Getting messages for {}/{} {} - {}".format(idx,
-                                                              cid_count, cid, self.channel.get(cid)))
+                                                              cid_count, cid, self.channel.get(cid)['name']))
             idx += 1
             (last_timestamp, refetch) = self.cconfig.get_channel_config(cid)
+            refetch = (config.refetch * 86400)
             last_timestamp = int(float(last_timestamp))
+            # print("\t Last timestamp is {}".format(self.dt(last_timestamp)))
             timestamp = last_timestamp - refetch
+            # print("\t After reducing by {}, timestamp is {}".format(refetch, self.dt(timestamp)))
             timestamp = max(timestamp, self.earliest_timestamp())
-            timestamp = self.earliest_timestamp()
-            lt = str(timestamp)
+            # print("\t After looking at max, timestamp is {}".format(self.dt(timestamp)))
             messages = self.slack.get_messages(cid, timestamp)
             messages = self.filter_messages(messages)
-            print("Got {} messages since {} in {}".format(
-                len(messages), self.ts_print(timestamp), cid))
+            # print("Got {} messages since {} in {}".format(
+            #   len(messages), self.ts_print(timestamp), cid))
             threads = 0
             message_count = 0
             if messages:
                 max_ts = max([int(float(x['ts'])) for x in messages])
-                print(
-                    "Setting max ts for {} to {}".format(
-                        cid, time.asctime(
-                            time.localtime(max_ts))))
+                # print(
+                #    "Setting max ts for {} to {}".format(
+                #        cid, time.asctime(
+                #            time.localtime(max_ts))))
                 self.cconfig.update_channel_timestamp(cid, max_ts)
-                print("Got {} messages for CID {}".format(len(messages), cid))
+                # print("Got {} messages for CID {}".format(len(messages), cid))
                 self.MessageWriter.write(messages, cid)
                 self.fp.set_channel(cid)
                 for message in messages:
