@@ -33,6 +33,27 @@ class DDB(object):
         self.table_name = config.prefix + "." + table_name
         self.table = None
 
+    def list_tables(self):
+        done = False
+        start_table = None
+        tables = []
+        while not done:
+            if start_table:
+                response = self.dynamodb_client.list_tables(ExclusiveStartTableName=start_table)
+            else:
+                response = self.dynamodb_client.list_tables()
+            tables += response['TableNames']
+            if 'LastEvaluatedTableName' in response:
+                start_table = response['LastEvaluatedTableName']
+            else:
+                done = True
+        pref = config.prefix + "."
+        # Only match the tables that start with our prefix
+        tables = [x for x in tables if x.find(pref) == 0]
+        # Now, remove our prefix
+        tables = [x.replace(pref, "") for x in tables]
+        return tables
+
     def batch_hash_get(self, hashlist, hashkeyname=None):
         if not hashkeyname:
             if not self.attributes:
