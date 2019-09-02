@@ -151,4 +151,9 @@ class SlackFormatter(object):
         # If set to true, this message will be sent as the user who owns the token we use
         as_user = False
         for blockset in utils.chunks(blocks, 49):
-            self.client.chat_postMessage(channel=uid, blocks=blockset, as_user=as_user, link_names=True)
+            self.client.chat_postMessage(
+                channel=uid,
+                blocks=blockset,
+                as_user=as_user, 
+                unfurl_links=True,
+                link_names=True)
