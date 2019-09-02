@@ -62,7 +62,9 @@ class SlackFormatter(object):
         blocks += self.topten(ur, uid, 'mentioned_you', "The people who mentioned you the most")
         blocks += self.topten(ur, uid, 'mentions_combined', "Mention Affinity")
         print("I have {} blocks".format(len(blocks)))
-        # print(json.dumps(blocks, indent=4))
+        f = open("{}_blocks.json".format(uid), "w")
+        f.write(json.dumps(blocks, indent=4))
+        f.close()
         return blocks
 
     def topten(self, ur, uid, label, header):
