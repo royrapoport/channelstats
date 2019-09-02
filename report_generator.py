@@ -113,9 +113,9 @@ class ReportGenerator(object):
         dates = self.generate_dates(start_day, days)
         report_creator.set_start_date(dates[0])
         report_creator.set_end_date(dates[-1])
-        print("For the report of {} days starting {} we have dates {}".format(days, start_day, dates))
+        # print("For the report of {} days starting {} we have dates {}".format(days, start_day, dates))
         tables = [self.mtf.get_message_table(date) for date in dates]
-        print("Message table names: {}".format(tables))
+        # print("Message table names: {}".format(tables))
         for table in tables:
             messages = table.scan()["Items"]
             for message in messages:
