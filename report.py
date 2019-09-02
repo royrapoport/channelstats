@@ -50,7 +50,7 @@ class Report(object):
     # Where we keep the 'top X' of messages, what X should we go for?
     top_limit = 10
 
-    def __init__(self):
+    def __init__(self, channels=None):
         self._data = {}
         self.user = user.User()
         self.reactions_accumulator = Accumulator(
@@ -63,6 +63,7 @@ class Report(object):
         self.configuration = configuration.Configuration()
         self.accum_methods = [x for x in dir(self) if x.find("accum_") == 0]
         self.track = {}
+        self.channels = channels
 
     def set_users(self, users):
         for user in users:
@@ -85,6 +86,8 @@ class Report(object):
 
     def message(self, message):
         if 'subtype' in message:
+            return
+        if self.channels and message.get('slack_cid') not in self.channels:
             return
         for accum_method in self.accum_methods:
             method = "self.{}(message)".format(accum_method)
@@ -170,7 +173,7 @@ class Report(object):
     def make_url(self, mrecord):
         mid = mrecord[1]
         cid = mrecord[2]
-        return("https://{}.slack.com/archives/{}/p{}".format(config.slack_name, cid, mid))
+        return "https://{}.slack.com/archives/{}/p{}".format(config.slack_name, cid, mid)
 
     def _finalize_reactions(self):
         for uid in self.reactions:

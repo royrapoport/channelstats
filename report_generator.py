@@ -23,28 +23,29 @@ class ReportGenerator(object):
         self.mtf = messagetablefactory.MessageTableFactory(readonly=True)
         self.report_store = report_store.ReportStore()
 
-    def make_report_id(self, start_day, days, user):
-        if user is None:
-            return "{}-{}".format(start_day, days)
-        return "{}-{}-{}".format(start_day, days, user)
+    def make_report_id(self, start_day, days, user, channels):
+        rid_user = '' if user is None else "-{}".format(user)
+        rid_channels = '' if channels is None else "-{}".format(''.join(channels))
+        return "{}-{}{}{}".format(start_day, days, rid_user, rid_channels)
 
-    def query_report(self, start_day, days, user=None):
+    def query_report(self, start_day, days, user=None, channels=None):
         """
         Query DDB for the report with the given parameters
         """
-        rid = self.make_report_id(start_day, days, user)
+        rid = self.make_report_id(start_day, days, user, channels)
         report_string = self.report_store.get(rid)
         if not report_string:
             return None
         # print("Found a stored report for {}".format(rid))
         return json.loads(report_string)
 
-    def store_report(self, start_day, days, report, user=None):
-        print("Storing report for {}/{}/{}".format(start_day, days, user))
-        rid = self.make_report_id(start_day, days, user)
+    def store_report(self, start_day, days, report, user=None, channels=None):
+        print("Storing report for {}/{}/{}{}".format(
+            start_day, days, user, '' if channels is None else '/{}'.format(''.join(channels))))
+        rid = self.make_report_id(start_day, days, user, channels)
         self.report_store.set(rid, json.dumps(report))
 
-    def previous_report(self, start_day, days, users=None, force_generate=False):
+    def previous_report(self, start_day, days, users=None, force_generate=False, channels=None):
         """
         Given a start day and days, get the PREVIOUS period's report with the same
         parameters as report() takes.
@@ -56,7 +57,7 @@ class ReportGenerator(object):
         delta = datetime.timedelta(days=days)
         dt -= delta
         new_start_day = dt.strftime("%Y-%m-%d")
-        return self.get_report(new_start_day, days, users, force_generate)
+        return self.get_report(new_start_day, days, users, force_generate, channels)
 
     def latest_week_start(self):
         """
@@ -102,20 +103,20 @@ class ReportGenerator(object):
             m = m.format(proposed_s, start_day)
             raise RuntimeError(m)
 
-    def report(self, start_day, days, users=None, force_generate=False):
+    def report(self, start_day, days, users=None, force_generate=False, channels=None):
         """
         Returns (current_report, previous_report)
         """
         self.validate(start_day, days)
-        current_report = self.get_report(start_day, days, users, force_generate)
+        current_report = self.get_report(start_day, days, users, force_generate, channels)
         try:
-            previous_report = self.previous_report(start_day, days, users, force_generate)
-        except Exception:
-            print("Exception: {}".format(Exception))
+            previous_report = self.previous_report(start_day, days, users, force_generate, channels)
+        except Exception as e:
+            print("Exception: {}".format(e))
             previous_report = None
-        return (current_report, previous_report)
+        return current_report, previous_report
 
-    def get_report(self, start_day, days, users=None, force_generate=False):
+    def get_report(self, start_day, days, users=None, force_generate=False, channels=None):
         """
         Generate a channel stats report starting on start_day, which is
         formatted as yyyy-mm-dd, and for the period of DAYS duration
@@ -124,36 +125,36 @@ class ReportGenerator(object):
         if not force_generate:
             # print("Querying for {}/{}/{}".format(start_day, days, user))
             reports = {}
-            emptyReport = False
+            empty_report = False
             if users:
                 for user in users:
-                    user_report = self.query_report(start_day, days, user)
+                    user_report = self.query_report(start_day, days, user, channels)
                     if not user_report:
-                        emptyReport = True
+                        empty_report = True
                     reports[user] = user_report
-            general_report = self.query_report(start_day, days)
-            if general_report and not emptyReport:
+            general_report = self.query_report(start_day, days, channels=channels)
+            if general_report and not empty_report:
                 print("Found all parts of the report in storage!")
                 general_report['enriched_user'] = reports
                 return general_report
-        general_report = self.generate_report(start_day, days, users)
+        general_report = self.generate_report(start_day, days, users, channels)
         enriched_users = general_report['enriched_user']
         if enriched_users:
             for user in enriched_users:
                 self.store_report(
-                    start_day, days, enriched_users[user], user=user)
+                    start_day, days, enriched_users[user], user=user, channels=channels)
         ret = copy.deepcopy(general_report)
         del(general_report['enriched_user'])
-        self.store_report(start_day, days, general_report, user=None)
+        self.store_report(start_day, days, general_report, user=None, channels=channels)
         return ret
 
-    def generate_report(self, start_day, days, users=[]):
+    def generate_report(self, start_day, days, users=[], channels=None):
         """
         Generate a channel stats report starting on start_day, which is
         formatted as yyyy-mm-dd, and for the period of DAYS duration
         """
         # print("Generating report for {}/{}/{}".format(start_day, days, user))
-        report_creator = report.Report()
+        report_creator = report.Report(channels=channels)
         report_creator.set_users(users)
         dates = self.generate_dates(start_day, days)
         report_creator.set_start_date(dates[0])
