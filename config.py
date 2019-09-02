@@ -13,4 +13,4 @@ max_age = 60
 # with its own namespace
 prefix = "channelstats"
 # By default, refetch this many days
-refetch = 60
+refetch = 7
