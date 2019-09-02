@@ -86,7 +86,7 @@ class FirstPost(object):
             "channel": cid,
             "ts": 0
         }
-        print("Saving {}".format(row))
+        # print("Saving {}".format(row))
         self.saved[cid] = 1
 
         self.table.put_item(Item=row)
