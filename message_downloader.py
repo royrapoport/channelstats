@@ -52,8 +52,8 @@ class Downloader(object):
         cid_count = len(cids)
         idx = 1
         for cid in cids:
-            print("Getting messages for {}/{} {} - {}".format(idx,
-                                                              cid_count, cid, self.channel.get(cid)['name']))
+            channel_name = self.channel.get(cid)['name']
+            print("{}/{} {} - {}".format(idx, cid_count, cid, channel_name))
             idx += 1
             (last_timestamp, refetch) = self.cconfig.get_channel_config(cid)
             refetch = (config.refetch * 86400)
