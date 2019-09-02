@@ -99,6 +99,8 @@ class Enricher(object):
 
     def user_enrich(self, report, uid):
         self.enrich(report)
+        if uid not in report['user_info']:
+            report['user_info'][uid] = self.user.get_pretty(uid)
         user = report['user_info'][uid]['label']
         report['uid'] = uid
         report['user'] = user
