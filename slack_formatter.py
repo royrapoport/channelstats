@@ -69,7 +69,9 @@ class SlackFormatter(object):
         blocks.append(self.text_block("*{}*".format(header)))
         fields = ["*Person*", "*Count*"]
 
-        d = ur['enriched_user'][uid][label]
+        d = ur['enriched_user'][uid].get(label)
+        if not d:
+            return []
         uids = list(d.keys())[0:10]
         for uid in uids:
             # fields.append(ur['user_info'][uid]['label'])
@@ -141,16 +143,18 @@ class SlackFormatter(object):
         fields = [{'type': 'mrkdwn', 'text': x} for x in ftext]
         return utils.chunks(fields, 10)
 
-    def send_report(self, uid, ur):
+    def send_report(self, uid, ur, send=True):
         self.enricher.user_enrich(ur, uid)
-        us = ur['user_stats'][uid]
+        us = ur['user_stats'].get(uid, {})
         blocks = self.make_report(ur, us, uid)
         # If set to true, this message will be sent as the user who owns the token we use
         as_user = False
         for blockset in utils.chunks(blocks, 49):
-            self.client.chat_postMessage(
-                channel=uid,
-                blocks=blockset,
-                as_user=as_user,
-                unfurl_links=True,
-                link_names=True)
+            if send:
+                print("Sending report to {}".format(uid))
+                self.client.chat_postMessage(
+                    channel=uid,
+                    blocks=blockset,
+                    as_user=as_user,
+                    unfurl_links=True,
+                    link_names=True)
