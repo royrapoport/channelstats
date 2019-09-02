@@ -14,3 +14,5 @@ max_age = 60
 prefix = "channelstats"
 # By default, refetch this many days
 refetch = 7
+# What channels should we upload weekly reports to?
+report_channel = "zmeta-statistics"
