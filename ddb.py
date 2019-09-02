@@ -79,11 +79,13 @@ class DDB(object):
             assert len(a) == 2, "Attribute {} is not a 2-item list".format(a)
             assert a[1] in valid_types
 
-    def get_table(self):
+    def get_table(self, readonly=False):
         """
         return the DDB table for channel configuration
+        if readonly and the table does not exist, do not create it; return None instead
         """
 
+        table = None
         if self.table:
             return self.table
 
@@ -94,7 +96,8 @@ class DDB(object):
             if not self.attributes:
                 raise RuntimeError(
                     "Given no attributes, I cannot create a table")
-            table = self.create_table()
+            if not readonly:
+                table = self.create_table()
         self.table = table
         return table
 

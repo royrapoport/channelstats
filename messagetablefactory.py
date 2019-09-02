@@ -5,20 +5,14 @@ import time
 
 # import botocore
 # import botocore.errorfactory.ResourceNotFoundException
-import boto3
 import ddb
 
 
 class MessageTableFactory(object):
 
-    def __init__(self):
+    def __init__(self, readonly=False):
         self.__day_tables = {}
-
-    def get_existing_tables(self):
-        """
-        Returns list of existing tables
-        """
-        return self.dynamodb_client.list_tables()['TableNames']
+        self.readonly = readonly
 
     def get_message_table_name(self, timestamp_or_dt):
         """
@@ -50,6 +44,6 @@ class MessageTableFactory(object):
         table_name = self.get_message_table_name(timestamp_or_dt)
         if table_name not in self.__day_tables:
             DDB = ddb.DDB(table_name, [("timestamp", "S"), ("slack_cid", "S")])
-            table = DDB.get_table()
+            table = DDB.get_table(readonly=self.readonly)
             self.__day_tables[table_name] = table
         return self.__day_tables[table_name]

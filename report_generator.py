@@ -20,7 +20,7 @@ class ReportGenerator(object):
 
     def __init__(self, fake=False):
         self.fake = fake
-        self.mtf = messagetablefactory.MessageTableFactory()
+        self.mtf = messagetablefactory.MessageTableFactory(readonly=True)
         self.report_store = report_store.ReportStore()
 
     def make_report_id(self, start_day, days, user):
