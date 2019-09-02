@@ -9,6 +9,8 @@ import requests
 
 class Slacker(object):
 
+    CONVERSATIONS_LIST_TYPES = ['public_channel', 'private_channel', 'mpim', 'im']
+
     def __init__(self, slack, token):
 
         self.slack = slack
@@ -34,9 +36,30 @@ class Slacker(object):
         users = self.paginated_lister("users.list")
         return users
 
-    def get_all_channels(self):
+    def get_all_channels(self, types=[]):
+        if len(types) == 0:
+            # Always default to public channels only
+            types = ['public_channel']
+        elif type(types) is list:
+            if any([conversation_type for conversation_type in types
+                    if conversation_type not in self.CONVERSATIONS_LIST_TYPES]):
+                raise ValueError('Invalid conversation type')
+        types_param = ','.join(types)
+
         channels = self.paginated_lister(
-            "conversations.list?types=public_channel")
+            "conversations.list?types={types}".format(types=types_param))
+
+        if 'private_channel' in types:
+            channels_to_iterate = channels
+            for index, channel in enumerate(channels_to_iterate):
+                is_group = channel.get('is_group', False)
+                is_private = channel.get('is_private', False)
+                if is_group and is_private:
+                    channels[index] = self.api_call(
+                        api_endpoint='conversations.info?channel={}&include_num_members=true'.format(
+                            channel.get('id'))
+                    ).get('channel', channel)
+
         return channels
 
     def get_all_channel_ids(self):
@@ -156,7 +179,7 @@ class Slacker(object):
         # print("url: {}".format(url))
         if json:
             headers['Content-Type'] = "application/json"
-        # print "url: {}".format(url)
+        # print("url: {}".format(url))
         done = False
         while not done:
             response = self.retry_api_call(

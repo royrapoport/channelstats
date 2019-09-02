@@ -13,8 +13,11 @@ class ChannelDownloader(object):
         self.channel = channel.Channel()
         self.slack = slacker.Slacker(sname, stoken)
 
-    def download(self):
-        channels = self.slack.get_all_channels()
+    def download(self, include_private=False):
+        channel_types = ['public_channel']
+        if include_private:
+            channel_types.append('private_channel')
+        channels = self.slack.get_all_channels(types=channel_types)
         self.channel.batch_upload(channels)
 
 
