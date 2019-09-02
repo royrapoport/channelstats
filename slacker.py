@@ -27,14 +27,12 @@ class Slacker(object):
     def get_messages(self, cid, timestamp, callback=None):
         timestamp = int(float(timestamp))
         # print("Getting messages from {} starting {}".format(cid, time.asctime(time.localtime(int(timestamp)))))
-        messages = self.paginated_lister(
+        return self.paginated_lister(
             "conversations.history?channel={}&oldest={}".format(
                 cid, timestamp), callback=callback)
-        return messages
 
     def get_all_users(self):
-        users = self.paginated_lister("users.list")
-        return users
+        return self.paginated_lister("users.list")
 
     def get_all_channels(self, types=[]):
         if len(types) == 0:
@@ -72,13 +70,13 @@ class Slacker(object):
                 self.api_calls,
                 self.api_wait))
 
-    def discover_element_name(self, response):
+    @staticmethod
+    def discover_element_name(response):
         """
         Figure out which part of the response from a paginated lister is the list of elements
         the logic is pretty simple -- in the dict response, find the one key that has a list value
         or raise an error if more than one exists
         """
-
         lists = [k for k in response if isinstance(response[k], list)]
         if len(lists) == 0:
             raise RuntimeError("No list of objects found")
@@ -94,7 +92,6 @@ class Slacker(object):
         get an arbitrary large set of elements without running out of memory
         In that case, we'll only return the latest set of results
         """
-
         element_name = None
         start = time.time()
         done = False
@@ -108,14 +105,13 @@ class Slacker(object):
                 interim_api_call += "&cursor={}".format(cursor)
             interim_results = self.api_call(interim_api_call)
             if not element_name:
-                element_name = self.discover_element_name(interim_results)
+                element_name = Slacker.discover_element_name(interim_results)
             if callback:
                 for element in interim_results[element_name]:
                     callback(element)
                 results = interim_results[element_name]
             else:
                 results += interim_results[element_name]
-            # print("I now have {} results".format(len(results)))
             cursor = interim_results.get(
                 "response_metadata", {}).get(
                 "next_cursor", "")
