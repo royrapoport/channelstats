@@ -8,6 +8,7 @@ import utils
 import enricher
 import slack_token
 
+
 class SlackFormatter(object):
 
     def __init__(self):
