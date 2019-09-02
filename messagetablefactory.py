@@ -10,9 +10,37 @@ import ddb
 
 class MessageTableFactory(object):
 
+    prefix = "Message-"
+
     def __init__(self, readonly=False):
         self.__day_tables = {}
         self.readonly = readonly
+
+    def latest_date(self):
+        """
+        return the latest date for which we have messages in yyyy-mm-dd format
+        """
+        dates = self.get_dates()
+        if dates:
+            return dates[-1]
+        return None
+
+    def get_dates(self):
+        d = ddb.DDB("bogus")
+        tables = d.list_tables()
+        message_tables = [x for x in tables if x.find(self.prefix) == 0]
+        dates = [x.replace(self.prefix, "") for x in message_tables]
+        dates.sort()
+        return dates
+
+    def earliest_date(self):
+        """
+        return the earliest date for which we have messages in yyyy-mm-dd format
+        """
+        dates = self.get_dates()
+        if dates:
+            return dates[0]
+        return None
 
     def get_message_table_name(self, timestamp_or_dt):
         """
@@ -27,7 +55,7 @@ class MessageTableFactory(object):
                 raise RuntimeError(
                     "timestamp_or_dt needs to be a timestamp or dt")
             date = timestamp_or_dt
-        return "Message-{}".format(date)
+        return "{}{}".format(self.prefix, date)
 
     def make_day(self, timestamp):
         """
