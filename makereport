@@ -43,7 +43,7 @@ f.write(json.dumps(report, indent=4))
 f.close()
 print("")
 slack_formatter_obj.send_report(users['roy'], report)
-slack_formatter_obj.send_report(users['jenna'], report)
+# slack_formatter_obj.send_report(users['jenna'], report)
 mhtml = html_formatter_obj.format(report)
 f = open("reports/{}-{}days-report.html".format(date, days), "w")
 f.write(mhtml)
@@ -55,7 +55,7 @@ for u in users.keys():
     f = open("reports/{}-{}-{}days_report.html".format(u, date, days), "w")
     f.write(u_html)
     f.close()
-
+#
 # s = time.time()
 # pdf = pdf_formatter_obj.convert(mhtml)
 # e = time.time()
