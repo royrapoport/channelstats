@@ -18,6 +18,10 @@ class Slacker(object):
         self.api_calls = 0
         self.api_wait = 0
 
+    def get_users_for_channel(self, cid):
+        response = self.paginated_lister("conversations.members?channel={}".format(cid))
+        return response
+
     def get_thread_responses(self, cid, thread_ts):
         messages = self.paginated_lister(
             "conversations.replies?channel={}&ts={}".format(
