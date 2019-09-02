@@ -64,7 +64,7 @@ class Downloader(object):
             timestamp = max(timestamp, self.earliest_timestamp())
             # print("\t After looking at max, timestamp is {}".format(self.dt(timestamp)))
             messages = self.slack.get_messages(cid, timestamp)
-            messages = self.filter_messages(messages)
+            # messages = self.filter_messages(messages)
             # print("Got {} messages since {} in {}".format(
             #   len(messages), self.ts_print(timestamp), cid))
             threads = 0

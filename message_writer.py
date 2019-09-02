@@ -53,7 +53,7 @@ class MessageWriter(object):
         """
         timestamp = message['ts']
         try:
-            user_id = message['user']
+            user_id = message.get("user") or message.get("bot_id")
         except BaseException:
             print(
                 "How the hell no user? {}".format(
