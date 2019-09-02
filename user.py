@@ -4,6 +4,7 @@ import time
 
 import ddb
 import utils
+import config
 import userhash
 import configuration
 
@@ -25,6 +26,56 @@ class User(object):
 
     def batch_get_user(self, userids):
         return self.ddb.batch_hash_get(userids)
+
+    def pick_name(self, user):
+        """
+        given a user structure from user.get(), return the name we should
+        show people -- this should ideally be the name they see people
+        interact as in slack
+        """
+        dn = user.get('display_name')
+        rn = user.get("real_name")
+        un = user.get("user_name")
+        return dn or rn or un
+
+    def get_users(self, list_of_userids):
+        """
+        Given a list of userIDs, returns a dictionary indexed by userID
+        where the value is another dictionary with
+            'label': The actual label to show for the user ID
+            'hover': The text to show when hovering over the label
+            'url': The URL to link to for more information about the user
+        """
+
+        dummy = {
+            'tz_offset': -25200,
+            'insert_timestamp': 1567210676,
+            'user_name': 'dummy',
+            'tz': 'America/Los_Angeles',
+            'real_name': 'Dummy User',
+            'display_name': 'Dummy User'}
+
+        ret = {}
+        start = time.time()
+        entries = self.batch_get_user(list_of_userids)
+        for uid in list_of_userids:
+            entry = entries.get(uid, dummy)
+            ret[uid] = self.make_pretty(entry)
+        return ret
+
+    def get_pretty(self, uid):
+        entry = self.get(uid)
+        return self.make_pretty(entry)
+
+    def make_pretty(self, user_structure):
+        url = "https://{}.slack.com/team/{}"
+        url = url.format(config.slack_name, user_structure['id'])
+        ret = {
+            'label': '@' + self.pick_name(user_structure),
+            'hover': user_structure.get("real_name", ""),
+            'url': url
+        }
+        return ret
 
     def get(self, key):
         if key in self.users:
@@ -51,8 +102,6 @@ class User(object):
             expr += "display_name=:d, "
             values[":d"] = row["display_name"]
         expr = re.sub(", $", "", expr)
-        print("Expr: {}".format(expr))
-        print("Row: {}".format(row))
         self.table.update_item(
             Key={
                 'id': row['id']

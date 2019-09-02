@@ -15,18 +15,6 @@ class Enricher(object):
         self.user = user.User(fake=fake)
         self.channel = channel.Channel()
 
-    @staticmethod
-    def pick_name(user):
-        """
-        given a user structure from user.get(), return the name we should
-        show people -- this should ideally be the name they see people
-        interact as in slack
-        """
-        dn = user.get('display_name')
-        rn = user.get("real_name")
-        un = user.get("user_name")
-        return dn or rn or un
-
     def get_channels(self, list_of_cid, report_start_date):
         """
         Given a list of channel IDs and an yyyy-mm-dd str date,
@@ -49,40 +37,6 @@ class Enricher(object):
             new = created > report_start_timestamp
             members = entry.get("members", 0)
             ret[cid] = {'name': name, 'new': new, 'members': members}
-        return ret
-
-    def get_users(self, list_of_userids):
-        """
-        Given a list of userIDs, returns a dictionary indexed by userID
-        where the value is another dictionary with
-            'label': The actual label to show for the user ID
-            'hover': The text to show when hovering over the label
-            'url': The URL to link to for more information about the user
-        """
-
-        dummy = {
-            'tz_offset': -25200,
-            'insert_timestamp': 1567210676,
-            'user_name': 'dummy',
-            'tz': 'America/Los_Angeles',
-            'real_name': 'Dummy User',
-            'display_name': 'Dummy User'}
-
-        ret = {}
-        start = time.time()
-        entries = self.user.batch_get_user(list_of_userids)
-        for uid in list_of_userids:
-            entry = entries.get(uid, dummy)
-            url = "https://{}.slack.com/team/{}"
-            url = url.format(config.slack_name, uid)
-            ret[uid] = {
-                'label': '@' + Enricher.pick_name(entry),
-                'hover': entry.get("real_name", ""),
-                'url': url
-            }
-        end = time.time()
-        diff = end - start
-        # print("Fetching users took {:.1f} seconds".format(diff))
         return ret
 
     @staticmethod
@@ -121,13 +75,13 @@ class Enricher(object):
         for uid in report['enriched_user']:
             enriched = report['enriched_user'][uid]
             for elem in ['reacted_to', 'reactions_from']:
-                reactors = enriched[elem].keys()
+                reactors = enriched.get(elem, {}).keys()
                 for user in reactors:
                     users[user] = 1
 
         users = list(users.keys())
         channel_info = self.get_channels(channel_list, report['start_date'])
-        user_info = self.get_users(users)
+        user_info = self.user.get_users(users)
         report['user_info'] = user_info
         report['channel_info'] = channel_info
 
