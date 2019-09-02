@@ -184,6 +184,7 @@ class Slacker(object):
         while not done:
             response = self.retry_api_call(
                 method, url, json=json, headers=headers)
+            # print(response.status_code)
             if response.status_code == 200:
                 done = True
             if response.status_code == 429:
@@ -192,6 +193,8 @@ class Slacker(object):
                 else:
                     retry_after = 5
                 time.sleep(retry_after)
+            if response.status_code == 403:
+                raise Exception('API returning status code 403')
         payload = response.json()
         # print "json: {} headers: {}".format(json, headers)
         # print "status code: {} payload: {}".format(response.status_code,
