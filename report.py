@@ -14,7 +14,7 @@ import utils
 class Accumulator(object):
     """
     Accumulator accumulates a list of objects, which will
-    never ben larger than LIMIT provided.  It will keep the
+    never be larger than LIMIT provided.  It will keep the
     top LIMIT objects, where the size of object is determined
     by running METHOD(object)
     """
@@ -39,9 +39,6 @@ class Accumulator(object):
         self.min = self.method(self.items[-1])
 
     def dump(self):
-        """
-        return items
-        """
         return self.items
 
 
@@ -89,9 +86,17 @@ class Report(object):
             return
         if self.channels and message.get('slack_cid') not in self.channels:
             return
-        for accum_method in self.accum_methods:
-            method = "self.{}(message)".format(accum_method)
-            eval(method)
+
+        self.accum_channel(message)
+        self.accum_channel_user(message)
+        self.accum_mentions(message)
+        self.accum_reaction_count(message)
+        self.accum_reactions(message)
+        self.accum_reply_count(message)
+        self.accum_threads(message)
+        self.accum_timestats(message)
+        self.accum_timestats(message)
+        self.accum_user(message)
 
     def create_key(self, keys, default_value):
         """
@@ -134,7 +139,6 @@ class Report(object):
         cur[1] += message.get("wordcount", 1)
 
     def accum_timestats(self, message):
-        # print("accumulating data for {}".format(message))
         uid = message['user_id']
         timestamp = int(float(message['timestamp']))
         # First, get stats unadjusted and by UTC
@@ -149,7 +153,6 @@ class Report(object):
             print("Couldn't find user {}".format(message['user_id']))
             return
         if 'tz_offset' not in user or 'tz' not in user:
-            # print("User has no tz info: {}".format(user))
             return
         tz_offset = user['tz_offset']
         tz = user.get("tz", "Unknown")
@@ -160,17 +163,24 @@ class Report(object):
         wday = localtime.tm_wday
         self.increment(["user_weekday", wday], message)
         if wday < 5:  # We only look at weekday activity
-            # print("Incrementing user_weekday_hour because wday is {}".format(wday))
             self.increment(["user_weekday_hour", hour], message)
             self.increment(["user_weekday_hour_per_user", uid, hour], message)
 
     def finalize(self):
-        final_methods = [x for x in dir(self) if x.find("_finalize_") == 0]
-        for final_method in final_methods:
-            method = "self.{}()".format(final_method)
-            eval(method)
+        self._finalize_channels()
+        self._finalize_mentions()
+        self._finalize_period_activity()
+        self._finalize_reaction()
+        self._finalize_reaction_popularity()
+        self._finalize_reactions()
+        self._finalize_reply_popularity()
+        self._finalize_stats()
+        self._finalize_threads()
+        self._finalize_timezones()
+        self._finalize_user_stats()
 
-    def make_url(self, mrecord):
+    @staticmethod
+    def make_url(mrecord):
         mid = mrecord[1]
         cid = mrecord[2]
         return "https://{}.slack.com/archives/{}/p{}".format(config.slack_name, cid, mid)
@@ -182,10 +192,11 @@ class Report(object):
             count = sum(reactions.values())
             enriched['reaction_popularity'] = reactions
             enriched['reaction_count'] = count
-            self.order_and_combine(
+            Report.order_and_combine(
                 enriched, 'reacted_to', 'reactions_from', 'reactions_combined')
 
-    def order_and_combine(self, d, k1, k2, label):
+    @staticmethod
+    def order_and_combine(d, k1, k2, label):
         """
         Given k1 and k2, which are keys into d and point into their own {k:v}
         dictionaries,
@@ -209,7 +220,7 @@ class Report(object):
     def _finalize_mentions(self):
         for uid in self.track:
             enriched = self._data['enriched_user'][uid]
-            self.order_and_combine(
+            Report.order_and_combine(
                 enriched,
                 'you_mentioned',
                 'mentioned_you',
@@ -218,7 +229,7 @@ class Report(object):
     def _finalize_threads(self):
         for uid in self.track:
             enriched = self._data['enriched_user'][uid]
-            self.order_and_combine(
+            Report.order_and_combine(
                 enriched,
                 'author_thread_responded',
                 'thread_responders',
@@ -245,7 +256,6 @@ class Report(object):
             hourdict = self._data['user_weekday_hour_per_user'][user]
             total = 0
             for hour in hourdict.keys():
-                messagecount = hourdict[hour][0]
                 total += hourdict[hour][0]
             percdict = {}
             for hour in range(0, 24):
@@ -255,12 +265,10 @@ class Report(object):
                 messagecount = hourdict[hour][0]
                 perc = messagecount * 100.0 / total
                 percdict[hour] = perc
-            # print("converting\n{}\nto\n{}".format(hourdict, percdict))
             up[user] = percdict
 
         # Now, convert the per-user stats to per-hour stats
         hour_stats = {}
-        # print("Average of messages sent by users per hour of the day:")
         period_stats = {}
         for hour in range(0, 24):
             stats = [up[x][hour] for x in up.keys()]
@@ -271,15 +279,11 @@ class Report(object):
             if period not in period_stats:
                 period_stats[period] = 0
             period_stats[period] += avg
-            # print("{:.1f}% of messages on hour {}".format(avg, hour))
+
         # This element is huge and we don't need it anymore
         del(self._data['user_weekday_hour_per_user'])
         self._data['weekday_activity_percentage'] = hour_stats
         self._data['weekday_actity_percentage_periods'] = period_stats
-        # print("Period Stats:")
-        # print("Period 1 (0000-0800): {:.1f}%".format(period_stats[0]))
-        # print("Period 2 (0800-1600): {:.1f}%".format(period_stats[1]))
-        # print("Period 3 (1700-0000): {:.1f}%".format(period_stats[2]))
 
     def accum_reactions(self, message):
         """
@@ -289,7 +293,7 @@ class Report(object):
         reactions = message.get("reactions")
         if not reactions:
             return
-        # print("reactions: {}".format(reactions))
+
         # reactions are of the form reaction_name:uid:uid...,reaction_name...
         reaction_list = reactions.split(",")
         for reaction in reaction_list:
@@ -327,10 +331,11 @@ class Report(object):
         """
         make sure all user_stats structures have all the fields we expect
         """
-        self.fill_in_values(self._data['user_stats'])
-        self.fill_in_values(self._data['enriched_user'])
+        Report.fill_in_values(self._data['user_stats'])
+        Report.fill_in_values(self._data['enriched_user'])
 
-    def fill_in_values(self, d):
+    @staticmethod
+    def fill_in_values(d):
         """
         presuming that d is {k: somedict} iterate through
         all k and find the complete set of keys that might be
@@ -438,7 +443,8 @@ class Report(object):
     def accum_channel(self, message):
         self.increment(["channels", message['slack_cid']], message)
 
-    def order_dict(self, d):
+    @staticmethod
+    def order_dict(d):
         """
         Given a dict whose values are either (messages, words) or just an int
         turn it into an ordered dict ordered from key with most to least
@@ -459,16 +465,16 @@ class Report(object):
         """
         Make the timezone dictionary ordered by words
         """
-        self._data['timezone'] = self.order_dict(self._data['timezone'])
+        self._data['timezone'] = Report.order_dict(self._data['timezone'])
 
     def _finalize_reaction(self):
-        self._data['reaction'] = self.order_dict(self._data['reaction'])
+        self._data['reaction'] = Report.order_dict(self._data['reaction'])
 
     def _finalize_channels(self):
         """
         Make the channels dictionary ordered by words
         """
-        self._data['channels'] = self.order_dict(self._data['channels'])
+        self._data['channels'] = Report.order_dict(self._data['channels'])
         cs = {}
         count = 0
         total_words = sum([x[1] for x in self._data['channels'].values()])
