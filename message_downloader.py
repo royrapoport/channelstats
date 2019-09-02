@@ -53,7 +53,7 @@ class Downloader(object):
         idx = 1
         for cid in cids:
             channel_name = self.channel.get(cid)['name']
-            print("{}/{} {} - {}".format(idx, cid_count, cid, channel_name))
+            sys.stdout.write("{}/{} {} - {} ".format(idx, cid_count, cid, channel_name))
             idx += 1
             (last_timestamp, refetch) = self.cconfig.get_channel_config(cid)
             refetch = (config.refetch * 86400)
@@ -93,9 +93,10 @@ class Downloader(object):
                         self.MessageWriter.write(
                             thread_messages, cid, thread_author)
             # WRITE_MESSAGES(messages, cid)
-            print(
-                "Downloaded {} messages and {} threads".format(
+            sys.stdout.write(
+                "Downloaded {} messages and {} threads\n".format(
                     message_count, threads))
+            sys.stdout.flush()
         self.fp.save()
 
 
