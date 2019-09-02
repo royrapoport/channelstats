@@ -5,6 +5,7 @@ import os
 import sys
 
 import html_formatter
+import slack_formatter
 import pdf_formatter
 import report_generator
 
@@ -15,6 +16,7 @@ if not os.path.exists('reports'):
 fake = False
 html_formatter_obj = html_formatter.HTMLFormatter(fake=fake)
 pdf_formatter_obj = pdf_formatter.PDFFormatter()
+slack_formatter_obj = slack_formatter.SlackFormatter()
 users = dict()
 users['noemi'] = "UHWD9BHPD"
 users['roy'] = "U06NSQT34"
@@ -40,6 +42,7 @@ f = open("reports/{}-{}days-report.json".format(date, days), "w")
 f.write(json.dumps(report, indent=4))
 f.close()
 print("")
+slack_formatter_obj.send_report(users['roy'], report)
 mhtml = html_formatter_obj.format(report)
 f = open("reports/{}-{}days-report.html".format(date, days), "w")
 f.write(mhtml)
