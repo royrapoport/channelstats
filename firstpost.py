@@ -93,7 +93,7 @@ class FirstPost(object):
 
     def save(self):
         channels = {}
-        print("self.users: {}".format(json.dumps(self.users, indent=4)))
+        # print("self.users: {}".format(json.dumps(self.users, indent=4)))
         with self.table.batch_writer() as batch:
             for uid in self.users:
                 row = self.users[uid]
