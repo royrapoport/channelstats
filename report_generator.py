@@ -58,17 +58,40 @@ class ReportGenerator(object):
         new_start_day = dt.strftime("%Y-%m-%d")
         return self.get_report(new_start_day, days, users, force_generate)
 
+    def validate(self, start_day, days):
+        """
+        start_day must 1. Be after when we started collecting stats;
+        2. If days = 7, start_day must be Sunday
+        """
+        earliest = self.mtf.earliest_date()
+        if start_day < earliest:
+            m = "Earliest available start date is {}, later than requested report start date {}"
+            m = m.format(earliest, start_day)
+            raise RuntimeError(m)
+        y, m, d = [int(x) for x in start_day.split('-')]
+        dt = datetime.date(y, m, d)
+        delta = datetime.timedelta(days=days)
+        dt += delta
+        end_day = dt.strftime("%Y-%m-%d")
+        latest = self.mtf.latest_date()
+        if end_day > latest:
+            m = "Latest available start date is {}, sooner than calculated report end date {}"
+            m = m.format(latest, end_day)
+            raise RuntimeError(m)
+
+
     def report(self, start_day, days, users=None, force_generate=False):
         """
         Returns (current_report, previous_report)
         """
+        self.validate(start_day, days)
         current_report = self.get_report(start_day, days, users, force_generate)
         try:
             previous_report = self.previous_report(start_day, days, users, force_generate)
         except Exception:
             print("Exception: {}".format(Exception))
             previous_report = None
-        return current_report, previous_report
+        return (current_report, previous_report)
 
     def get_report(self, start_day, days, users=None, force_generate=False):
         """
@@ -79,15 +102,15 @@ class ReportGenerator(object):
         if not force_generate:
             # print("Querying for {}/{}/{}".format(start_day, days, user))
             reports = {}
-            empty_report = False
+            emptyReport = False
             if users:
                 for user in users:
                     user_report = self.query_report(start_day, days, user)
                     if not user_report:
-                        empty_report = True
+                        emptyReport = True
                     reports[user] = user_report
             general_report = self.query_report(start_day, days)
-            if general_report and not empty_report:
+            if general_report and not emptyReport:
                 print("Found all parts of the report in storage!")
                 general_report['enriched_user'] = reports
                 return general_report
