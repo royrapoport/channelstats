@@ -71,14 +71,20 @@ class ReportGenerator(object):
         y, m, d = [int(x) for x in start_day.split('-')]
         dt = datetime.date(y, m, d)
         delta = datetime.timedelta(days=days)
-        dt += delta
-        end_day = dt.strftime("%Y-%m-%d")
+        ndt = dt + delta
+        end_day = ndt.strftime("%Y-%m-%d")
         latest = self.mtf.latest_date()
         if end_day > latest:
             m = "Latest available start date is {}, sooner than calculated report end date {}"
             m = m.format(latest, end_day)
             raise RuntimeError(m)
-
+        weekday = dt.weekday()
+        if weekday != 6 and days == 7:
+            proposed = dt - datetime.timedelta(days = (weekday + 1))
+            proposed_s = proposed.strftime("%Y-%m-%d")
+            m = "Weekly reports must start on a Sunday.  Consider using {} instead of {}"
+            m = m.format(proposed_s, start_day)
+            raise RuntimeError(m)
 
     def report(self, start_day, days, users=None, force_generate=False):
         """
