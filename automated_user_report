@@ -19,8 +19,7 @@ channel_obj = channel.Channel()
 
 optchan = config.optin_channel
 optchan_id = channel_obj.get(optchan)['name']
-print("Opt in Channel ID: {}".format(optchan_id))
-users = slack.get_users_for_channel(config.optin_channel)
+users = slack.get_users_for_channel(optchan_id)
 
 last_week = rg.latest_week_start()
 days = 7
@@ -30,11 +29,13 @@ if len(sys.argv) > 1 and sys.argv[1] == "regen":
     force_regen = True
 
 print("users: {}".format(users))
-print("Generating report for {}/{}".format(date, days))
-(report, previous_report) = rg.report(date, days, users=users, force_generate=force_regen)
-f = open("reports/{}-{}days-report.json".format(date, days), "w")
+print("Week start: {}".format(last_week))
+# sys.exit(0)
+print("Generating report for {}/{}".format(last_week, days))
+(report, previous_report) = rg.report(last_week, days, users=users, force_generate=force_regen)
+f = open("reports/{}-{}days-report.json".format(last_week, days), "w")
 f.write(json.dumps(report, indent=4))
 f.close()
-users = []
+# users = []
 for user in users:
-    slack_formatter_obj.send_report(user, report)
+    slack_formatter_obj.send_report(user, report, send=False)
