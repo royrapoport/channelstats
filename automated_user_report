@@ -1,0 +1,40 @@
+#! /usr/bin/env python3
+
+import json
+import os
+import sys
+
+import config
+import slacker
+import channel
+import slack_token
+import slack_formatter
+import report_generator
+
+fake = False
+rg = report_generator.ReportGenerator(fake=fake)
+slack_formatter_obj = slack_formatter.SlackFormatter()
+slack = slacker.Slacker(config.slack_name, slack_token.token)
+channel_obj = channel.Channel()
+
+optchan = config.optin_channel
+optchan_id = channel_obj.get(optchan)['name']
+print("Opt in Channel ID: {}".format(optchan_id))
+users = slack.get_users_for_channel(config.optin_channel)
+
+last_week = rg.latest_week_start()
+days = 7
+
+force_regen = False
+if len(sys.argv) > 1 and sys.argv[1] == "regen":
+    force_regen = True
+
+print("users: {}".format(users))
+print("Generating report for {}/{}".format(date, days))
+(report, previous_report) = rg.report(date, days, users=users, force_generate=force_regen)
+f = open("reports/{}-{}days-report.json".format(date, days), "w")
+f.write(json.dumps(report, indent=4))
+f.close()
+users = []
+for user in users:
+    slack_formatter_obj.send_report(user, report)

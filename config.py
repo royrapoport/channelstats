@@ -16,3 +16,5 @@ prefix = "channelstats"
 refetch = 7
 # What channels should we upload weekly reports to?
 report_channel = "zmeta-statistics"
+# Members of this channel will get automated weekly user reports 
+optin_channel = "zmeta-per-user-report-optin"
