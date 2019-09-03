@@ -97,15 +97,18 @@ class SlackFormatter(object):
             m = m.format(message['count'], label, message['url'], message['channel'], message['dt'])
             text += m
         blocks = []
+        if not text:
+            return blocks
         blocks.append(self.divider())
         blocks.append(self.text_block("*Your messages which got the most {}*".format(label)))
-        if text:
-            blocks.append(self.text_block(text))
+        blocks.append(self.text_block(text))
         return blocks
 
     def popular_reactions(self, ur, uid):
         popularity = ur['enriched_user'][uid]['reaction_popularity']
         fields = []
+        if not popularity:
+            return fields
         fields.append("*Reactji*")
         fields.append("*Count*")
         for rname in list(popularity.keys())[0:10]:
@@ -121,6 +124,8 @@ class SlackFormatter(object):
     def make_channels(self, ur):
         fields = []
         ctr = 1
+        if not ur['enriched_channels']:
+            return fields
         fields.append("*Channel*")
         fields.append("*Rank, Messages, Words*")
         for channel in ur['enriched_channels']:
