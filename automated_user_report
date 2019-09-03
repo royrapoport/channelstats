@@ -24,7 +24,7 @@ users = slack.get_users_for_channel(optchan_id)
 last_week = rg.latest_week_start()
 days = 7
 
-force_regen = False
+force_regen = True
 if len(sys.argv) > 1 and sys.argv[1] == "regen":
     force_regen = True
 
@@ -36,6 +36,6 @@ print("Generating report for {}/{}".format(last_week, days))
 f = open("reports/{}-{}days-report.json".format(last_week, days), "w")
 f.write(json.dumps(report, indent=4))
 f.close()
-# users = []
+roy = "U06NSQT34"
 for user in users:
-    slack_formatter_obj.send_report(user, report, send=False)
+    slack_formatter_obj.send_report(user, report, send=True, override_uid=roy)
