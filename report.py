@@ -63,6 +63,31 @@ class Report(object):
         self.channels = channels
 
     def set_users(self, users):
+        dummyenriched = {}
+        for label in "reactions_from reacted_to you_mentioned thread_responders author_thread_responded mentioned_you mentions_combined".split():
+            dummyenriched[label] = {}
+        for label in "reactions replies".split():
+            dummyenriched[label] = []
+        dummyenriched['reaction_count'] = 0
+        for label in "reaction_popularity reactions_combined threads_combined".split():
+            dummyenriched[label] = {}
+
+        dummy_user = {
+            "thread_messages": 0,
+            "reactions": 0,
+            "count": [
+                0,
+                0
+            ],
+            "replies": 0,
+            "percent_of_messages": 0,
+            "cum_percent_of_messages": 100,
+            "rank": 999999,
+            "percent_of_words": 0,
+            "cum_percent_of_words": 0
+        }
+
+
         for user in users:
             self.user_reply_accumulators[user] = Accumulator(
                 self.top_limit, lambda x: x[0])
@@ -70,7 +95,9 @@ class Report(object):
                 self.top_limit, lambda x: x[0])
             self.reactions[user] = {}
             self.track[user] = 1
-            self.create_key(["enriched_user", user], {})
+            self.create_key(["enriched_user", user], copy.deepcopy(dummyenriched))
+            self.create_key(["users", user], [0,0])
+            self.create_key(["user_stats", user], copy.deepcopy(dummy_user))
 
     def data(self):
         return utils.dump(self._data)
