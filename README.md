@@ -9,3 +9,9 @@ Then run ./bootstrap
 This will take a while as it downloads about two months of data.
 
 Then you can start playing with report_generator.py
+
+# Notes
+
+You will need (at least):
+  - `awscli` installed (`pip install awscli --upgrade --user`) and configured (`aws configure`)
+  - a Slack legacy token in `slack_token.py` (`token = "xoxp-...."`)
