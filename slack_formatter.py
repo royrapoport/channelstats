@@ -1,6 +1,7 @@
 #! /usr/bin/env python
 
 import json
+import sys
 
 import slack
 
@@ -98,7 +99,8 @@ class SlackFormatter(object):
         blocks = []
         blocks.append(self.divider())
         blocks.append(self.text_block("*Your messages which got the most {}*".format(label)))
-        blocks.append(self.text_block(text))
+        if text:
+            blocks.append(self.text_block(text))
         return blocks
 
     def popular_reactions(self, ur, uid):
@@ -143,7 +145,7 @@ class SlackFormatter(object):
         fields = [{'type': 'mrkdwn', 'text': x} for x in ftext]
         return utils.chunks(fields, 10)
 
-    def send_report(self, uid, ur, send=True):
+    def send_report(self, uid, ur, send=True, override_uid=None):
         self.enricher.user_enrich(ur, uid)
         us = ur['user_stats'].get(uid, {})
         blocks = self.make_report(ur, us, uid)
@@ -152,9 +154,16 @@ class SlackFormatter(object):
         for blockset in utils.chunks(blocks, 49):
             if send:
                 print("Sending report to {}".format(uid))
-                self.client.chat_postMessage(
-                    channel=uid,
-                    blocks=blockset,
-                    as_user=as_user,
-                    unfurl_links=True,
-                    link_names=True)
+                if override_uid:
+                    uid=override_uid
+                try:
+                    self.client.chat_postMessage(
+                        channel=uid,
+                        blocks=blockset,
+                        as_user=as_user,
+                        unfurl_links=True,
+                        link_names=True)
+                except Exception:
+                    print(Exception)
+                    print(json.dumps(blockset, indent=4))
+                    sys.exit(0)
