@@ -159,7 +159,7 @@ class SlackFormatter(object):
         us = ur['user_stats'].get(uid, {})
         blocks = self.make_report(ur, us, uid)
         # If set to true, this message will be sent as the user who owns the token we use
-        as_user = False
+        as_user = True
         for blockset in utils.chunks(blocks, 49):
             if send:
                 print("Sending report to {}".format(uid))
@@ -169,6 +169,7 @@ class SlackFormatter(object):
                     self.client.chat_postMessage(
                         channel=uid,
                         blocks=blockset,
+                        parse='full',
                         as_user=as_user,
                         unfurl_links=True,
                         link_names=True)
