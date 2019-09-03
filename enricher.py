@@ -57,7 +57,7 @@ class Enricher(object):
                 'dt': time.strftime("%m/%d/%Y %H:%M", time.localtime(int(float(timestamp)))),
                 'channel': cinfo[cid]['name'],
                 'user': uinfo[uid]['label'],
-                'url': url.format(config.slack_name, cid, timestamp)
+                'url': url.format(config.slack_name, cid, timestamp.replace(".", ""))
             })
         return ret
 
