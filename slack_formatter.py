@@ -39,7 +39,7 @@ class SlackFormatter(object):
         tm = us.get("thread_messages")
         if tm:
             m += "You started public threads that added *{}* messages by other people to total volume\n".format(tm)
-        m += "That made the *{}*-ranked poster on the Slack and meant you contributed "
+        m += "That made you the *{}*-ranked poster on the Slack and meant you contributed "
         m += "*{:.1f}%* of this Slack's total public volume"
         m = m.format(us['rank'], us['percent_of_words'])
         blocks.append(self.text_block(m))
