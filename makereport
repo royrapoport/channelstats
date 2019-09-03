@@ -6,7 +6,6 @@ import sys
 
 import html_formatter
 import slack_formatter
-import pdf_formatter
 import report_generator
 
 
@@ -15,7 +14,6 @@ if not os.path.exists('reports'):
 
 fake = False
 html_formatter_obj = html_formatter.HTMLFormatter(fake=fake)
-pdf_formatter_obj = pdf_formatter.PDFFormatter()
 slack_formatter_obj = slack_formatter.SlackFormatter()
 users = {
     'noemi': 'UHWD9BHPD',
@@ -58,6 +56,8 @@ for u in users.keys():
     f.close()
 #
 # s = time.time()
+# import pdf_formatter
+# pdf_formatter_obj = pdf_formatter.PDFFormatter()
 # pdf = pdf_formatter_obj.convert(mhtml)
 # e = time.time()
 # d = e - s
