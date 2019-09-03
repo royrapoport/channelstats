@@ -87,7 +87,6 @@ class Report(object):
             "cum_percent_of_words": 0
         }
 
-
         for user in users:
             self.user_reply_accumulators[user] = Accumulator(
                 self.top_limit, lambda x: x[0])

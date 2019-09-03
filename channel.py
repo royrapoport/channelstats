@@ -16,10 +16,16 @@ class Channel(object):
         with self.table.batch_writer() as batch:
             for channel in channels:
                 cid = channel['id']
-                cname = channel.get("name")
-                created = channel['created']
-                members = channel['num_members']
-                values = {'created': created, 'members': members}
+                cname = channel.get('name')
+                values = {
+                    'created': channel.get('created'),
+                    'members': channel.get('num_members'),
+                    'is_channel': channel.get('is_channel', None),
+                    'is_im': channel.get('is_im', None),
+                    'is_group': channel.get('is_group', None),
+                    'is_private': channel.get('is_private', None),
+                    'is_mpim': channel.get('is_mpim', None)
+                }
                 for k, v in [[cid, cname], [cname, cid]]:
                     row = {
                         'channel_key': k,
