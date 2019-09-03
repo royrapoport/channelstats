@@ -90,18 +90,22 @@ class SlackFormatter(object):
     def replied_messages(self, ur, uid):
         return self.messager(ur, uid, "replies")
 
+    def make_link_button(self, text, buttontext, url):
+        block = {'type':'section', 'text': { 'type': 'mrkdwn', 'text':text} }
+        block['accessory'] = { 'type':'button', 'text':{'type':'plain_text', 'text':buttontext }, 'url':url }
+        return block
+
     def messager(self, ur, uid, label):
-        text = ""
-        for message in ur['reenriched_user'][uid][label]:
-            m = "*{}* {} to {} in #{} on {}\n"
-            m = m.format(message['count'], label, message['url'], message['channel'], message['dt'])
-            text += m
         blocks = []
-        if not text:
+        for message in ur['reenriched_user'][uid][label]:
+            m = "*{}* {} in #{} on {}"
+            m = m.format(message['count'], label, message['channel'], message['dt'])
+            block = self.make_link_button(m, 'link', message['url'])
+            blocks.append(block)
+        if not blocks:
             return blocks
-        blocks.append(self.divider())
-        blocks.append(self.text_block("*Your messages which got the most {}*".format(label)))
-        blocks.append(self.text_block(text))
+        blocks = [self.divider()] + blocks
+        blocks = [(self.text_block("*Your messages which got the most {}*".format(label)))] + blocks
         return blocks
 
     def popular_reactions(self, ur, uid):
