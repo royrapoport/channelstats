@@ -33,7 +33,8 @@ class DDB(object):
         self.table_name = config.prefix + "." + table_name
         self.table = None
 
-    def items(self):
+    @staticmethod
+    def items(table):
         """
         generator function to return the items in the table
         (basically, a wrapper around table.scan()
@@ -42,9 +43,9 @@ class DDB(object):
         ExclusiveStartKey = None
         while not done:
             if ExclusiveStartKey:
-                response = self.get_table().scan(ExclusiveStartKey=ExclusiveStartKey)
+                response = table.scan(ExclusiveStartKey=ExclusiveStartKey)
             else:
-                response = self.get_table().scan()
+                response = table.scan()
             if "LastEvaluatedKey" in response:
                 ExclusiveStartKey = response['LastEvaluatedKey']
             else:
@@ -53,7 +54,7 @@ class DDB(object):
                 yield item
 
     @staticmethod
-    def delete_empty_tables(self):
+    def delete_empty_tables():
         """
         In case we accidentally created some empty tables in this
         namespace, find them and delete them
@@ -67,7 +68,6 @@ class DDB(object):
             if count == 0:
                 d.get_table().delete()
 
-    @staticmethod
     def list_tables(self):
         done = False
         start_table = None
@@ -163,7 +163,7 @@ class DDB(object):
 
     def dump(self, fname):
         items = []
-        for item in self.items():
+        for item in self.items(self.get_table()):
             items.append(item)
         f = open(fname, "w")
         f.write(utils.dumps(items))
