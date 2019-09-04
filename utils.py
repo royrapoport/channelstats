@@ -70,3 +70,9 @@ def find_user_mentions(text):
     """
     # text is of the form "whatever <@UID> and also ..."
     return [x[2:-1] for x in re.findall("<@U[A-Z0-9]+>", text)]
+
+def rank(n):
+    r = {0: 'th', 1: 'st', 2: 'nd', 3: 'rd'}
+    if n in r:
+        return "{}{}".format(n, r[n])
+    return "{}th".format(n)
