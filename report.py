@@ -1,6 +1,7 @@
 #! /usr/bin/env python
 
 import channel
+import decimal
 
 import collections
 import copy
@@ -381,16 +382,26 @@ class Report(object):
         """
         # What fields do we expect?
         expect = {}
-        for k in d:
-            v = d[k]
-            if type(v) == int:
-                expect[k] = 0
-            elif type(v) in [dict, collections.OrderedDict]:
-                expect[k] = {}
-        for k in d:
+        for user in d:
+            for k in d[user]:
+                if k in expect:
+                    continue
+                v = d[user][k]
+                if type(v) in [int, float, decimal.Decimal]:
+                    expect[k] = 0
+                elif type(v) in [dict, collections.OrderedDict]:
+                    expect[k] = {}
+                elif type(v) == list and len(v) == 2:
+                    expect[k] = [0,0]
+                elif type(v) == list:
+                    expect[k] = []
+                else:
+                    print("I don't know what to do with type {}".format(type(v)))
+        for user in d:
+            udict = d[user]
             for ek in expect.keys():
-                if ek not in d[k]:
-                    d[k][ek] = expect[ek]
+                if ek not in udict:
+                    udict[ek] = expect[ek]
 
     def accum_reaction_count(self, message):
         """
