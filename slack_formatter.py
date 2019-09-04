@@ -74,7 +74,7 @@ class SlackFormatter(object):
         d = ur['enriched_user'][uid].get(label)
         if not d:
             return []
-        t = "*{}* instances by/to *{}* unique people"
+        t = "*{}* times between you and *{}* unique people"
         total = sum(d.values())
         count = len(list(d.keys()))
         t = t.format(total, count)
