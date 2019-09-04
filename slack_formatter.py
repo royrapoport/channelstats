@@ -28,14 +28,36 @@ class SlackFormatter(object):
     def divider(self):
         return { "type": "divider" }
 
-    def make_header(self, ur, us):
+    def comparison(self, cur, prev, idx):
+        """
+        cur and prev are dicts with identical structures
+        idx is a list of keys to delve into each dict into
+        returns a difference between the items pointed to by idx
+        """
+        cur_item = cur
+        for i in idx:
+            cur_item = cur_item[i]
+        prev_item = prev
+        for i in idx:
+            prev_item = prev_item[i]
+        diff = (cur_item * 100.0) / prev_item
+        diff = diff - 100
+        ds = "{}".format(cur_item)
+        if diff > 0.5 or diff < -0.5:
+            if diff > 0:
+                ds += " (+{:.0f}%)".format(diff)
+            else:
+                ds += " ({:.0f}%)".format(diff)
+        return ds
+
+    def make_header(self, ur, us, pur, pus):
         blocks = []
         header = "Public User Activity Report for *{}* Between {} and {}"
         header = header.format(ur['user'], ur['start_date'], ur['end_date'])
         blocks.append(self.text_block(header))
         blocks.append(self.divider())
-        m = "You posted *{:,}* words in *{:,}* public messages."
-        m = m.format(us['count'][1], us['count'][0])
+        m = "You posted *{}* words in *{}* public messages."
+        m = m.format(self.comparison(us, pus, ['count', 1]), self.comparison(us, pus, ['count', 0]))
         m += "\n"
         tm = us.get("thread_messages")
         if tm:
@@ -48,7 +70,7 @@ class SlackFormatter(object):
 
     def make_report(self, ur, us, pur, pus, uid):
         blocks = []
-        blocks += self.make_header(ur, us)
+        blocks += self.make_header(ur, us, pur, pus)
         blocks.append(self.divider())
         blocks += self.make_channels(ur)
         blocks += self.reacted_messages(ur, uid)
