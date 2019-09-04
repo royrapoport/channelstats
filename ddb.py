@@ -33,6 +33,7 @@ class DDB(object):
         self.table_name = config.prefix + "." + table_name
         self.table = None
 
+    @staticmethod
     def delete_empty_tables(self):
         """
         In case we accidentally created some empty tables in this
@@ -47,6 +48,7 @@ class DDB(object):
             if count == 0:
                 d.get_table().delete()
 
+    @staticmethod
     def list_tables(self):
         done = False
         start_table = None
