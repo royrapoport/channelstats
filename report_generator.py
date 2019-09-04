@@ -7,6 +7,7 @@ import sys
 import time
 
 import channel
+import ddb
 import html_formatter
 import pdf_formatter
 import messagetablefactory
@@ -166,8 +167,7 @@ class ReportGenerator(object):
         tables = [self.mtf.get_message_table(date) for date in dates]
         # print("Message table names: {}".format(tables))
         for table in tables:
-            messages = table.scan()["Items"]
-            for message in messages:
+            for message in ddb.DDB.items(table):
                 report_creator.message(message)
         report_creator.finalize()
         current_report = report_creator.data()
