@@ -77,14 +77,14 @@ class SlackFormatter(object):
         m = "You posted *{}* words in *{}* public messages."
         m = m.format(self.comparison(us, pus, ['count', 1]), self.comparison(us, pus, ['count', 0]))
         m += "\n"
+        m += "That made you the *{}*-ranked poster on the Slack and meant you contributed "
+        m += "*{:.1f}%*{} of this Slack's total public volume"
+        m = m.format(utils.rank(us['rank']), us['percent_of_words'], self.comparison(us, pus, ['percent_of_words'], False))
         tm = us.get("thread_messages")
         if tm:
             t = "In total, {} messages were posted as threaded responses to your messages.\n"
             t = t.format(self.comparison(us, pus, ['thread_messages']))
             m += t
-        m += "That made you the *{}*-ranked poster on the Slack and meant you contributed "
-        m += "*{:.1f}%*{} of this Slack's total public volume"
-        m = m.format(utils.rank(us['rank']), us['percent_of_words'], self.comparison(us, pus, ['percent_of_words'], False))
         blocks.append(self.text_block(m))
         return blocks
 
