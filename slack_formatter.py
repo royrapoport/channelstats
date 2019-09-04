@@ -183,7 +183,7 @@ class SlackFormatter(object):
                         as_user=as_user,
                         unfurl_links=True,
                         link_names=True)
-                    print("Response: {}".format(response))
+                    # print("Response: {}".format(response))
                 except Exception:
                     print(Exception)
                     print(json.dumps(blockset, indent=4))
