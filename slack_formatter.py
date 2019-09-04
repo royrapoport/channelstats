@@ -73,6 +73,11 @@ class SlackFormatter(object):
         d = ur['enriched_user'][uid].get(label)
         if not d:
             return []
+        t = "*{}* instances by/to *{}* unique people"
+        total = sum(d.values())
+        count = len(list(d.keys()))
+        t = t.format(total, count)
+        blocks.append(self.text_block(t))
         uids = list(d.keys())[0:10]
         for uid in uids:
             # fields.append(ur['user_info'][uid]['label'])
@@ -166,13 +171,14 @@ class SlackFormatter(object):
                 if override_uid:
                     uid=override_uid
                 try:
-                    self.client.chat_postMessage(
+                    response = self.client.chat_postMessage(
                         channel=uid,
                         blocks=blockset,
                         parse='full',
                         as_user=as_user,
                         unfurl_links=True,
                         link_names=True)
+                    print("Response: {}".format(response))
                 except Exception:
                     print(Exception)
                     print(json.dumps(blockset, indent=4))
