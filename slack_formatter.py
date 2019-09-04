@@ -34,6 +34,7 @@ class SlackFormatter(object):
         idx is a list of keys to delve into each dict into
         returns a difference between the items pointed to by idx
         """
+        found_prev = True
         cur_item = cur
         for i in idx:
             cur_item = cur_item[i]
@@ -46,16 +47,25 @@ class SlackFormatter(object):
                 prev_item = prev_item[i]
             except:
                 prev_item = cur_item
+                found_prev = False
         diff = (cur_item * 100.0) / prev_item
         diff = diff - 100
         ds = ""
+        emoji = False
+        if not found_prev:
+            emoji = ":new:"
         if print_num:
             ds = "{}".format(cur_item)
         if diff > 0.5 or diff < -0.5:
             if diff > 0:
+                emoji = emoji or ":green_arrow_up:"
                 ds += " (+{:.0f}%)".format(diff)
             else:
+                emoji = emoji or ":red_arrow_down:"
                 ds += " ({:.0f}%)".format(diff)
+        else:
+            emoji = emoji or ":same:"
+        ds += emoji
         return ds
 
     def make_header(self, ur, us, pur, pus):
@@ -74,7 +84,7 @@ class SlackFormatter(object):
             m += t
         m += "That made you the *{}*-ranked poster on the Slack and meant you contributed "
         m += "*{:.1f}%*{} of this Slack's total public volume"
-        m = m.format(us['rank'], us['percent_of_words'], self.comparison(us, pus, ['percent_of_words'], False))
+        m = m.format(utils.rank(us['rank']), us['percent_of_words'], self.comparison(us, pus, ['percent_of_words'], False))
         blocks.append(self.text_block(m))
         return blocks
 
