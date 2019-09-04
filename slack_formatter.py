@@ -1,5 +1,6 @@
 #! /usr/bin/env python
 
+import copy
 import json
 import sys
 
@@ -45,7 +46,7 @@ class SlackFormatter(object):
         blocks.append(self.text_block(m))
         return blocks
 
-    def make_report(self, ur, us, uid):
+    def make_report(self, ur, us, pur, pus, uid):
         blocks = []
         blocks += self.make_header(ur, us)
         blocks.append(self.divider())
@@ -159,10 +160,14 @@ class SlackFormatter(object):
         fields = [{'type': 'mrkdwn', 'text': x} for x in ftext]
         return utils.chunks(fields, 10)
 
-    def send_report(self, uid, ur, send=True, override_uid=None):
-        self.enricher.user_enrich(ur, uid)
+    def send_report(self, uid, ur, previous, send=True, override_uid=None):
+        ur = copy.deepcopy(ur)
+        previous = copy.deepcopy(previous)
+        enricher.Enricher().user_enrich(ur, uid)
+        enricher.Enricher().user_enrich(previous, uid)
         us = ur['user_stats'].get(uid, {})
-        blocks = self.make_report(ur, us, uid)
+        pus = previous['user_stats'].get(uid, {})
+        blocks = self.make_report(ur, us, previous, pus, uid)
         # If set to true, this message will be sent as the user who owns the token we use
         as_user = False
         for blockset in utils.chunks(blocks, 49):
