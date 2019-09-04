@@ -61,7 +61,7 @@ class SlackFormatter(object):
         m += "\n"
         tm = us.get("thread_messages")
         if tm:
-            m += "In total, {} messages were posted as threaded responses to your messages".format(tm)
+            m += "In total, {} messages were posted as threaded responses to your messages.\n".format(tm)
         m += "That made you the *{}*-ranked poster on the Slack and meant you contributed "
         m += "*{:.1f}%* of this Slack's total public volume"
         m = m.format(us['rank'], us['percent_of_words'])
