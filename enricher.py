@@ -1,5 +1,6 @@
 #! /usr/bin/env python
 
+import collections
 import datetime
 import time
 
@@ -136,7 +137,11 @@ class Enricher(object):
             channel_list.append(c)
         channel_list.sort(key=lambda x: x['words'])
         channel_list.reverse()
-        report['enriched_channels'] = channel_list
+        d = collections.OrderedDict()
+        for channel in channel_list:
+            name = channel['name']
+            d[name] = channel
+        report['enriched_channels'] = d
 
         ci = report['channel_info']
         ui = report['user_info']

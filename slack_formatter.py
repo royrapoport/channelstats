@@ -28,7 +28,7 @@ class SlackFormatter(object):
     def divider(self):
         return { "type": "divider" }
 
-    def comparison(self, cur, prev, idx):
+    def comparison(self, cur, prev, idx, print_num=True):
         """
         cur and prev are dicts with identical structures
         idx is a list of keys to delve into each dict into
@@ -39,10 +39,18 @@ class SlackFormatter(object):
             cur_item = cur_item[i]
         prev_item = prev
         for i in idx:
-            prev_item = prev_item[i]
+            # TODO: Figure out a better answer to "what if there is
+            # no number from last time? the answer should be 0, but
+            # then we divide by 0 and bad things happen
+            try:
+                prev_item = prev_item[i]
+            except:
+                prev_item = cur_item
         diff = (cur_item * 100.0) / prev_item
         diff = diff - 100
-        ds = "{}".format(cur_item)
+        ds = ""
+        if print_num:
+            ds = "{}".format(cur_item)
         if diff > 0.5 or diff < -0.5:
             if diff > 0:
                 ds += " (+{:.0f}%)".format(diff)
@@ -61,10 +69,12 @@ class SlackFormatter(object):
         m += "\n"
         tm = us.get("thread_messages")
         if tm:
-            m += "In total, {} messages were posted as threaded responses to your messages.\n".format(tm)
+            t = "In total, {} messages were posted as threaded responses to your messages.\n"
+            t = t.format(self.comparison(us, pus, ['thread_messages']))
+            m += t
         m += "That made you the *{}*-ranked poster on the Slack and meant you contributed "
-        m += "*{:.1f}%* of this Slack's total public volume"
-        m = m.format(us['rank'], us['percent_of_words'])
+        m += "*{:.1f}%*{} of this Slack's total public volume"
+        m = m.format(us['rank'], us['percent_of_words'], self.comparison(us, pus, ['percent_of_words'], False))
         blocks.append(self.text_block(m))
         return blocks
 
@@ -72,7 +82,7 @@ class SlackFormatter(object):
         blocks = []
         blocks += self.make_header(ur, us, pur, pus)
         blocks.append(self.divider())
-        blocks += self.make_channels(ur)
+        blocks += self.make_channels(ur, pur)
         blocks += self.reacted_messages(ur, uid)
         blocks += self.replied_messages(ur, uid)
         blocks.append(self.text_block("You got {} reactions".format(ur['enriched_user'][uid]['reaction_count'])))
@@ -153,17 +163,20 @@ class SlackFormatter(object):
             blocks.append(block)
         return blocks
 
-    def make_channels(self, ur):
+    def make_channels(self, ur, pur):
         fields = []
         ctr = 1
         if not ur['enriched_channels']:
             return fields
         fields.append("*Channel*")
         fields.append("*Rank, Messages, Words*")
-        for channel in ur['enriched_channels']:
+        for channel_name in ur['enriched_channels']:
+            channel = ur['enriched_channels'][channel_name]
             f1 = "{} *{}*".format(ctr, channel['name'])
             f2 = "*{}* rank, *{}* m, *{}* w"
-            f2 = f2.format(channel['rank'], channel['messages'], channel['words'])
+            messages = self.comparison(ur, pur, ['enriched_channels', channel_name, 'messages'])
+            words = self.comparison(ur, pur, ['enriched_channels', channel_name, 'words'])
+            f2 = f2.format(channel['rank'], messages, words)
             fields.append(f1)
             fields.append(f2)
             ctr += 1
