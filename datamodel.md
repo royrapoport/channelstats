@@ -18,6 +18,23 @@ Columns marked with (R) are Range keys (if present)
 
 ## ReportStore
 
+| column      | values |
+| ----------- | -------- |
+| **report_id** (H) | unique ID of the report |
+| **value**    | report text |
+| **0 [ 1 ... N ]** |  report_id for chunk N|
+
+Used to store generated reports so we don't need to re-generate them.
+
+If the report size is smaller than 300K, we'll just store the report text in `value`.  
+
+If the report size is larger than 300K, we'll chunk it up into 300K chunks.  Each will be given its own unique report_id and stored in its own row.  Then, the report ID for that chunk will be stored as the value of the particular index of that chunk.
+
+So for example, if the report with report_id `foo` is "whatever" and chunk size is limited to 2, we'll break it into `wh`, `at`, `ev`, and `er`
+(chunks 0, 1, 2, 3 in order).  `foo` will have 4 keys in addition to `report_id`: 0, 1, 2, 3.  Each key will have as its value another report_id -- e.g. 0:foo-0, 1:foo-1, etc.
+Then report_id foo-0 will have an entry in the table whose `value` is `wh`
+
+
 ## User
 
 | column      | values |
