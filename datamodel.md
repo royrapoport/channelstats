@@ -31,7 +31,7 @@ Columns marked with (R) are Range keys (if present)
 | **display_name**  | `display_name` field from `profile` of Slack user structure |
 | **deleted** | true/false |
 
-It's the user table.  Self-explanatory, hopefully.  We store both tz and
+We store both tz and
 tz_offset because tz_offset is useful for calculations of when a message was
 posted, and tz is useful for categorizing messages by timezone and having a nice
 label.  If we were concerned about space more than reads, we could normalize
