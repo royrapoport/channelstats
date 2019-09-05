@@ -14,6 +14,18 @@ Columns marked with (R) are Range keys (if present)
 
 ## FirstPost
 
+| column      | values |
+| ----------- | -------- |
+| **key** (H) | Slack User ID |
+| **channel**  | Channel ID of the message |
+| **message_id**  | str Message ID |
+| **ts** | int timestamp of the message |
+
+This table stores a pointer to a user's first message on the Slack.  
+
+Some entries in this table only have a channel and a key, both pointing to the same Channel ID, and a ts which is 0 (so no message_id, and no reference to a user).  I'm not at this point clear why these entries exist.
+
+
 ## Message-yyyy-mm-dd
 
 | column      | values |
