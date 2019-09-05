@@ -42,13 +42,12 @@ class Downloader(object):
         s = time.strftime("%Y-%m-%d %H:%M", tl)
         return s
 
-    def download(self):
-        if len(sys.argv) > 1:
-            cids = [self.channel.get(sys.argv[1])['name']]
-        else:
-            cids = self.slack.get_all_channel_ids()
+    def download(self, start_at = None):
+        cids = self.slack.get_all_channel_ids()
         # cids = [self.channel.get("devops")["name"]]
         #cids = cids[17:]
+        if start_at:
+            cids = cids[start_at:]
         cid_count = len(cids)
         idx = 1
         for cid in cids:
@@ -85,7 +84,12 @@ class Downloader(object):
                     if message.get("thread_ts") == message.get(
                             "ts"):  # thread head
                         threads += 1
-                        thread_author = message['user']
+                        if 'user' in message:
+                            thread_author = message['user']
+                        elif 'bot_id' in message:
+                            thread_author = message['bot_id']
+                        else:
+                            raise RuntimeError("Could not deduce message author: {}".format(message))
                         thread_messages = self.slack.get_thread_responses(
                             cid, message['thread_ts'])
                         thread_messages = [
@@ -102,4 +106,6 @@ class Downloader(object):
 
 if __name__ == "__main__":
     downloader = Downloader("rands-leadership", slack_token.token)
-    downloader.download()
+    if len(sys.argv) > 1:
+        start_at = int(sys.argv[1])
+    downloader.download(start_at)
