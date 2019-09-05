@@ -41,8 +41,6 @@ this information.
 time we inserted the user.  Ideally, at some point we'll move insert_timestamp
 to a different table.
 
-
-
 ## UserHash
 
 | column      | values |
@@ -56,7 +54,7 @@ UIDs are about 10 chars; we store them as
 ```
  k: UID UID UID
 ```
-item sizes in DDB are not to be over 400K, which means no more than 400,000
+item (row) sizes in DDB must not be over 400K, which means no more than 400,000
 chars.  At approx 15chars per UID, and not wanting to exceed about 300K, that
 gives us about 20,000 UIDs per row Using the last char in the UID turns out to
 give us a pretty good distribution -- and with 35 possible values, gives us up
