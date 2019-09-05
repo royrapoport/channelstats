@@ -16,6 +16,28 @@ Columns marked with (R) are Range keys (if present)
 
 ## Message-yyyy-mm-dd
 
+| column      | values |
+| ----------- | -------- |
+| **timestamp** (H) | timestamp of the message |
+| **slack_cid** (R)   | Channel ID of the message |
+| **wordcount** | int number of words in the message |
+| **user_id** | | Slack UID of the author of the message |
+| **mentions** | UID:UID:UID of mentioned users in message text |
+| **reactions** | emoji:UID:UID:UID,emoji:UID:UID |
+| **reaction_count** | int number of reactions to the message |
+| **thread_timestamp** | If part of a thread, the thread timestamp |
+| **thread_author** | If part of a thread, the thread's author |
+| **replies** | UID:TS,UID:TS,UID:TS |
+| **reply_count** | int number of replies to the message |
+| **subtype** | If the message has a subtype, this is the subtype |
+| **files** | json.dumps() of files structure from message |
+
+For each day, we create a table named Message-yyyy-mm-dd with the day's messages in it.
+
+For `replies`, we keep the replies as pairs of UID:TS (UID of the author of the reply, timestamp of the reply), joined by a ','.  Replies are guaranteed to be in the same channel (of course), so the combination of this message's channel and the reply's TS gives a unique message.
+
+A message's `thread_author` may by the same as the message's ``user_id`` (either because this is the originating message in the thread or because the author of the thread replies in it).  The message is the head of the thread if the `thread_timestamp` is identical to the `timestamp`.
+
 ## ReportStore
 
 | column      | values |
