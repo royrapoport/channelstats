@@ -11,7 +11,7 @@ parser.add_argument("--fake", action="store_true", help="Use fake usernames")
 parser.add_argument("--regen", action="store_true", help="Regenerate stats even if we have them")
 args = parser.parse_args()
 
-slack_formatter_obj = slack_formatter.SlackFormatter()
+slack_formatter_obj = slack_formatter.SlackFormatter(fake=args.fake)
 print("args.fake is {}".format(args.fake))
 rg = report_generator.ReportGenerator(fake=args.fake)
 latest_week_start = rg.latest_week_start()

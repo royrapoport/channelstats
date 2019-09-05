@@ -13,9 +13,10 @@ import slack_token
 
 class SlackFormatter(object):
 
-    def __init__(self):
+    def __init__(self, fake=False):
+        self.fake = fake
         self.client = slack.WebClient(token=slack_token.token)
-        self.enricher = enricher.Enricher()
+        self.enricher = enricher.Enricher(fake=fake)
 
     def text_block(self, text, markdown=True):
         if markdown:
@@ -208,8 +209,8 @@ class SlackFormatter(object):
     def send_report(self, uid, ur, previous, send=True, override_uid=None):
         ur = copy.deepcopy(ur)
         previous = copy.deepcopy(previous)
-        enricher.Enricher().user_enrich(ur, uid)
-        enricher.Enricher().user_enrich(previous, uid)
+        enricher.Enricher(fake=self.fake).user_enrich(ur, uid)
+        enricher.Enricher(fake=self.fake).user_enrich(previous, uid)
         us = ur['user_stats'].get(uid, {})
         pus = previous['user_stats'].get(uid, {})
         blocks = self.make_report(ur, us, previous, pus, uid)
