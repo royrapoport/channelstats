@@ -8,9 +8,41 @@ Columns marked with (R) are Range keys (if present)
 
 ## Channel
 
+| column      | values |
+| ----------- | -------- |
+| **channel_key** (H) | Slack Channel ID (but see below) |
+| **channel_name**  | Friendly name of the channel (but see below) |
+| **members** | int number of members |
+| **is_channel** | always apparently true? |
+| **created** | int timestamp of channel creation |
+
+Keeps tracks of the channels we have.  Of particular note is the fact we end up with two rows -- one is indexed by channel ID, in which case the channel_name is the friendly name, and the other is indexed by the friendly name, in which case the channel_name is the channel ID.  All other elements of the record should be identical between the two items.  
+
+is_channel is used for ... something I'm not sure about.  I think @jenna might have added it.
+
+`members` might be 0, and probably will be for archived channels.
+
+
 ## ChannelConfiguration
 
+| column      | values |
+| ----------- | -------- |
+| **slack_cid** (H) | Slack Channel ID |
+| **last_message_timestamp**  | The int timestamp of the last message we retrieved from the channel |
+| **refetch** | *deprecated* |
+
+Used to keep track of where in channel history we are to know where we need to start grabbing messages (or, if config.refetch is defined, then we go `config.refetch` days back from `last_message_timestamp`)
+
 ## Configuration
+
+| column      | values |
+| ----------- | -------- |
+| **key** (H) | Some key |
+| **SOMEVALUE**  | Some Value |
+
+General-purpose configuration table to keep track of bits and pieces we want to remember (e.g. last time we ran).  
+
+Of interest is the `counts` key, whose value is a set of K:V columns for various K we care about (e.g. `active_users`, `all_users`, etc)
 
 ## FirstPost
 
