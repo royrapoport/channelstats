@@ -17,6 +17,7 @@ html_formatter_obj = html_formatter.HTMLFormatter(fake=fake)
 slack_formatter_obj = slack_formatter.SlackFormatter()
 users = {
     'noemi': 'UHWD9BHPD',
+    'rands': 'U04T4TH8Y',
     'roy': 'U06NSQT34',
     'jenna': 'U8MEPG4Q7',
     'jude': 'UCR03V5BP',
@@ -39,7 +40,8 @@ f = open("reports/{}-{}days-report.json".format(date, days), "w")
 f.write(json.dumps(report, indent=4))
 f.close()
 print("")
-slack_formatter_obj.send_report(users['roy'], report, previous_report)
+# slack_formatter_obj.send_report(users['roy'], report, previous_report)
+slack_formatter_obj.send_report(users['roy'], report, previous_report, override_uid="CMURXPZK3")
 # slack_formatter_obj.send_report(users['jenna'], report)
 mhtml = html_formatter_obj.format(report)
 f = open("reports/{}-{}days-report.html".format(date, days), "w")
