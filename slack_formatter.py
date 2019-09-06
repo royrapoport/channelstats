@@ -98,29 +98,37 @@ class SlackFormatter(object):
         blocks += self.replied_messages(ur, uid)
         blocks.append(self.text_block("You got {} reactions".format(ur['enriched_user'][uid]['reaction_count'])))
         blocks += self.popular_reactions(ur, uid)
-        blocks += self.topten(ur, uid, 'reactions_from', "The people who most responded to you are")
-        blocks += self.topten(ur, uid, 'reacted_to', "The people you most responded to are")
-        blocks += self.topten(ur, uid, 'reactions_combined', "Reaction Affinity")
-        blocks += self.topten(ur, uid, 'author_thread_responded', "Authors whose threads you responded to the most")
-        blocks += self.topten(ur, uid, 'thread_responders', "Most frequent responders to your threads")
-        blocks += self.topten(ur, uid, 'threads_combined', "Thread Affinity")
-        blocks += self.topten(ur, uid, 'you_mentioned', "The people you mentioned the most")
-        blocks += self.topten(ur, uid, 'mentioned_you', "The people who mentioned you the most")
-        blocks += self.topten(ur, uid, 'mentions_combined', "Mention Affinity")
+        blocks += self.topten(ur, pur, uid, 'reactions_from', "The people who most responded to you are")
+        blocks += self.topten(ur, pur, uid, 'reacted_to', "The people you most responded to are")
+        blocks += self.topten(ur, pur, uid, 'reactions_combined', "Reaction Affinity")
+        blocks += self.topten(ur, pur, uid, 'author_thread_responded', "Authors whose threads you responded to the most")
+        blocks += self.topten(ur, pur, uid, 'thread_responders', "Most frequent responders to your threads")
+        blocks += self.topten(ur, pur, uid, 'threads_combined', "Thread Affinity")
+        blocks += self.topten(ur, pur, uid, 'you_mentioned', "The people you mentioned the most")
+        blocks += self.topten(ur, pur, uid, 'mentioned_you', "The people who mentioned you the most")
+        blocks += self.topten(ur, pur, uid, 'mentions_combined', "Mention Affinity")
         return blocks
 
-    def topten(self, ur, uid, label, header):
+    def topten(self, ur, pur, uid, label, header):
         blocks = []
         blocks.append(self.text_block("*{}*".format(header)))
         fields = ["*Person*", "*Count*"]
 
-        d = ur['enriched_user'][uid].get(label)
+        d = ur['enriched_user'][uid].get(label, {})
         if not d:
             return []
+
+        pd = pur['enriched_user'][uid].get(label, {})
         t = "*{}* times between you and *{}* unique people"
         total = sum(d.values())
         count = len(list(d.keys()))
-        t = t.format(total, count)
+        ptotal = sum(pd.values())
+        pcount = len(list(pd.keys()))
+        cur = {'total': total, 'count': count}
+        prev = {'total': ptotal, 'count': pcount}
+        total_comp = self.comparison(cur, prev, ['total'])
+        count_comp = self.comparison(cur, prev, ['count'])
+        t = t.format(total_comp, count_comp)
         blocks.append(self.text_block(t))
         uids = list(d.keys())[0:10]
         for uid in uids:
