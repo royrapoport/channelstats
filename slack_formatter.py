@@ -209,11 +209,18 @@ class SlackFormatter(object):
     def send_report(self, uid, ur, previous, send=True, override_uid=None):
         ur = copy.deepcopy(ur)
         previous = copy.deepcopy(previous)
+        print("SlackFormatter send_report: fake is {}".format(self.fake))
         enricher.Enricher(fake=self.fake).user_enrich(ur, uid)
         enricher.Enricher(fake=self.fake).user_enrich(previous, uid)
         us = ur['user_stats'].get(uid, {})
         pus = previous['user_stats'].get(uid, {})
         blocks = self.make_report(ur, us, previous, pus, uid)
+        if not send:
+            print("Saving report to slack.json")
+            f = open("slack.json", "w")
+            f.write(json.dumps(blocks, indent=4))
+            f.close()
+            return
         # If set to true, this message will be sent as the user who owns the token we use
         as_user = False
         for blockset in utils.chunks(blocks, 49):
