@@ -209,7 +209,6 @@ class SlackFormatter(object):
     def send_report(self, uid, ur, previous, send=True, override_uid=None):
         ur = copy.deepcopy(ur)
         previous = copy.deepcopy(previous)
-        print("SlackFormatter send_report: fake is {}".format(self.fake))
         enricher.Enricher(fake=self.fake).user_enrich(ur, uid)
         enricher.Enricher(fake=self.fake).user_enrich(previous, uid)
         us = ur['user_stats'].get(uid, {})
