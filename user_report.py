@@ -20,6 +20,9 @@ def uid_for(token):
     if u.get(uid):
         return uid
 
+    if token[0] != '@':
+        raise RuntimeError("Usernames must start with '@'")
+
     matches = u.find(token)
     if len(matches) == 0:
         raise RuntimeError("Could not find a user with name '{}'".format(token))
@@ -35,6 +38,7 @@ parser.add_argument("--uid", help="Run the report for this UID")
 parser.add_argument("--regen", action="store_true", help="Regenerate stats even if we have them")
 parser.add_argument("--name", help="Run the report for this user")
 parser.add_argument("--nosend", action="store_true", help="Do not send report")
+parser.add_argument("--sendto", help="Specify @username or #channel to send report to rather than to the user who owns the report")
 args = parser.parse_args()
 
 if (not args.uid) and (not args.name):
