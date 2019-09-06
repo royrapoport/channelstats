@@ -13,7 +13,7 @@ class Enricher(object):
 
     def __init__(self, fake=False):
         self.fake = fake
-        self.user = user.User(fake=fake)
+        self.user = user.User(fake=self.fake)
         self.channel = channel.Channel()
 
     def get_channels(self, list_of_cid, report_start_date):
