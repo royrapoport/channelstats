@@ -2,10 +2,14 @@
 
 import copy
 import json
+import random
+import time
 import sys
 
 import slack
 
+import random_name
+import user
 import utils
 import enricher
 import slack_token
@@ -14,7 +18,10 @@ import slack_token
 class SlackFormatter(object):
 
     def __init__(self, fake=False):
+        random.seed(time.time())
         self.fake = fake
+        self.rn = random_name.RandomName()
+        self.user = user.User(fake=fake)
         self.client = slack.WebClient(token=slack_token.token)
         self.enricher = enricher.Enricher(fake=fake)
 
@@ -133,13 +140,25 @@ class SlackFormatter(object):
         uids = list(d.keys())[0:10]
         for uid in uids:
             # fields.append(ur['user_info'][uid]['label'])
-            fields.append("<@{}>".format(uid))
+            fields.append(self.show_uid(uid))
             fields.append(str(d[uid]))
 
         for fset in self.make_fields(fields):
             block = {'type': 'section', 'fields': fset}
             blocks.append(block)
         return blocks
+
+    def show_uid(self, uid):
+        if not self.fake:
+            return "<@{}>".format(uid)
+        entry = self.user.get(uid)
+        if not entry:
+            choice = rn.name()
+        elif random.choice(range(2)) == 1:
+            choice = entry['user_name']
+        else:
+            choice = entry['real_name']
+        return "@{}".format(choice)
 
     def reacted_messages(self, ur, uid):
         return self.messager(ur, uid, "reactions")

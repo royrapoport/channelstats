@@ -7,10 +7,6 @@ import user
 import slack_formatter
 import report_generator
 
-slack_formatter_obj = slack_formatter.SlackFormatter()
-rg = report_generator.ReportGenerator()
-u = user.User()
-
 def uid_for(token):
     """
     token is either a username or a UID.  If UID, make sure it's valid
@@ -31,15 +27,18 @@ def uid_for(token):
     uid = matches[0]['id']
     return uid
 
-
-
 parser = argparse.ArgumentParser(description='Run a user-level Slack activity report.')
 parser.add_argument("--uid", help="Run the report for this UID")
 parser.add_argument("--regen", action="store_true", help="Regenerate stats even if we have them")
 parser.add_argument("--name", help="Run the report for this user")
 parser.add_argument("--nosend", action="store_true", help="Do not send report")
+parser.add_argument("--fake", action="store_true", help="Use bogus user names")
 parser.add_argument("--sendto", help="Specify @username or #channel to send report to rather than to the user who owns the report")
 args = parser.parse_args()
+
+slack_formatter_obj = slack_formatter.SlackFormatter(fake=args.fake)
+rg = report_generator.ReportGenerator()
+u = user.User()
 
 if (not args.uid) and (not args.name):
     raise RuntimeError("--uid|--name is required")
