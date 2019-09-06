@@ -24,6 +24,21 @@ class User(object):
         self.configuration = configuration.Configuration(fake=fake)
         self.modified = {}
 
+    def find(self, username):
+        """
+        Return a list of matches to the given username, case-sensitive
+        """
+        if username[0] == "@":
+            username = username[1:]
+        matches = []
+        attrs = "user_name display_name real_name".split()
+        for item in self.ddb.items(self.table):
+            for i in attrs:
+                if username == item.get(i):
+                    matches.append(item)
+                    break
+        return matches
+
     def batch_get_user(self, userids):
         return self.ddb.batch_hash_get(userids)
 
