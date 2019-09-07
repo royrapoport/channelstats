@@ -296,11 +296,11 @@ class SlackFormatter(object):
             return
         # If set to true, this message will be sent as the user who owns the token we use
         as_user = False
+        if override_uid:
+            uid=override_uid
         for blockset in utils.chunks(blocks, 49):
             if send:
                 print("Sending report to {}".format(uid))
-                if override_uid:
-                    uid=override_uid
                 try:
                     response = self.client.chat_postMessage(
                         channel=uid,
