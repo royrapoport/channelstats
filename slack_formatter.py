@@ -9,6 +9,7 @@ import sys
 import slack
 
 import random_name
+import channel
 import user
 import utils
 import enricher
@@ -20,6 +21,8 @@ class SlackFormatter(object):
     def __init__(self, fake=False):
         random.seed(time.time())
         self.fake = fake
+        self.fake_channel = channel.Channel(fake=True)
+        self.channel = channel.Channel()
         self.rn = random_name.RandomName()
         self.user = user.User(fake=fake)
         self.client = slack.WebClient(token=slack_token.token)
@@ -174,8 +177,11 @@ class SlackFormatter(object):
     def messager(self, ur, uid, label):
         blocks = []
         for message in ur['reenriched_user'][uid][label]:
+            cname = message['channel']
+            if self.fake:
+                cname = self.get_fake_channel(cname)
             m = "*{}* {} in #{} on {}"
-            m = m.format(message['count'], label, message['channel'], message['dt'])
+            m = m.format(message['count'], label, cname, message['dt'])
             block = self.make_link_button(m, 'link', message['url'])
             blocks.append(block)
         if not blocks:
@@ -201,6 +207,16 @@ class SlackFormatter(object):
             blocks.append(block)
         return blocks
 
+    def get_fake_channel(self, cname):
+        """
+        given a friendly channel name, return a fake one
+        """
+        c = self.channel.get(cname)
+        cid = c['channel_name']
+        c = self.fake_channel.get(cid)
+        cname = c['channel_name']
+        return cname
+
     def make_channels(self, ur, pur):
         fields = []
         ctr = 1
@@ -210,7 +226,10 @@ class SlackFormatter(object):
         fields.append("*Rank, Messages, Words*")
         for channel_name in ur['enriched_channels']:
             channel = ur['enriched_channels'][channel_name]
-            f1 = "{} *{}*".format(ctr, channel['name'])
+            cname = channel['name']
+            if self.fake:
+                cname = self.get_fake_channel(channel_name)
+            f1 = "{} *{}*".format(ctr, cname)
             f2 = "*{}* rank, *{}* m, *{}* w"
             messages = self.comparison(ur, pur, ['enriched_channels', channel_name, 'messages'])
             words = self.comparison(ur, pur, ['enriched_channels', channel_name, 'words'])

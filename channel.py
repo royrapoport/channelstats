@@ -5,7 +5,10 @@ import utils
 class Channel(object):
     table_name = "Channel"
 
-    def __init__(self):
+    def __init__(self, fake=False):
+        self.fake = fake
+        if self.fake:
+            self.table_name = "Fake" + self.table_name
         self.ddb = ddb.DDB(self.table_name, [('channel_key', 'S')])
         self.table = self.ddb.get_table()
 
