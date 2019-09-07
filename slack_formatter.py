@@ -106,6 +106,7 @@ class SlackFormatter(object):
         blocks += self.make_channels(ur, pur)
         blocks.append(self.divider())
         blocks += self.posting_hours(ur, pur, uid)
+        blocks += self.posting_days(ur, pur, uid)
         blocks += self.reacted_messages(ur, uid)
         blocks += self.replied_messages(ur, uid)
         blocks.append(self.text_block("You got {} reactions".format(ur['enriched_user'][uid]['reaction_count'])))
@@ -157,6 +158,22 @@ class SlackFormatter(object):
     def hour_formatter(self, hr):
         hr = int(hr)
         return "{0:02d}00-{0:02d}59".format(hr, hr)
+
+    def day_formatter(self, day):
+        days = "Monday Tuesday Wednesday Thursday Friday Saturday Sunday".split()
+        return days[int(day)]
+
+    def posting_days(self, ur, pur, uid):
+        """
+        Report on activity per day of the week
+        """
+        blocks = []
+        blocks.append(self.text_block("*Your posting activity by day of the week:*"))
+        # We'll use messages (idx 0) rather than words (idx 1)
+        idx = 0
+        d = ur['user_stats'][uid]['posting_days']
+        blocks += self.histogram(d, self.day_formatter, idx, "*Day of Week*")
+        return blocks
 
     def posting_hours(self, ur, pur, uid):
         """
