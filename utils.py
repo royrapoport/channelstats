@@ -76,3 +76,9 @@ def rank(n):
     if n in r:
         return "{}{}".format(n, r[n])
     return "{}th".format(n)
+
+def valid_cid(cid):
+    return re.match("^C[A-Z0-9]+$", cid)
+
+def valid_uid(uid):
+    return re.match("^U[A-Z0-9]+$", uid)
