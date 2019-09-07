@@ -102,6 +102,7 @@ class Report(object):
             self.create_key(["enriched_user", user], copy.deepcopy(dummyenriched))
             self.create_key(["users", user], [0,0])
             self.create_key(["user_stats", user], copy.deepcopy(dummy_user))
+            self.create_key(["user_stats", user, "posting_hours"], {})
 
     def data(self):
         return utils.dump(self._data)
@@ -203,6 +204,9 @@ class Report(object):
         if wday < 5:  # We only look at weekday activity
             self.increment(["user_weekday_hour", hour], message)
             self.increment(["user_weekday_hour_per_user", uid, hour], message)
+            if uid in self.track:
+                self.increment(["user_stats", uid, "posting_hours", hour], message)
+
 
     def finalize(self):
         self._finalize_channels()
