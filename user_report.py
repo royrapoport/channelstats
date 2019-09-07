@@ -84,7 +84,6 @@ else:
     destination = uid
 print("Will send report to {}".format(destination))
 print("Will run report for UID {}".format(uid))
-sys.exit(0)
 
 latest_week_start = rg.latest_week_start()
 days = 7
