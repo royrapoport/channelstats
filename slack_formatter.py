@@ -104,6 +104,8 @@ class SlackFormatter(object):
         blocks += self.make_header(ur, us, pur, pus)
         blocks.append(self.divider())
         blocks += self.make_channels(ur, pur)
+        blocks.append(self.divider())
+        blocks += self.posting_hours(ur, pur, uid)
         blocks += self.reacted_messages(ur, uid)
         blocks += self.replied_messages(ur, uid)
         blocks.append(self.text_block("You got {} reactions".format(ur['enriched_user'][uid]['reaction_count'])))
@@ -117,6 +119,32 @@ class SlackFormatter(object):
         blocks += self.topten(ur, pur, uid, 'you_mentioned', "The people you mentioned the most")
         blocks += self.topten(ur, pur, uid, 'mentioned_you', "The people who mentioned you the most")
         blocks += self.topten(ur, pur, uid, 'mentions_combined', "Mention Affinity")
+        return blocks
+
+    def posting_hours(self, ur, pur, uid):
+        """
+        Report on activity per hour of the workday
+        """
+        blocks = []
+        blocks.append(self.text_block("*Your weekday posting activity by (local) hour of the day:*"))
+        # We'll use messages (idx 0) rather than words (idx 1)
+        idx = 0
+        total = ur['user_stats'][uid]["count"][idx]
+        hours = {}
+        for hour in ur['user_stats'][uid]['posting_hours']:
+            ihour = int(hour)
+            activity = ur['user_stats'][uid]['posting_hours'][hour][idx]
+            percent = (activity * 100.0) / total
+            hours[ihour] = (percent, activity)
+        hour_keys = list(hours.keys())
+        hour_keys.sort()
+        fields = ["*(Local) Time of Weekday*", "*Percent of Activity*"]
+        for hr in hour_keys:
+            fields.append("{0:02d}00-{0:02d}59".format(hr, hr))
+            fields.append("`{}` {:.1f}% ({} messages)".format('*' * int(hours[hr][0]), hours[hr][0], hours[hr][1]))
+        for fset in self.make_fields(fields):
+            block = {'type': 'section', 'fields': fset}
+            blocks.append(block)
         return blocks
 
     def topten(self, ur, pur, uid, label, header):
