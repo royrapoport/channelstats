@@ -13,8 +13,12 @@ class ChannelMembersLog(object):
         self.ddb = ddb.DDB(self.table_name, [('channel_id', 'S')])
         self.table = self.ddb.get_table()
 
+    def token(self, ts):
+        return "ts_{}".format(ts)
+
     def batch_upload(self, channels):
-        now = str(time.time())
+        now = str(int(time.time()))
+        nows = self.token(now)
         new_rows = []
         update_rows = []
         for channel in channels:
@@ -22,7 +26,7 @@ class ChannelMembersLog(object):
             members = 0
             if 'num_members' in channel:
                 members = channel['num_members']
-            row = {'channel_id': cid, now: members}
+            row = {'channel_id': cid, nows: members}
             item = self.get(cid)
             if item:
                 update_rows.append(row)
@@ -34,9 +38,9 @@ class ChannelMembersLog(object):
         for row in update_rows:
             self.table.update_item(
                 Key = {'channel_id': row['channel_id']},
-                UpdateExpression='set {} = :m'.format(now),
-                ExpressionAttributeValues={':m': row[now]},
-                ReturnValue='UPDATED_NEW'
+                UpdateExpression='set {} = :m'.format(nows),
+                ExpressionAttributeValues={':m': now},
+                ReturnValues='UPDATED_NEW'
             )
 
     def get(self, key):
