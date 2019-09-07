@@ -21,6 +21,8 @@ class Channel(object):
                 cid = channel['id']
                 cname = channel.get('name')
                 values = {
+                    'channel_name': cname,
+                    'channel_id': cid,
                     'created': channel.get('created'),
                     'members': channel.get('num_members'),
                     'is_channel': channel.get('is_channel', None),
@@ -32,7 +34,6 @@ class Channel(object):
                 for k, v in [[cid, cname], [cname, cid]]:
                     row = {
                         'channel_key': k,
-                        'channel_name': v
                     }
                     for i in values:
                         row[i] = values[i]

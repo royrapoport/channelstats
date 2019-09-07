@@ -10,15 +10,17 @@ Columns marked with (R) are Range keys (if present)
 
 | column      | values |
 | ----------- | -------- |
-| **channel_key** (H) | Slack Channel ID (but see below) |
-| **channel_name**  | Friendly name of the channel (but see below) |
+| **channel_key** (H) | Slack Channel ID or friendly name of channel |
+| **channel_name**  | Friendly name of the channel |
+| **channel_id**  | Slack Channel ID |
 | **members** | int number of members |
-| **is_channel** | always apparently true? |
+| **is_channel** | Boolean, whether channel is a public channel |
+| **is_im** | Boolean, whether channel is a DM |
+| **is_group** | Boolean, whether channel is a group (AKA private channel) |
+| **is_mpim** | Boolean, whether channel is an MPIM/MPDM (DM with multiple people) |
 | **created** | int timestamp of channel creation |
 
-Keeps tracks of the channels we have.  Of particular note is the fact we end up with two rows -- one is indexed by channel ID, in which case the channel_name is the friendly name, and the other is indexed by the friendly name, in which case the channel_name is the channel ID.  All other elements of the record should be identical between the two items.  
-
-is_channel is used for ... something I'm not sure about.  I think @jenna might have added it.
+Keeps tracks of the channels we have.  Of particular note is the fact we end up with two rows -- one is indexed by channel ID,  and the other is indexed by the friendly name.
 
 `members` might be 0, and probably will be for archived channels.
 

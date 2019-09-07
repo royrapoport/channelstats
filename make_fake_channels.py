@@ -3,6 +3,7 @@
 import re
 import sys
 
+import utils
 import random_channel
 import channel
 import slack_token
@@ -19,10 +20,7 @@ ftable = fakec.table
 items = []
 for item in realc.ddb.items(rtable):
     # {'channel_name': 'C471F3NLB', 'created': Decimal('1487352987'), 'is_channel': True, 'channel_key': 'office-pets'}
-    if re.match("^C[A-Z0-9]+$", item['channel_name']):
-        item['channel_key'] = rc.name()
-    else:
-        item['channel_name'] = rc.name()
+    item['channel_name'] = rc.name()
     items.append(item)
 
 with ftable.batch_writer() as batch:
