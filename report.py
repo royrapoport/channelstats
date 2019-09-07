@@ -201,6 +201,8 @@ class Report(object):
         hour = localtime.tm_hour
         wday = localtime.tm_wday
         self.increment(["user_weekday", wday], message)
+        if uid in self.track:
+            self.increment(["user_stats", uid, "posting_day", wday], message)
         if wday < 5:  # We only look at weekday activity
             self.increment(["user_weekday_hour", hour], message)
             self.increment(["user_weekday_hour_per_user", uid, hour], message)
