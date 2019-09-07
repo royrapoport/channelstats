@@ -121,6 +121,43 @@ class SlackFormatter(object):
         blocks += self.topten(ur, pur, uid, 'mentions_combined', "Mention Affinity")
         return blocks
 
+    def histogram(self, d, m, idx, header):
+        """
+        With d as a dict with {k:v} where v are (messages, words)
+        output a histogram with percent of total activity for each k
+        m is a method to call with each key of the dictionary which will
+        return the formatted version of that key
+        idx is 0 if you want to go by messages, 1 if words
+        returns a list of blocks
+        """
+        if idx == 0:
+            label = "m"
+        elif idx == 1:
+            label = "w"
+        else:
+            raise RuntimeError("idx has to be 0 or 1")
+        total = sum([x[idx] for x in d.values()])
+        new = {}
+        for i in d:
+            value = d[i][idx]
+            percent = (value * 100.0 / total)
+            new[i] = (percent, value)
+        k = list(d.keys())
+        k.sort(key = lambda x: int(x))
+        fields = [header, "*Percent of Activity*"]
+        for i in k:
+            fields.append("{}".format(m(i)))
+            fields.append("`{}` {:.1f}% ({} {})".format('*' * int(new[i][0]), new[i][0], new[i][1], label))
+        blocks = []
+        for fset in self.make_fields(fields):
+            block = {'type': 'section', 'fields': fset}
+            blocks.append(block)
+        return blocks
+
+    def hour_formatter(self, hr):
+        hr = int(hr)
+        return "{0:02d}00-{0:02d}59".format(hr, hr)
+
     def posting_hours(self, ur, pur, uid):
         """
         Report on activity per hour of the workday
@@ -129,22 +166,8 @@ class SlackFormatter(object):
         blocks.append(self.text_block("*Your weekday posting activity by (local) hour of the day:*"))
         # We'll use messages (idx 0) rather than words (idx 1)
         idx = 0
-        total = ur['user_stats'][uid]["count"][idx]
-        hours = {}
-        for hour in ur['user_stats'][uid]['posting_hours']:
-            ihour = int(hour)
-            activity = ur['user_stats'][uid]['posting_hours'][hour][idx]
-            percent = (activity * 100.0) / total
-            hours[ihour] = (percent, activity)
-        hour_keys = list(hours.keys())
-        hour_keys.sort()
-        fields = ["*(Local) Time of Weekday*", "*Percent of Activity*"]
-        for hr in hour_keys:
-            fields.append("{0:02d}00-{0:02d}59".format(hr, hr))
-            fields.append("`{}` {:.1f}% ({} messages)".format('*' * int(hours[hr][0]), hours[hr][0], hours[hr][1]))
-        for fset in self.make_fields(fields):
-            block = {'type': 'section', 'fields': fset}
-            blocks.append(block)
+        d = ur['user_stats'][uid]['posting_hours']
+        blocks += self.histogram(d, self.hour_formatter, idx, "*(Local) Time of Weekday*")
         return blocks
 
     def topten(self, ur, pur, uid, label, header):
