@@ -13,7 +13,7 @@ import report_generator
 
 fake = False
 rg = report_generator.ReportGenerator(fake=fake)
-slack_formatter_obj = slack_user_report.SlackUserReport()
+slack_reporter = slack_user_report.SlackUserReport()
 slack = slacker.Slacker(config.slack_name, slack_token.token)
 channel_obj = channel.Channel()
 
@@ -37,5 +37,5 @@ f.write(json.dumps(report, indent=4))
 f.close()
 roy = "U06NSQT34"
 for user in users:
-    # slack_formatter_obj.send_report(user, report, previous_report, send=True, override_uid=roy)
-    slack_formatter_obj.send_report(user, report, previous_report, send=True)
+    # slack_reporter.send_report(user, report, previous_report, send=True, override_uid=roy)
+    slack_reporter.send_report(user, report, previous_report, send=True)
