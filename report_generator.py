@@ -123,21 +123,31 @@ class ReportGenerator(object):
         formatted as yyyy-mm-dd, and for the period of DAYS duration
         If user is specified, limit to messages from the user
         """
+        existing_report = None
         if not force_generate:
             complete = True
-            general_report = self.query_report(start_day, days)
-            if general_report:
+            existing_report = self.query_report(start_day, days)
+            if existing_report:
                 if users:
                     for user in users:
-                        if user not in general_report.get("enriched_user", {}):
+                        if user not in existing_report.get("enriched_user", {}):
                             complete = False
                 if channels:
                     for channel in channels:
-                        if channel not in general_report.get("enriched_channel", {}):
+                        if channel not in existing_report.get("enriched_channel", {}):
                             complete = False
                 if complete:
-                    return general_report
+                    return existing_report
         general_report = self.generate_report(start_day, days, users, channels)
+        if not force_generate:
+            if existing_report:
+                for token in ['enriched_user', 'enriched_channel']:
+                    if token in existing_report:
+                        if token not in general_report:
+                            general_report[token] = {}
+                        for item in existing_report[token]:
+                            if item not in general_report[token]:
+                                general_report[token][item] = existing_report[token][item]
         self.store_report(start_day, days, general_report)
         return general_report
 
