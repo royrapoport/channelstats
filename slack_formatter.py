@@ -39,12 +39,15 @@ class SlackFormatter(object):
     def divider(self):
         return { "type": "divider" }
 
-    def simple_comparison(self, cur_item, prev_item, found_prev=True, print_num=True):
+    def simple_comparison(self, cur_item, prev_item, found_prev=True, print_num=True, is_percent=False):
         if prev_item == 0:
             if cur_item == 0:
                 return "0"
             else:
-                return "{} :infinity:".format(cur_item)
+                if is_percent:
+                    return "{}% :infinity:".format(cur_item)
+                else:
+                    return "{} :infinity:".format(cur_item)
         diff = (cur_item * 100.0) / prev_item
         diff = diff - 100
         ds = ""
@@ -52,7 +55,10 @@ class SlackFormatter(object):
         if not found_prev:
             emoji = ":new:"
         if print_num:
-            ds = "{}".format(cur_item)
+            if is_percent:
+                ds = "{}%".format(cur_item)
+            else:
+                ds = "{}".format(cur_item)
         if diff > 0.5 or diff < -0.5:
             if diff > 0:
                 emoji = emoji or ":green_arrow_up:"
