@@ -107,13 +107,16 @@ class SlackChannelReport(object):
         blocks = []
         blocks += self.make_header(ur, pur, cid)
         blocks.append(self.sf.divider())
+        blocks.append(self.sf.text_block(
+                "People sent {} reactions to the channel".format(
+                    self.sf.comparison(ur, pur, ['enriched_channel', cid, 'reaction_count']))))
+        blocks += self.popular_reactions(ur, cid)
         #blocks += self.make_channels(ur, pur)
         #blocks.append(self.sf.divider())
         #blocks += self.posting_hours(ur, pur, uid)
         #blocks += self.posting_days(ur, pur, uid)
         #blocks += self.reacted_messages(ur, uid)
         #blocks += self.replied_messages(ur, uid)
-        #blocks.append(self.sf.text_block("You got {} reactions".format(ur['enriched_user'][uid]['reaction_count'])))
         #blocks += self.popular_reactions(ur, uid)
         #blocks += self.topten(ur, pur, uid, 'reactions_from', "The people who most responded to you are")
         #blocks += self.topten(ur, pur, uid, 'reacted_to', "The people you most responded to are")
@@ -204,22 +207,9 @@ class SlackChannelReport(object):
         blocks = [(self.sf.text_block("*Your messages which got the most {}*".format(label)))] + blocks
         return blocks
 
-    def popular_reactions(self, ur, uid):
-        popularity = ur['enriched_user'][uid]['reaction_popularity']
-        fields = []
-        if not popularity:
-            return fields
-        fields.append("*Reactji*")
-        fields.append("*Count*")
-        for rname in list(popularity.keys())[0:10]:
-            num = popularity[rname]
-            fields.append(":{}:".format(rname))
-            fields.append(str(num))
-        blocks = []
-        for fset in self.sf.make_fields(fields):
-            block = {'type': 'section', 'fields': fset}
-            blocks.append(block)
-        return blocks
+    def popular_reactions(self, ur, cid):
+        popularity = ur['enriched_channel'][cid]['reactions']
+        return self.sf.reactions(popularity)
 
     def make_channels(self, ur, pur):
         fields = []
@@ -246,6 +236,7 @@ class SlackChannelReport(object):
             block = {'type': 'section', 'fields': fset}
             blocks.append(block)
         return blocks
+
 
     def send_report(self, cid, ur, previous, send=True, override_uid=None):
         blocks = self.make_report(ur, previous, cid)

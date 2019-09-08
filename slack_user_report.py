@@ -153,20 +153,7 @@ class SlackUserReport(object):
 
     def popular_reactions(self, ur, uid):
         popularity = ur['enriched_user'][uid]['reaction_popularity']
-        fields = []
-        if not popularity:
-            return fields
-        fields.append("*Reactji*")
-        fields.append("*Count*")
-        for rname in list(popularity.keys())[0:10]:
-            num = popularity[rname]
-            fields.append(":{}:".format(rname))
-            fields.append(str(num))
-        blocks = []
-        for fset in self.sf.make_fields(fields):
-            block = {'type': 'section', 'fields': fset}
-            blocks.append(block)
-        return blocks
+        return self.sf.reactions(popularity)
 
     def make_channels(self, ur, pur):
         fields = []
