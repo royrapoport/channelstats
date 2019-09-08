@@ -171,6 +171,9 @@ class ReportGenerator(object):
                 report_creator.message(message)
         report_creator.finalize()
         current_report = report_creator.data()
+        f = open("reports/{}-{}days-report.json".format(start_day, days), "w")
+        f.write(json.dumps(current_report, indent=4))
+        f.close()
         return current_report
 
     def generate_dates(self, start_day, days):

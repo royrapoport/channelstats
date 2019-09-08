@@ -69,6 +69,7 @@ class Report(object):
     def set_channels(self, channels):
         if channels:
             for channel in channels:
+                print("Will keep track of channel {}".format(channel))
                 self.create_key(["enriched_channel", channel], {})
 
     def set_users(self, users):
@@ -96,6 +97,9 @@ class Report(object):
             "cum_percent_of_words": 0
         }
 
+        self.create_key(["enriched_user"], {})
+        if not users:
+            return
         for user in users:
             self.user_reply_accumulators[user] = Accumulator(
                 self.top_limit, lambda x: x[0])
@@ -349,6 +353,11 @@ class Report(object):
             # and some may be 'skin-tone-X".  Remove these since
             # they're not actually reactors
             reactors = [x for x in reactors if (x and x[0] == "U")]
+            if cid in self._data['enriched_channel']:
+                self.create_key(['enriched_channel', cid, 'reaction_count'], 0)
+                self._data['enriched_channel'][cid]['reaction_count'] += len(reactors)
+                self.create_key(['enriched_channel', cid, 'reactions', reaction_name], 0)
+                self._data['enriched_channel'][cid]['reactions'][reaction_name] += len(reactors)
             if uid in self.track:
                 # The UID of the person who wrote the message is someone
                 # we're tracking
@@ -523,6 +532,8 @@ class Report(object):
 
     def _finalize_reaction(self):
         self._data['reaction'] = Report.order_dict(self._data['reaction'])
+        for cid in self._data.get("enriched_channel", {}):
+            self._data['enriched_channel'][cid]['reactions'] = Report.order_dict(self._data['enriched_channel'][cid]['reactions'])
 
     def _finalize_channels(self):
         """
