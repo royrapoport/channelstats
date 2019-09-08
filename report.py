@@ -395,7 +395,7 @@ class Report(object):
                 v = d[user][k]
                 if type(v) in [int, float, decimal.Decimal]:
                     expect[k] = 0
-                elif type(v) in [dict, collections.OrderedDict]:
+                elif type(v) in [dict, collections.OrderedDict, collections.defaultdict]:
                     expect[k] = {}
                 elif type(v) == list and len(v) == 2:
                     expect[k] = [0,0]

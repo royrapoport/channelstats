@@ -24,26 +24,23 @@ class ReportGenerator(object):
         self.mtf = messagetablefactory.MessageTableFactory(readonly=True)
         self.report_store = report_store.ReportStore()
 
-    def make_report_id(self, start_day, days, user, channels):
-        rid_user = '' if user is None else "-{}".format(user)
-        rid_channels = '' if channels is None else "-{}".format(''.join(channels))
-        return "{}-{}{}{}".format(start_day, days, rid_user, rid_channels)
+    def make_report_id(self, start_day, days):
+        return "{}-{}".format(start_day, days)
 
-    def query_report(self, start_day, days, user=None, channels=None):
+    def query_report(self, start_day, days):
         """
         Query DDB for the report with the given parameters
         """
-        rid = self.make_report_id(start_day, days, user, channels)
+        rid = self.make_report_id(start_day, days)
         report_string = self.report_store.get(rid)
         if not report_string:
             return None
         # print("Found a stored report for {}".format(rid))
         return json.loads(report_string)
 
-    def store_report(self, start_day, days, report, user=None, channels=None):
-        print("Storing report for {}/{}/{}{}".format(
-            start_day, days, user, '' if channels is None else '/{}'.format(''.join(channels))))
-        rid = self.make_report_id(start_day, days, user, channels)
+    def store_report(self, start_day, days, report):
+        print("Storing report for {}/{}".format(start_day, days))
+        rid = self.make_report_id(start_day, days)
         self.report_store.set(rid, json.dumps(report))
 
     def previous_report(self, start_day, days, users=None, force_generate=False, channels=None):
@@ -120,39 +117,31 @@ class ReportGenerator(object):
             previous_report = None
         return current_report, previous_report
 
-    def get_report(self, start_day, days, users=None, force_generate=False, channels=None):
+    def get_report(self, start_day, days, users=[], force_generate=False, channels=[]):
         """
         Generate a channel stats report starting on start_day, which is
         formatted as yyyy-mm-dd, and for the period of DAYS duration
         If user is specified, limit to messages from the user
         """
         if not force_generate:
-            # print("Querying for {}/{}/{}".format(start_day, days, user))
-            reports = {}
-            empty_report = False
-            if users:
-                for user in users:
-                    user_report = self.query_report(start_day, days, user, channels)
-                    if not user_report:
-                        empty_report = True
-                    reports[user] = user_report
-            general_report = self.query_report(start_day, days, channels=channels)
-            if general_report and not empty_report:
-                print("Found all parts of the report in storage!")
-                general_report['enriched_user'] = reports
-                return general_report
+            complete = True
+            general_report = self.query_report(start_day, days)
+            if general_report:
+                if users:
+                    for user in users:
+                        if user not in general_report.get("enriched_user", {}):
+                            complete = False
+                if channels:
+                    for channel in channels:
+                        if channel not in general_report.get("enriched_channel", {}):
+                            complete = False
+                if complete:
+                    return general_report
         general_report = self.generate_report(start_day, days, users, channels)
-        enriched_users = general_report['enriched_user']
-        if enriched_users:
-            for user in enriched_users:
-                self.store_report(
-                    start_day, days, enriched_users[user], user=user, channels=channels)
-        ret = copy.deepcopy(general_report)
-        del(general_report['enriched_user'])
-        self.store_report(start_day, days, general_report, user=None, channels=channels)
-        return ret
+        self.store_report(start_day, days, general_report)
+        return general_report
 
-    def generate_report(self, start_day, days, users=[], channels=None):
+    def generate_report(self, start_day, days, users=[], channels=[]):
         """
         Generate a channel stats report starting on start_day, which is
         formatted as yyyy-mm-dd, and for the period of DAYS duration
