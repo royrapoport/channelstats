@@ -50,7 +50,7 @@ class Report(object):
     # Where we keep the 'top X' of messages, what X should we go for?
     top_limit = 10
 
-    def __init__(self, channels=None):
+    def __init__(self):
         self._data = {}
         self.user = user.User()
         self.reactions_accumulator = Accumulator(
@@ -64,7 +64,6 @@ class Report(object):
         self.accum_methods = [x for x in dir(self) if x.find("accum_") == 0]
         self.track = {}
         self.channel = channel.Channel()
-        self.channels = channels
         self.hydrated_channels = {}
 
     def set_users(self, users):
@@ -119,11 +118,6 @@ class Report(object):
             self.hydrated_channels[cid] = self.channel.get(cid)
 
         if 'subtype' in message:
-            return
-        if self.channels and message.get('slack_cid') not in self.channels:
-            return
-        if not self.channels and self.hydrated_channels[cid].get('is_private'):
-            # If no channels are specified, assume we want public only channels.
             return
 
         self.accum_channel(message)
