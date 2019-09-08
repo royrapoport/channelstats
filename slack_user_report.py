@@ -44,7 +44,7 @@ class SlackUserReport(object):
         m = m.format(utils.rank(us['rank']), us['percent_of_words'], self.sf.comparison(us, pus, ['percent_of_words'], False))
         tm = us.get("thread_messages")
         if tm:
-            t = "In total, {} messages were posted as threaded responses to your messages.\n"
+            t = ".  In total, {} messages were posted as threaded responses to your messages.\n"
             t = t.format(self.sf.comparison(us, pus, ['thread_messages']))
             m += t
         blocks.append(self.sf.text_block(m))
