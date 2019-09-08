@@ -41,10 +41,44 @@ class SlackChannelReport(object):
         return self.sf.text_block(text)
 
     def messages(self, cid, ur, pur):
+        text = ""
         m = "*{}* messages and *{}* words were posted to the channel"
         m = m.format(self.sf.comparison(ur, pur, ['channels', cid, 0]), self.sf.comparison(ur, pur, ['channels', cid, 1]))
-        b = self.sf.text_block(m)
+        text += m
+        curchannelvol = ur['channels'][cid][1]
+        curtotal = ur['statistics']["words"]
+        prevchannelvol = pur['channels'][cid][1]
+        prevtotal = pur['statistics']["words"]
+        curper = float("{:.1f}".format(curchannelvol * 100.0 / curtotal))
+        prevper = float("{:.1f}".format(prevchannelvol * 100.0 / prevtotal))
+        m = "In all, this channel represented *{}* of total traffic"
+        m = m.format(self.sf.simple_comparison(curper, prevper, True, True, True))
+        text += "\n" + m
+        b = self.sf.text_block(text)
         return b
+
+    def users(self, cid, ur, pur):
+        blocks = []
+        cur_users = ur['channel_user'].get(cid)
+        prev_users = pur['channel_user'].get(cid)
+        total = sum([x[1] for x in cur_users.values()])
+        cur_user_names = list(cur_users.keys())
+        cur_user_names.sort(key = lambda x: cur_users[x][1])
+        cur_user_names.reverse()
+        fields = ["*User*", "*Activity"]
+        ctr = 1
+        for user in cur_user_names:
+            fields.append("{} {}".format(ctr, self.sf.show_uid(user)))
+            m = "*{}* m".format(self.sf.comparison(ur, pur, ['channel_user', cid, user, 0]))
+            m += " *{}* w".format(self.sf.comparison(ur, pur, ['channel_user', cid, user, 1]))
+            fields.append(m)
+            ctr += 1
+        for fset in self.sf.make_fields(fields):
+            block = {'type': 'section', 'fields': fset}
+            blocks.append(block)
+        return blocks
+
+
 
     def make_header(self, ur, pur, cid):
         blocks = []
@@ -54,6 +88,8 @@ class SlackChannelReport(object):
         blocks.append(self.sf.divider())
         blocks.append(self.membercount(cid, ur['start_date'], ur['end_date']))
         blocks.append(self.messages(cid, ur, pur))
+        blocks.append(self.sf.divider())
+        blocks += self.users(cid, ur, pur)
         #m = m.format(self.sf.comparison(us, pus, ['count', 1]), self.sf.comparison(us, pus, ['count', 0]))
         #m += "\n"
         #m += "That made you the *{}*-ranked poster on the Slack and meant you contributed "
