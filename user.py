@@ -163,7 +163,6 @@ class User(object):
             else:  # user already exists.  Updated?
                 updated = user['updated']
                 if updated > last_run:
-                    print("Updating {}".format(Row))
                     self.update_user(Row)
 
         with self.table.batch_writer() as batch:
