@@ -8,17 +8,17 @@ import config
 import slacker
 import channel
 import slack_token
-import slack_formatter
+import slack_user_report
 import report_generator
 
 fake = False
 rg = report_generator.ReportGenerator(fake=fake)
-slack_formatter_obj = slack_formatter.SlackFormatter()
+slack_formatter_obj = slack_user_report.SlackUserReport()
 slack = slacker.Slacker(config.slack_name, slack_token.token)
 channel_obj = channel.Channel()
 
 optchan = config.optin_channel
-optchan_id = channel_obj.get(optchan)['name']
+optchan_id = channel_obj.get(optchan)['channel_id']
 users = slack.get_users_for_channel(optchan_id)
 # users = ["U4430KWBT"]
 last_week = rg.latest_week_start()
@@ -37,5 +37,5 @@ f.write(json.dumps(report, indent=4))
 f.close()
 roy = "U06NSQT34"
 for user in users:
-    # slack_formatter_obj.send_report(user, report, send=True, override_uid=roy)
-    slack_formatter_obj.send_report(user, report, send=True)
+    # slack_formatter_obj.send_report(user, report, previous_report, send=True, override_uid=roy)
+    slack_formatter_obj.send_report(user, report, previous_report, send=True)
