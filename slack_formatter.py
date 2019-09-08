@@ -120,6 +120,16 @@ class SlackFormatter(object):
         days = "Monday Tuesday Wednesday Thursday Friday Saturday Sunday".split()
         return days[int(day)]
 
+    def show_cid(self, cid):
+        if not self.fake:
+            return "<#{}>".format(cid)
+        entry = self.channel.get(cid)
+        if entry:
+            choice = entry['channel_name']
+        else:
+            choice = rn.name()
+        return "#{}".format(choice)
+
     def show_uid(self, uid):
         if not self.fake:
             return "<@{}>".format(uid)
