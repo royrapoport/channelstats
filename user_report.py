@@ -6,7 +6,7 @@ import sys
 import user
 import utils
 import channel
-import slack_formatter
+import slack_user_report
 import report_generator
 
 def override(o):
@@ -65,7 +65,7 @@ parser.add_argument("--fake", action="store_true", help="Use bogus user names")
 parser.add_argument("--override", help="Specify @username or #channel to send report to rather than to the user who owns the report")
 args = parser.parse_args()
 
-slack_formatter_obj = slack_formatter.SlackFormatter(fake=args.fake)
+slack_formatter_obj = slack_user_report.SlackUserReport(fake=args.fake)
 rg = report_generator.ReportGenerator()
 u = user.User()
 c = channel.Channel()
