@@ -10,6 +10,7 @@ import slack
 
 import random_name
 import channel
+import channel_members_log
 import user
 import utils
 import enricher
@@ -29,6 +30,21 @@ class SlackChannelReport(object):
         self.user = user.User(fake=fake)
         self.client = slack.WebClient(token=slack_token.token)
         self.enricher = enricher.Enricher(fake=fake)
+        self.cml = channel_members_log.ChannelMembersLog()
+
+    def membercount(self, cid, start, end):
+        sc = self.cml.earliest_count(cid, start)
+        ec = self.cml.latest_count(cid, end)
+        text = self.sf.simple_comparison(sc, ec)
+        diff = sc - ec
+        text = "{} ended this period with {} members, a change of {} members".format(self.sf.show_cid(cid), text, diff)
+        return self.sf.text_block(text)
+
+    def messages(self, cid, ur, pur):
+        m = "*{}* messages and *{}* words were posted to the channel"
+        m = m.format(self.sf.comparison(ur, pur, ['channels', cid, 0]), self.sf.comparison(ur, pur, ['channels', cid, 1]))
+        b = self.sf.text_block(m)
+        return b
 
     def make_header(self, ur, pur, cid):
         blocks = []
@@ -36,6 +52,8 @@ class SlackChannelReport(object):
         header = header.format(self.sf.show_cid(cid), ur['start_date'], ur['end_date'])
         blocks.append(self.sf.text_block(header))
         blocks.append(self.sf.divider())
+        blocks.append(self.membercount(cid, ur['start_date'], ur['end_date']))
+        blocks.append(self.messages(cid, ur, pur))
         #m = m.format(self.sf.comparison(us, pus, ['count', 1]), self.sf.comparison(us, pus, ['count', 0]))
         #m += "\n"
         #m += "That made you the *{}*-ranked poster on the Slack and meant you contributed "
