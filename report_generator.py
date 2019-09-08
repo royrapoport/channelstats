@@ -157,8 +157,9 @@ class ReportGenerator(object):
         formatted as yyyy-mm-dd, and for the period of DAYS duration
         """
         # print("Generating report for {}/{}/{}".format(start_day, days, user))
-        report_creator = report.Report(channels=channels)
+        report_creator = report.Report()
         report_creator.set_users(users)
+        report_creator.set_channels(channels)
         dates = self.generate_dates(start_day, days)
         report_creator.set_start_date(dates[0])
         report_creator.set_end_date(dates[-1])

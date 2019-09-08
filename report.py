@@ -66,6 +66,11 @@ class Report(object):
         self.channel = channel.Channel()
         self.hydrated_channels = {}
 
+    def set_channels(self, channels):
+        if channels:
+            for channel in channels:
+                self.create_key(["enriched_channel", channel], {})
+
     def set_users(self, users):
         dummyenriched = {}
         for label in "reactions_from reacted_to you_mentioned thread_responders author_thread_responded mentioned_you mentions_combined".split():
@@ -328,6 +333,7 @@ class Report(object):
         keep track of most popular reacjis
         """
         uid = message['user_id']
+        cid = message['slack_cid']
         reactions = message.get("reactions")
         if not reactions:
             return
