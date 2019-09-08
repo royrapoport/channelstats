@@ -102,8 +102,10 @@ class ChannelMembersLog(object):
         mcounts = self.get_mcounts(entry)
         timestamps = list(mcounts.keys())
         filtered_timestamps = [x for x in timestamps if comparator(x, ts)]
-        ts = reducer(filtered_timestamps)
-        return mcounts[ts]
+        if filtered_timestamps:
+            ts = reducer(filtered_timestamps)
+            return mcounts[ts]
+        return 0
 
     def latest_count(self, cid, date):
         """
