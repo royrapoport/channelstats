@@ -20,7 +20,7 @@ parser.add_argument("--fake", action="store_true", help="Use bogus user names")
 parser.add_argument("--override", help="Specify @username or #channel to send report to rather than to the user who owns the report")
 args = parser.parse_args()
 
-slack_formatter_obj = slack_user_report.SlackUserReport(fake=args.fake)
+slack_reporter = slack_user_report.SlackUserReport(fake=args.fake)
 rg = report_generator.ReportGenerator()
 u = user.User()
 c = channel.Channel()
@@ -44,4 +44,4 @@ latest_week_start = rg.latest_week_start()
 days = 7
 send = not args.nosend
 (report, previous_report) = rg.report(latest_week_start, days, users=[uid], force_generate=args.regen)
-slack_formatter_obj.send_report(uid, report, previous_report, send=send, override_uid=destination)
+slack_reporter.send_report(uid, report, previous_report, send=send, override_uid=destination)
