@@ -119,7 +119,8 @@ class SlackFormatter(object):
         fields = [header, "*Percent of Activity*"]
         for i in k:
             fields.append("{}".format(m(i)))
-            fields.append("`{}` {:.1f}% ({} {})".format('*' * int(new[i][0]), new[i][0], new[i][1], label))
+            histo = "`{}` ".format('*' * int(new[i][0])) if int(new[i][0]) > 0 else ''
+            fields.append("{}{:.1f}% ({} {})".format(histo, new[i][0], new[i][1], label))
         blocks = []
         for fset in self.make_fields(fields):
             block = {'type': 'section', 'fields': fset}
