@@ -39,6 +39,32 @@ class SlackFormatter(object):
     def divider(self):
         return { "type": "divider" }
 
+    def simple_comparison(self, cur_item, prev_item, found_prev=True, print_num=True):
+        if prev_item == 0:
+            if cur_item == 0:
+                return "0"
+            else:
+                return "{} :infinity:".format(cur_item)
+        diff = (cur_item * 100.0) / prev_item
+        diff = diff - 100
+        ds = ""
+        emoji = False
+        if not found_prev:
+            emoji = ":new:"
+        if print_num:
+            ds = "{}".format(cur_item)
+        if diff > 0.5 or diff < -0.5:
+            if diff > 0:
+                emoji = emoji or ":green_arrow_up:"
+                ds += " (+{:.0f}%)".format(diff)
+            else:
+                emoji = emoji or ":red_arrow_down:"
+                ds += " ({:.0f}%)".format(diff)
+        else:
+            emoji = emoji or ":same:"
+        ds += emoji
+        return ds
+
     def comparison(self, cur, prev, idx, print_num=True):
         """
         cur and prev are dicts with identical structures
@@ -59,25 +85,7 @@ class SlackFormatter(object):
             except:
                 prev_item = cur_item
                 found_prev = False
-        diff = (cur_item * 100.0) / prev_item
-        diff = diff - 100
-        ds = ""
-        emoji = False
-        if not found_prev:
-            emoji = ":new:"
-        if print_num:
-            ds = "{}".format(cur_item)
-        if diff > 0.5 or diff < -0.5:
-            if diff > 0:
-                emoji = emoji or ":green_arrow_up:"
-                ds += " (+{:.0f}%)".format(diff)
-            else:
-                emoji = emoji or ":red_arrow_down:"
-                ds += " ({:.0f}%)".format(diff)
-        else:
-            emoji = emoji or ":same:"
-        ds += emoji
-        return ds
+        return self.simple_comparison(cur_item, prev_item, found_prev, print_num)
 
     def histogram(self, d, m, idx, header):
         """
