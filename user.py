@@ -8,7 +8,6 @@ import config
 import userhash
 import configuration
 
-
 class User(object):
     table_name = "User"
     fake_table_name = "FakeUser"
