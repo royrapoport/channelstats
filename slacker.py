@@ -83,6 +83,7 @@ class Slacker(object):
         """
         lists = [k for k in response if isinstance(response[k], list)]
         if len(lists) == 0:
+            print("Response was {}".format(json.dumps(response, indent=4)))
             raise RuntimeError("No list of objects found")
         if len(lists) > 1:
             raise RuntimeError(
