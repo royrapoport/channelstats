@@ -51,6 +51,7 @@ class Slacker(object):
         channels = self.paginated_lister(
             "conversations.list?types={types}".format(types=types_param))
 
+        channels.sort(key = lambda x: x['id'])
         if 'private_channel' in types:
             channels_to_iterate = channels
             for index, channel in enumerate(channels_to_iterate):
