@@ -191,6 +191,7 @@ class Report(object):
 
     def accum_timestats(self, message):
         uid = message['user_id']
+        cid = message['slack_cid']
         timestamp = int(float(message['timestamp']))
         # First, get stats unadjusted and by UTC
         localtime = time.gmtime(timestamp)
@@ -215,11 +216,15 @@ class Report(object):
         self.increment(["user_weekday", wday], message)
         if uid in self.track:
             self.increment(["user_stats", uid, "posting_days", wday], message)
+        if cid in self._data['enriched_channel']:
+            self.increment(["enriched_channel", cid, "posting_days", wday], message)
         if wday < 5:  # We only look at weekday activity
             self.increment(["user_weekday_hour", hour], message)
             self.increment(["user_weekday_hour_per_user", uid, hour], message)
             if uid in self.track:
                 self.increment(["user_stats", uid, "posting_hours", hour], message)
+            if cid in self._data['enriched_channel']:
+                self.increment(["enriched_channel", cid, "posting_hours", hour], message)
 
 
     def finalize(self):
