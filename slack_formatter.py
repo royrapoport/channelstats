@@ -205,7 +205,7 @@ class SlackFormatter(object):
             if show_channel:
                 m += " in {}".format(self.show_cid(cid))
             if show_user:
-                m += " from {}".format(self.show_uid(message['uid']))
+                m += " to a message from {}".format(self.show_uid(message['uid']))
             m += " on {}".format(message['dt'])
             block = self.make_link_button(m, 'link', message['url'])
             blocks.append(block)
