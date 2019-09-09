@@ -52,6 +52,7 @@ class Report(object):
 
     def __init__(self):
         self._data = {}
+        self._data['enriched_channel'] = {}
         self.user = user.User()
         self.reactions_accumulator = Accumulator(
             self.top_limit, lambda x: x[0])
