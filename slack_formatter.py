@@ -197,3 +197,20 @@ class SlackFormatter(object):
             blocks.append(block)
         return blocks
 
+    def messager(self, message_list, label, show_user=False, show_channel=False):
+        blocks = []
+        for message in message_list:
+            cid = message['cid']
+            m = "*{}* {}".format(message['count'], label)
+            if show_channel:
+                m += " in {}".format(self.show_cid(cid))
+            if show_user:
+                m += " from {}".format(self.show_uid(message['uid']))
+            m += " on {}".format(message['dt'])
+            block = self.make_link_button(m, 'link', message['url'])
+            blocks.append(block)
+        if not blocks:
+            return blocks
+        blocks = [self.divider()] + blocks
+        blocks = [(self.text_block("*Messages which got the most {}*".format(label)))] + blocks
+        return blocks

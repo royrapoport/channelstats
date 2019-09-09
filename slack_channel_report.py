@@ -111,12 +111,12 @@ class SlackChannelReport(object):
                 "People sent {} reactions to the channel".format(
                     self.sf.comparison(ur, pur, ['enriched_channel', cid, 'reaction_count']))))
         blocks += self.popular_reactions(ur, cid)
+        blocks += self.reacted_messages(ur, cid)
+        blocks += self.replied_messages(ur, cid)
         #blocks += self.make_channels(ur, pur)
         #blocks.append(self.sf.divider())
         #blocks += self.posting_hours(ur, pur, uid)
         #blocks += self.posting_days(ur, pur, uid)
-        #blocks += self.reacted_messages(ur, uid)
-        #blocks += self.replied_messages(ur, uid)
         #blocks += self.popular_reactions(ur, uid)
         #blocks += self.topten(ur, pur, uid, 'reactions_from', "The people who most responded to you are")
         #blocks += self.topten(ur, pur, uid, 'reacted_to', "The people you most responded to are")
@@ -140,6 +140,20 @@ class SlackChannelReport(object):
         d = ur['user_stats'][uid]['posting_days']
         blocks += self.sf.histogram(d, self.sf.day_formatter, idx, "*Day of Week*")
         return blocks
+
+    def reacted_messages(self, ur, cid):
+        return self.sf.messager(
+            ur['enriched_channel'][cid]['most_reacted'],
+            'reactions',
+            show_user=True,
+            show_channel=False)
+
+    def replied_messages(self, ur, cid):
+        return self.sf.messager(
+            ur['enriched_channel'][cid]['most_replied'],
+            'replies',
+            show_user=True,
+            show_channel=False)
 
     def posting_hours(self, ur, pur, uid):
         """
@@ -185,28 +199,6 @@ class SlackChannelReport(object):
             blocks.append(block)
         return blocks
 
-    def reacted_messages(self, ur, uid):
-        return self.messager(ur, uid, "reactions")
-
-    def replied_messages(self, ur, uid):
-        return self.messager(ur, uid, "replies")
-
-    def messager(self, ur, uid, label):
-        blocks = []
-        for message in ur['reenriched_user'][uid][label]:
-            cname = message['channel']
-            if self.fake:
-                cname = self.sf.get_fake_channel(cname)
-            m = "*{}* {} in #{} on {}"
-            m = m.format(message['count'], label, cname, message['dt'])
-            block = self.sf.make_link_button(m, 'link', message['url'])
-            blocks.append(block)
-        if not blocks:
-            return blocks
-        blocks = [self.sf.divider()] + blocks
-        blocks = [(self.sf.text_block("*Your messages which got the most {}*".format(label)))] + blocks
-        return blocks
-
     def popular_reactions(self, ur, cid):
         popularity = ur['enriched_channel'][cid]['reactions']
         return self.sf.reactions(popularity)
@@ -239,6 +231,8 @@ class SlackChannelReport(object):
 
 
     def send_report(self, cid, ur, previous, send=True, override_uid=None):
+        enricher.Enricher(fake=self.fake).enrich(ur)
+        enricher.Enricher(fake=self.fake).enrich(previous)
         blocks = self.make_report(ur, previous, cid)
         if not send:
             print("Saving report to slack.json")

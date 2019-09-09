@@ -130,26 +130,18 @@ class SlackUserReport(object):
         return blocks
 
     def reacted_messages(self, ur, uid):
-        return self.messager(ur, uid, "reactions")
+        return self.sf.messager(
+            ur['reenriched_user'][uid]['reactions'],
+            'reactions',
+            show_user=False,
+            show_channel=True)
 
     def replied_messages(self, ur, uid):
-        return self.messager(ur, uid, "replies")
-
-    def messager(self, ur, uid, label):
-        blocks = []
-        for message in ur['reenriched_user'][uid][label]:
-            cname = message['channel']
-            if self.fake:
-                cname = self.sf.get_fake_channel(cname)
-            m = "*{}* {} in #{} on {}"
-            m = m.format(message['count'], label, cname, message['dt'])
-            block = self.sf.make_link_button(m, 'link', message['url'])
-            blocks.append(block)
-        if not blocks:
-            return blocks
-        blocks = [self.sf.divider()] + blocks
-        blocks = [(self.sf.text_block("*Your messages which got the most {}*".format(label)))] + blocks
-        return blocks
+        return self.sf.messager(
+            ur['reenriched_user'][uid]['replies'],
+            'replies',
+            show_user=False, 
+            show_channel=True)
 
     def popular_reactions(self, ur, uid):
         popularity = ur['enriched_user'][uid]['reaction_popularity']
