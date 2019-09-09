@@ -214,3 +214,25 @@ class SlackFormatter(object):
         blocks = [self.divider()] + blocks
         blocks = [(self.text_block("*Messages which got the most {}*".format(label)))] + blocks
         return blocks
+
+    def posting_hours(self, d):
+        """
+        Report on activity per hour of the workday
+        """
+        blocks = []
+        blocks.append(self.text_block("*Weekday posting activity by (local) hour of the day:*"))
+        # We'll use messages (idx 0) rather than words (idx 1)
+        idx = 0
+        blocks += self.histogram(d, self.hour_formatter, idx, "*(Local) Time of Weekday*")
+        return blocks
+
+    def posting_days(self, d):
+        """
+        Report on activity per day of the week
+        """
+        blocks = []
+        blocks.append(self.text_block("*Posting activity by day of the week:*"))
+        # We'll use messages (idx 0) rather than words (idx 1)
+        idx = 0
+        blocks += self.histogram(d, self.day_formatter, idx, "*Day of Week*")
+        return blocks

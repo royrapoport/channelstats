@@ -113,10 +113,10 @@ class SlackChannelReport(object):
         blocks += self.popular_reactions(ur, cid)
         blocks += self.reacted_messages(ur, cid)
         blocks += self.replied_messages(ur, cid)
+        blocks += self.posting_hours(ur, cid)
+        blocks += self.posting_days(ur, cid)
         #blocks += self.make_channels(ur, pur)
         #blocks.append(self.sf.divider())
-        #blocks += self.posting_hours(ur, pur, uid)
-        #blocks += self.posting_days(ur, pur, uid)
         #blocks += self.popular_reactions(ur, uid)
         #blocks += self.topten(ur, pur, uid, 'reactions_from', "The people who most responded to you are")
         #blocks += self.topten(ur, pur, uid, 'reacted_to', "The people you most responded to are")
@@ -129,17 +129,19 @@ class SlackChannelReport(object):
         #blocks += self.topten(ur, pur, uid, 'mentions_combined', "Mention Affinity")
         return blocks
 
-    def posting_days(self, ur, pur, uid):
+    def posting_days(self, ur, cid):
         """
         Report on activity per day of the week
         """
-        blocks = []
-        blocks.append(self.sf.text_block("*Your posting activity by day of the week:*"))
-        # We'll use messages (idx 0) rather than words (idx 1)
-        idx = 0
-        d = ur['user_stats'][uid]['posting_days']
-        blocks += self.sf.histogram(d, self.sf.day_formatter, idx, "*Day of Week*")
-        return blocks
+        d = ur['enriched_channel'][cid]['posting_days']
+        return self.sf.posting_days(d)
+
+    def posting_hours(self, ur, cid):
+        """
+        Report on activity per hour of the workday
+        """
+        d = ur['enriched_channel'][cid]['posting_hours']
+        return self.sf.posting_hours(d)
 
     def reacted_messages(self, ur, cid):
         return self.sf.messager(
@@ -154,18 +156,6 @@ class SlackChannelReport(object):
             'replies',
             show_user=True,
             show_channel=False)
-
-    def posting_hours(self, ur, pur, uid):
-        """
-        Report on activity per hour of the workday
-        """
-        blocks = []
-        blocks.append(self.sf.text_block("*Your weekday posting activity by (local) hour of the day:*"))
-        # We'll use messages (idx 0) rather than words (idx 1)
-        idx = 0
-        d = ur['user_stats'][uid]['posting_hours']
-        blocks += self.sf.histogram(d, self.sf.hour_formatter, idx, "*(Local) Time of Weekday*")
-        return blocks
 
     def topten(self, ur, pur, uid, label, header):
         blocks = []
