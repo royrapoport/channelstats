@@ -1,10 +1,13 @@
 # channelstats data model
 
 channelstats stores its data in DynamoDB tables (either local or in AWS).  Here
-is their structure. and expected use.
+is their structure and expected use.
 
 Columns marked with (H) are Hash keys
 Columns marked with (R) are Range keys (if present)
+
+Learn more about Hash and Range keys [here](https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/HowItWorks.CoreComponents.html).
+
 
 ## Channel
 
@@ -15,14 +18,15 @@ Columns marked with (R) are Range keys (if present)
 | **channel_id**  | Slack Channel ID |
 | **members** | int number of members |
 | **is_channel** | Boolean, whether channel is a public channel |
-| **is_im** | Boolean, whether channel is a DM |
+| **is_im** | Boolean, whether channel is an IM/DM |
 | **is_group** | Boolean, whether channel is a group (AKA private channel) |
 | **is_mpim** | Boolean, whether channel is an MPIM/MPDM (DM with multiple people) |
 | **created** | int timestamp of channel creation |
 
-Keeps tracks of the channels we have.  Of particular note is the fact we end up with two rows -- one is indexed by channel ID,  and the other is indexed by the friendly name.
+Keeps tracks of the channels we have. Of particular note is the fact we end up with two rows per channel -- one is 
+indexed by the Slack channel ID, and the other is indexed by the friendly name.
 
-`members` might be 0, and probably will be for archived channels.
+Column `members` may be 0 and will be for archived channels.
 
 
 ## ChannelConfiguration
@@ -33,7 +37,9 @@ Keeps tracks of the channels we have.  Of particular note is the fact we end up 
 | **last_message_timestamp**  | The int timestamp of the last message we retrieved from the channel |
 | **refetch** | *deprecated* |
 
-Used to keep track of where in channel history we are to know where we need to start grabbing messages (or, if config.refetch is defined, then we go `config.refetch` days back from `last_message_timestamp`)
+Used to keep track of where in channel history we are to know where we need to start 
+grabbing messages (or, if config.refetch is defined, then we go `config.refetch` days 
+back from `last_message_timestamp`)
 
 ## Configuration
 
@@ -44,7 +50,8 @@ Used to keep track of where in channel history we are to know where we need to s
 
 General-purpose configuration table to keep track of bits and pieces we want to remember (e.g. last time we ran).  
 
-Of interest is the `counts` key, whose value is a set of K:V columns for various K we care about (e.g. `active_users`, `all_users`, etc)
+Of interest is the `counts` key, whose value is a set of K:V columns for various K 
+we care about (e.g. `active_users`, `all_users`, etc)
 
 ## FirstPost
 
@@ -57,7 +64,9 @@ Of interest is the `counts` key, whose value is a set of K:V columns for various
 
 This table stores a pointer to a user's first message on the Slack.  
 
-Some entries in this table only have a channel and a key, both pointing to the same Channel ID, and a ts which is 0 (so no message_id, and no reference to a user).  I'm not at this point clear why these entries exist.
+Some entries in this table only have a channel and a key, both pointing to the same 
+Channel ID, and a ts which is 0 (so no message_id, and no reference to a user).  
+I'm not at this point clear why these entries exist.
 
 
 ## Message-yyyy-mm-dd
@@ -80,9 +89,15 @@ Some entries in this table only have a channel and a key, both pointing to the s
 
 For each day, we create a table named Message-yyyy-mm-dd with the day's messages in it.
 
-For `replies`, we keep the replies as pairs of UID:TS (UID of the author of the reply, timestamp of the reply), joined by a ','.  Replies are guaranteed to be in the same channel (of course), so the combination of this message's channel and the reply's TS gives a unique message.
+For `replies`, we keep the replies as pairs of UID:TS (UID of the author of the reply, timestamp of the reply), 
+joined by a ','.  Replies are guaranteed to be in the same channel (of course), so the combination of this 
+message's channel and the reply's TS gives a unique message.
 
-A message's `thread_author` may by the same as the message's ``user_id`` (either because this is the originating message in the thread or because the author of the thread replies in it).  The message is the head of the thread if the `thread_timestamp` is identical to the `timestamp`.
+A message's `thread_author` may by the same as the message's `user_id` (either because this is the 
+originating message in the thread or because the author of the thread replies in it). 
+The message is the head of the thread if the `thread_timestamp` is identical to the 
+`timestamp`.
+
 
 ## ReportStore
 
@@ -96,11 +111,14 @@ Used to store generated reports so we don't need to re-generate them.
 
 If the report size is smaller than 300K, we'll just store the report text in `value`.  
 
-If the report size is larger than 300K, we'll chunk it up into 300K chunks.  Each will be given its own unique report_id and stored in its own row.  Then, the report ID for that chunk will be stored as the value of the particular index of that chunk.
+If the report size is larger than 300K, we'll chunk it up into 300K chunks. 
+Each will be given its own unique report_id and stored in its own row. 
+Then, the report ID for that chunk will be stored as the value of the particular 
+index of that chunk.
 
 So for example, if the report with report_id `foo` is "whatever" and chunk size is limited to 2, we'll break it into `wh`, `at`, `ev`, and `er`
 (chunks 0, 1, 2, 3 in order).  `foo` will have 4 keys in addition to `report_id`: 0, 1, 2, 3.  Each key will have as its value another report_id -- e.g. 0:foo-0, 1:foo-1, etc.
-Then report_id foo-0 will have an entry in the table whose `value` is `wh`
+Then report_id foo-0 will have an entry in the table whose `value` is `wh`.
 
 
 ## User
@@ -126,6 +144,7 @@ this information.
 time we inserted the user.  Ideally, at some point we'll move insert_timestamp
 to a different table.
 
+
 ## UserHash
 
 | column      | values |
@@ -133,7 +152,8 @@ to a different table.
 | **key** (H) | UID Hash |
 | **uids**    | UID UID UID UID ... UID |
 
-The UID Hash is the result of a simplistic hash function (see userhash.UserHash.make_key()) which currently simply returns the last character in the UID.  
+The UID Hash is the result of a simplistic hash function (see userhash.UserHash.make_key()) which currently 
+returns the last character in the UID.  
 
 UIDs are about 10 chars; we store them as
 ```
@@ -145,6 +165,9 @@ gives us about 20,000 UIDs per row Using the last char in the UID turns out to
 give us a pretty good distribution -- and with 35 possible values, gives us up
 to about 700K users.
 
-This table allows us to quickly ascertain whether we already know about a user before deciding whether to simply upload the user or modify it.  By using this hash approach, we can do one DB get() per approximately 20K userIDs (or at most, we'll end up with ~35 DB gets) rather than one per userID.  
+This table allows us to quickly ascertain whether we already know about a user before 
+deciding whether to simply upload the user or modify it.  By using this hash approach, 
+we can do one DB get() per approximately 20K userIDs (or at most, we'll end up with ~35 
+DB gets) rather than one per userID.  
 
 **uids** is a text field with UIDs separated by spaces.
