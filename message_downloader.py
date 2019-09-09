@@ -53,6 +53,7 @@ class Downloader(object):
         for cid in cids:
             channel_name = self.channel.get(cid)['name']
             sys.stdout.write("{}/{} {} - {} ".format(idx, cid_count, cid, channel_name))
+            sys.stdout.flush()
             idx += 1
             (last_timestamp, refetch) = self.cconfig.get_channel_config(cid)
             refetch = (config.refetch * 86400)
