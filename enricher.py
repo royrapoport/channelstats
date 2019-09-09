@@ -45,7 +45,7 @@ class Enricher(object):
         """
         given a list of lists where each list is
         [reaction count, timestamp, cid, uid]
-        convert to dict with 'count', 'dt', 'channel', 'user', 'url'
+        convert to dict with 'count', 'dt', 'channel', 'cid', 'uid', 'user', 'url'
         """
         ret = []
         for message in messages:
@@ -58,6 +58,8 @@ class Enricher(object):
                 'dt': time.strftime("%m/%d/%Y %H:%M", time.localtime(int(float(timestamp)))),
                 'channel': cinfo[cid]['name'],
                 'user': uinfo[uid]['label'],
+                'uid': uid,
+                'cid': cid,
                 'url': url.format(config.slack_name, cid, timestamp.replace(".", ""))
             })
         return ret
@@ -97,6 +99,11 @@ class Enricher(object):
         report['replied_messages'] = Enricher.popular_messages(
             report['reply_count'], channel_info, user_info)
         report['replied_messages'] = report['replied_messages'][0:10]
+
+        for cid in report.get('enriched_channel', {}):
+            for k in ['most_replied', 'most_reacted']:
+                report['enriched_channel'][cid][k] = Enricher.popular_messages(
+                    report['enriched_channel'][cid][k], channel_info, user_info)
 
     def user_enrich(self, report, uid):
         self.enrich(report)
