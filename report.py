@@ -56,6 +56,8 @@ class Report(object):
         self.reactions_accumulator = Accumulator(
             self.top_limit, lambda x: x[0])
         self.reply_accumulator = Accumulator(self.top_limit, lambda x: x[0])
+        self.channel_reply_accumulators = {}
+        self.channel_reaction_accumulators = {}
         self.user_reply_accumulators = {}
         self.user_reaction_accumulators = {}
         self.reactions = {}
@@ -68,9 +70,16 @@ class Report(object):
 
     def set_channels(self, channels):
         if channels:
+            self.channel_reply_accumulators = {}
+            self.channel_reaction_accumulators = {}
             for channel in channels:
                 print("Will keep track of channel {}".format(channel))
-                self.create_key(["enriched_channel", channel], {})
+                self.create_key(["enriched_channel", channel, 'most_replied'], {})
+                self.create_key(["enriched_channel", channel, 'most_reacted'], {})
+                self.channel_reply_accumulators[channel] = Accumulator(
+                    self.top_limit, lambda x: x[0])
+                self.channel_reaction_accumulators[channel] = Accumulator(
+                    self.top_limit, lambda x: x[0])
 
     def set_users(self, users):
         dummyenriched = {}
@@ -286,11 +295,15 @@ class Report(object):
         self._data['reply_count'] = self.reply_accumulator.dump()
         for uid in self.user_reply_accumulators:
             self._data['enriched_user'][uid]['replies'] = self.user_reply_accumulators[uid].dump()
+        for cid in self.channel_reply_accumulators:
+            self._data['enriched_channel'][cid]['most_replied'] = self.channel_reply_accumulators[cid].dump()
 
     def _finalize_reaction_popularity(self):
         self._data['reaction_count'] = self.reactions_accumulator.dump()
         for uid in self.user_reaction_accumulators:
             self._data['enriched_user'][uid]['reactions'] = self.user_reaction_accumulators[uid].dump()
+        for cid in self.channel_reaction_accumulators:
+            self._data['enriched_channel'][cid]['most_reacted'] = self.channel_reaction_accumulators[cid].dump()
 
     def _finalize_period_activity(self):
         # Two-step process:
@@ -353,7 +366,7 @@ class Report(object):
             # and some may be 'skin-tone-X".  Remove these since
             # they're not actually reactors
             reactors = [x for x in reactors if (x and x[0] == "U")]
-            if cid in self._data['enriched_channel']:
+            if cid in self._data.get("enriched_channel", {}):
                 self.create_key(['enriched_channel', cid, 'reaction_count'], 0)
                 self._data['enriched_channel'][cid]['reaction_count'] += len(reactors)
                 self.create_key(['enriched_channel', cid, 'reactions', reaction_name], 0)
@@ -438,6 +451,8 @@ class Report(object):
         self.reactions_accumulator.append(mrecord)
         if uid in self.user_reaction_accumulators:
             self.user_reaction_accumulators[uid].append(mrecord)
+        if cid in self.channel_reaction_accumulators:
+            self.channel_reaction_accumulators[cid].append(mrecord)
 
     def accum_mentions(self, message):
         uid = message['user_id']
@@ -502,6 +517,8 @@ class Report(object):
         self.reply_accumulator.append(mrecord)
         if uid in self.user_reaction_accumulators:
             self.user_reply_accumulators[uid].append(mrecord)
+        if cid in self.channel_reaction_accumulators:
+            self.channel_reaction_accumulators[cid].append(mrecord)
 
     def accum_channel(self, message):
         self.increment(["channels", message['slack_cid']], message)
