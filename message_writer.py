@@ -107,10 +107,8 @@ class MessageWriter(object):
         reply_count = 0
         replies = message.get("replies", [])
         replies.sort(key = lambda x: int(float(x['ts'])))
-        for reply in replies:
-            reply_count += 1
-            reply_string = "{}:{}".format(reply['user'], reply['ts'])
-            replies.append(reply_string)
+        reply_count = len(replies)
+        replies = ["{}:{}".format(x['user'], x['ts']) for x in replies]
         if replies:
             replies = ",".join(replies)
         else:
