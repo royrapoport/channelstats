@@ -364,14 +364,9 @@ class Report(object):
         # reactions are of the form reaction_name:uid:uid...,reaction_name...
         reaction_list = reactions.split(",")
         for reaction in reaction_list:
-            elements = reaction.split(":")
+            elements = reaction.split(";")
             reaction_name = elements.pop(0)
             reactors = elements
-            # reactions are sometimes e.g. point_up_2::skin-tone-3
-            # which means that some of the reactors might be blank
-            # and some may be 'skin-tone-X".  Remove these since
-            # they're not actually reactors
-            reactors = [x for x in reactors if (x and x[0] == "U")]
             if cid in self._data.get("enriched_channel", {}):
                 self.create_key(['enriched_channel', cid, 'reaction_count'], 0)
                 self._data['enriched_channel'][cid]['reaction_count'] += len(reactors)
@@ -465,7 +460,7 @@ class Report(object):
         mentions = message.get("mentions")
         if not mentions:
             return
-        mentions = mentions.split(":")
+        mentions = mentions.split(",")
         # Due to a bug, about 800 messages have a mention that is the
         # message's UID.  We'll fix that later, but for now, filter this out
         mentions = [x for x in mentions if x != uid]

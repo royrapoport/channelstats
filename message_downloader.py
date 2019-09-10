@@ -101,9 +101,11 @@ class Downloader(object):
                         self.MessageWriter.write(
                             thread_messages, cid, parent_user_id)
             # WRITE_MESSAGES(messages, cid)
-            sys.stdout.write(
-                "Downloaded {} messages and {} threads\n".format(
-                    message_count, threads))
+            m = "Downloaded {} messages and {} threads\n".format(
+                    message_count, threads)
+            if message_count == 0 and threads == 0:
+                m = "\n"
+            sys.stdout.write(m)
             sys.stdout.flush()
         self.fp.save()
 

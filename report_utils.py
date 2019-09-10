@@ -51,7 +51,7 @@ def uid_for(token):
         raise RuntimeError("Could not find a user with name '{}'".format(token))
     if len(matches) > 1:
         raise RuntimeError("Found too many matches for user {}: {}".format(token, json.dumps(matches, indent=4)))
-    uid = matches[0]['id']
+    uid = matches[0]['slack_uid']
     return uid
 
 def cid_for(token):
