@@ -21,8 +21,10 @@ class SlackFormatter(object):
     def __init__(self, fake=False):
         random.seed(time.time())
         self.fake = fake
-        self.fake_channel = channel.Channel(fake=True)
         self.channel = channel.Channel()
+        self.fake_channel = channel.Channel(fake=True)
+        if self.fake:
+            self.channel = self.fake_channel
         self.rn = random_name.RandomName()
         self.user = user.User(fake=fake)
         self.client = slack.WebClient(token=slack_token.token)

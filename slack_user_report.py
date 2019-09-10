@@ -20,7 +20,7 @@ import slack_formatter
 class SlackUserReport(object):
 
     def __init__(self, fake=False):
-        self.sf = slack_formatter.SlackFormatter()
+        self.sf = slack_formatter.SlackFormatter(fake=fake)
         random.seed(time.time())
         self.fake = fake
         self.fake_channel = channel.Channel(fake=True)
@@ -140,7 +140,7 @@ class SlackUserReport(object):
         return self.sf.messager(
             ur['reenriched_user'][uid]['replies'],
             'replies',
-            show_user=False, 
+            show_user=False,
             show_channel=True)
 
     def popular_reactions(self, ur, uid):
@@ -157,9 +157,7 @@ class SlackUserReport(object):
         for channel_name in ur['enriched_channels']:
             channel = ur['enriched_channels'][channel_name]
             cname = channel['name']
-            if self.fake:
-                cname = self.sf.get_fake_channel(channel_name)
-            f1 = "{} *{}*".format(ctr, cname)
+            f1 = "{} *{}*".format(ctr, self.sf.show_cid(cname))
             f2 = "*{}* rank, *{}* m, *{}* w"
             messages = self.sf.comparison(ur, pur, ['enriched_channels', channel_name, 'messages'])
             words = self.sf.comparison(ur, pur, ['enriched_channels', channel_name, 'words'])
