@@ -19,18 +19,18 @@ class ChannelConfiguration(object):
         )
         return 'Item' in response
 
-    def update_channel_timestamp(self, slack_cid, last_message_timestamp):
+    def update_channel_ts(self, slack_cid, last_message_ts):
         if not self.channel_configuration_exists(slack_cid):
-            self.set_channel_config(slack_cid, last_message_timestamp)
+            self.set_channel_config(slack_cid, last_message_ts)
             return
 
         self.table.update_item(
             Key={
                 'slack_cid': slack_cid
             },
-            UpdateExpression="set last_message_timestamp=:t",
+            UpdateExpression="set last_message_ts=:t",
             ExpressionAttributeValues={
-                ":t": int(last_message_timestamp)
+                ":t": int(last_message_ts)
             },
             ReturnValues="UPDATED_NEW"
         )
@@ -38,7 +38,7 @@ class ChannelConfiguration(object):
     def set_channel_config(
             self,
             slack_cid,
-            last_message_timestamp):
+            last_message_ts):
         """
         Sets configuration for the given slack_cid
         """
@@ -46,14 +46,14 @@ class ChannelConfiguration(object):
         self.table.put_item(
             Item={
                 'slack_cid': slack_cid,
-                'last_message_timestamp': str(last_message_timestamp)
+                'last_message_ts': str(last_message_ts)
             }
         )
 
     def get_channel_config(self, cid):
         """
-        returns last_message_timestamp for cid
-        If we have never gotten cid, last_message_timestamp will be 0
+        returns last_message_ts for cid
+        If we have never gotten cid, last_message_ts will be 0
         """
         response = self.table.get_item(
             Key={
@@ -63,6 +63,6 @@ class ChannelConfiguration(object):
         if 'Item' not in response:
             return 0
         item = response['Item']
-        last_message_timestamp = item['last_message_timestamp']
-        ret = last_message_timestamp
+        last_message_ts = item['last_message_ts']
+        ret = last_message_ts
         return ret

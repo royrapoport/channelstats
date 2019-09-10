@@ -64,7 +64,7 @@ class User(object):
         dummy = {
             'slack_uid': 'USLACKBOT',
             'tz_offset': -25200,
-            'insert_timestamp': 1567210676,
+            'insert_ts': 1567210676,
             'user_name': 'dummy',
             'tz': 'America/Los_Angeles',
             'real_name': 'Dummy User',
@@ -157,7 +157,7 @@ class User(object):
             }
             if not self.userhash.user_exists(uid):
                 self.userhash.register_user(uid)
-                Row['insert_timestamp'] = now
+                Row['insert_ts'] = now
                 Row = utils.prune_empty(Row)
                 insert_users.append(Row)
             else:  # user already exists.  Updated?

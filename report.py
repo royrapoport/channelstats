@@ -193,9 +193,9 @@ class Report(object):
     def accum_timestats(self, message):
         uid = message['user_id']
         cid = message['slack_cid']
-        timestamp = int(float(message['ts']))
+        ts = int(float(message['ts']))
         # First, get stats unadjusted and by UTC
-        localtime = time.gmtime(timestamp)
+        localtime = time.gmtime(ts)
         hour = localtime.tm_hour
         wday = localtime.tm_wday
         self.increment(["weekday", wday], message)
@@ -210,8 +210,8 @@ class Report(object):
         tz_offset = user['tz_offset']
         tz = user.get("tz", "Unknown")
         self.increment(["timezone", tz], message)
-        timestamp += tz_offset
-        localtime = time.gmtime(timestamp)
+        ts += tz_offset
+        localtime = time.gmtime(ts)
         hour = localtime.tm_hour
         wday = localtime.tm_wday
         self.increment(["user_weekday", wday], message)

@@ -42,34 +42,34 @@ class MessageTableFactory(object):
             return dates[0]
         return None
 
-    def get_message_table_name(self, timestamp_or_dt):
+    def get_message_table_name(self, ts_or_dt):
         """
-        given str timestamp or yyyy-mm-dd, return the name of the Message table we'll store
+        given str ts or yyyy-mm-dd, return the name of the Message table we'll store
         a message in
         """
         try:
-            int(float(timestamp_or_dt))
-            date = self.make_day(timestamp_or_dt)
+            int(float(ts_or_dt))
+            date = self.make_day(ts_or_dt)
         except BaseException:
-            if not re.match(r"\d\d\d\d-\d\d-\d\d", timestamp_or_dt):
+            if not re.match(r"\d\d\d\d-\d\d-\d\d", ts_or_dt):
                 raise RuntimeError(
-                    "timestamp_or_dt needs to be a timestamp or dt")
-            date = timestamp_or_dt
+                    "ts_or_dt needs to be a timestamp or dt")
+            date = ts_or_dt
         return "{}{}".format(self.prefix, date)
 
-    def make_day(self, timestamp):
+    def make_day(self, ts):
         """
-        Given a str timestamp, return yyyy-mm-dd
+        Given a str ts, return yyyy-mm-dd
         """
-        lt = time.localtime(int(float(timestamp)))
+        lt = time.localtime(int(float(ts)))
         return time.strftime("%Y-%m-%d", lt)
 
-    def get_message_table(self, timestamp_or_dt):
+    def get_message_table(self, ts_or_dt):
         """
         Return a pynamodb.models.Model Table for the given UNIX timestamp;
         """
 
-        table_name = self.get_message_table_name(timestamp_or_dt)
+        table_name = self.get_message_table_name(ts_or_dt)
         if table_name not in self.__day_tables:
             DDB = ddb.DDB(table_name, [("ts", "S"), ("slack_cid", "S")])
             table = DDB.get_table(readonly=self.readonly)

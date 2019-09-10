@@ -28,12 +28,12 @@ class Slacker(object):
                 cid, thread_ts))
         return messages
 
-    def get_messages(self, cid, timestamp, callback=None):
-        timestamp = int(float(timestamp))
-        # print("Getting messages from {} starting {}".format(cid, time.asctime(time.localtime(int(timestamp)))))
+    def get_messages(self, cid, ts, callback=None):
+        ts = int(float(ts))
+        # print("Getting messages from {} starting {}".format(cid, time.asctime(time.localtime(int(ts)))))
         return self.paginated_lister(
             "conversations.history?channel={}&oldest={}".format(
-                cid, timestamp), callback=callback)
+                cid, ts), callback=callback)
 
     def get_all_users(self):
         return self.paginated_lister("users.list")

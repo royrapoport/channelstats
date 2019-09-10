@@ -28,12 +28,12 @@ class MessageWriter(object):
         for message in list_of_messages:
             if message.get("type") != "message":
                 continue
-            timestamp = message['ts']
+            ts = message['ts']
             table_name = self.MessageTableFactory.get_message_table_name(
-                timestamp)
+                ts)
             if table_name not in message_tables:
                 message_tables[table_name] = self.MessageTableFactory.get_message_table(
-                    timestamp)
+                    ts)
                 messages[table_name] = []
             messages[table_name].append(message)
 
@@ -51,7 +51,7 @@ class MessageWriter(object):
         """
         create a Row dictionary for insertion into DynamoDB
         """
-        timestamp = message['ts']
+        ts = message['ts']
         try:
             user_id = message.get("user") or message.get("bot_id")
         except BaseException:
@@ -68,14 +68,14 @@ class MessageWriter(object):
         (reply_count, replies) = self.get_replies(message)
         files = json.dumps(message.get("files", None))
         thread_ts = message.get("thread_ts")
-        is_threadhead = thread_ts == timestamp
+        is_threadhead = thread_ts == ts
         is_threaded = 'thread_ts' in message
         if files == 'null':
             files = None
         Row = {
             "is_threaded": is_threaded,
             "is_thread_head": is_threadhead,
-            "ts": timestamp,
+            "ts": ts,
             "thread_ts": thread_ts,
             "slack_cid": cid,
             "user_id": user_id,

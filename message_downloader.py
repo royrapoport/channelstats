@@ -21,24 +21,24 @@ class Downloader(object):
         self.channel = channel.Channel()
         self.fp = firstpost.FirstPost()
 
-    def earliest_timestamp(self):
+    def earliest_ts(self):
         """
-        Given config.max_age, return the minimum timestamp we're willing to refetch
+        Given config.max_age, return the minimum ts we're willing to refetch
         """
         now = time.time()
         then = now - 86400 * config.max_age
         return then
 
-    def ts_print(self, timestamp):
-        return time.asctime(time.localtime(float(timestamp)))
+    def ts_print(self, ts):
+        return time.asctime(time.localtime(float(ts)))
 
     def filter_messages(self, messages):
         new_messages = [x for x in messages if x.get(
             "subtype") != "bot_message"]
         return new_messages
 
-    def dt(self, timestamp):
-        tl = time.localtime(timestamp)
+    def dt(self, ts):
+        tl = time.localtime(ts)
         s = time.strftime("%Y-%m-%d %H:%M", tl)
         return s
 
@@ -58,18 +58,18 @@ class Downloader(object):
             sys.stdout.write("{}/{} {} - {} ".format(idx, cid_count, cid, friendly_name))
             sys.stdout.flush()
             idx += 1
-            last_timestamp = self.cconfig.get_channel_config(cid)
+            last_ts = self.cconfig.get_channel_config(cid)
             refetch = (config.refetch * 86400)
-            last_timestamp = int(float(last_timestamp))
-            # print("\t Last timestamp is {}".format(self.dt(last_timestamp)))
-            timestamp = last_timestamp - refetch
-            # print("\t After reducing by {}, timestamp is {}".format(refetch, self.dt(timestamp)))
-            timestamp = max(timestamp, self.earliest_timestamp())
-            # print("\t After looking at max, timestamp is {}".format(self.dt(timestamp)))
-            messages = self.slack.get_messages(cid, timestamp)
+            last_ts = int(float(last_ts))
+            # print("\t Last ts is {}".format(self.dt(last_ts)))
+            ts = last_ts - refetch
+            # print("\t After reducing by {}, ts is {}".format(refetch, self.dt(ts)))
+            ts = max(ts, self.earliest_ts())
+            # print("\t After looking at max, ts is {}".format(self.dt(ts)))
+            messages = self.slack.get_messages(cid, ts)
             # messages = self.filter_messages(messages)
             # print("Got {} messages since {} in {}".format(
-            #   len(messages), self.ts_print(timestamp), cid))
+            #   len(messages), self.ts_print(ts), cid))
             threads = 0
             message_count = 0
             if messages:
@@ -78,7 +78,7 @@ class Downloader(object):
                 #    "Setting max ts for {} to {}".format(
                 #        cid, time.asctime(
                 #            time.localtime(max_ts))))
-                self.cconfig.update_channel_timestamp(cid, max_ts)
+                self.cconfig.update_channel_ts(cid, max_ts)
                 # print("Got {} messages for CID {}".format(len(messages), cid))
                 self.MessageWriter.write(messages, cid)
                 self.fp.set_channel(cid)
