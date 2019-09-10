@@ -21,8 +21,8 @@ class Channel(object):
                 cid = channel['id']
                 cname = channel.get('name')
                 values = {
-                    'channel_name': cname,
-                    'channel_id': cid,
+                    'friendly_name': cname,
+                    'slack_cid': cid,
                     'created': channel.get('created'),
                     'members': channel.get('num_members'),
                     'is_channel': channel.get('is_channel', None),
@@ -45,5 +45,5 @@ class Channel(object):
         if 'Item' not in response:
             return None
         result = response['Item']
-        result['name'] = result.get('channel_name')
+        result['name'] = result.get('friendly_name')
         return result

@@ -33,7 +33,7 @@ class Enricher(object):
         ret = {}
         for cid in entries:
             entry = entries[cid]
-            name = entry['channel_name']
+            name = entry['friendly_name']
             created = int(entry['created'])
             new = created > report_start_timestamp
             members = entry.get("members", 0)

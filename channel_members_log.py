@@ -11,7 +11,7 @@ class ChannelMembersLog(object):
         self.fake = fake
         if self.fake:
             self.table_name = "Fake" + self.table_name
-        self.ddb = ddb.DDB(self.table_name, [('channel_id', 'S')])
+        self.ddb = ddb.DDB(self.table_name, [('slack_cid', 'S')])
         self.table = self.ddb.get_table()
 
     def token(self, ts):
@@ -28,7 +28,7 @@ class ChannelMembersLog(object):
     def update(self, cid, ts, count):
         nows = self.token(int(ts))
         self.table.update_item(
-            Key = {'channel_id': cid},
+            Key = {'slack_cid': cid},
             UpdateExpression='set {} = :m'.format(nows),
             ExpressionAttributeValues={':m': count},
             ReturnValues='UPDATED_NEW'
@@ -44,7 +44,7 @@ class ChannelMembersLog(object):
             members = 0
             if 'num_members' in channel:
                 members = channel['num_members']
-            row = {'channel_id': cid, nows: members}
+            row = {'slack_cid': cid, nows: members}
             item = self.get(cid)
             if item:
                 update_rows.append(row)
@@ -54,13 +54,13 @@ class ChannelMembersLog(object):
             for row in new_rows:
                 batch.put_item(row)
         for row in update_rows:
-            cid = row['channel_id']
+            cid = row['slack_cid']
             ts = now
             count = row[nows]
             self.update(cid, ts, count)
 
     def get(self, key):
-        response = self.table.get_item(Key={'channel_id': key})
+        response = self.table.get_item(Key={'slack_cid': key})
         return response.get('Item')
 
     def make_ts(self, date):

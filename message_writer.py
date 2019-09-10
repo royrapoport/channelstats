@@ -13,11 +13,11 @@ class MessageWriter(object):
         self.MessageTableFactory = messagetablefactory.MessageTableFactory()
         seen = {}
 
-    def write(self, list_of_messages, cid, thread_author_uid=None):
+    def write(self, list_of_messages, cid, parent_user_id=None):
         """
         Given the list of message JSONs, write them to DynamoDB
         cid is the Slack channel ID
-        if thread_author_uid is provided, this is the UID of the originator of the thread
+        if parent_user_id is provided, this is the UID of the originator of the thread
         of which this message is a part
         """
         # Map message table name to actual message table objects
@@ -42,12 +42,12 @@ class MessageWriter(object):
             table = message_tables[table_name]
             with table.batch_writer() as batch:
                 for message in messages[table_name]:
-                    Row = self.make_row(message, cid, thread_author_uid)
+                    Row = self.make_row(message, cid, parent_user_id)
                     if not Row:
                         continue
                     batch.put_item(Row)
 
-    def make_row(self, message, cid, thread_author_uid):
+    def make_row(self, message, cid, parent_user_id):
         """
         create a Row dictionary for insertion into DynamoDB
         """
@@ -61,21 +61,25 @@ class MessageWriter(object):
                         message,
                         indent=4)))
             return None
-        wordcount = len(message['text'].split())
+        word_count = len(message['text'].split())
         mentions = utils.find_user_mentions(message['text'])
         mentions = [x for x in mentions if x != user_id]
         (reaction_count, reactions) = self.get_reactions(message)
         (reply_count, replies) = self.get_replies(message)
         files = json.dumps(message.get("files", None))
         thread_ts = message.get("thread_ts")
+        is_threadhead = thread_ts == timestamp
+        is_threaded = 'thread_ts' in message
         if files == 'null':
             files = None
         Row = {
-            "timestamp": timestamp,
-            "thread_timestamp": thread_ts,
+            "is_threaded": is_threaded,
+            "is_thread_head": is_threadhead,
+            "ts": timestamp,
+            "thread_ts": thread_ts,
             "slack_cid": cid,
             "user_id": user_id,
-            "wordcount": wordcount,
+            "word_count": word_count,
             "reaction_count": reaction_count,
             "reactions": reactions,
             "replies": replies,
@@ -83,13 +87,13 @@ class MessageWriter(object):
             "files": files
         }
         Row['subtype'] = message.get("subtype")
-        if thread_author_uid:
-            Row['thread_author'] = thread_author_uid
+        if parent_user_id:
+            Row['parent_user_id'] = parent_user_id
         if mentions:
             Row['mentions'] = ":".join(mentions)
         else:  # if it's a thread head, we want to capture that
             if message.get("thread_ts") == message.get("ts"):
-                Row['thread_author'] = user_id
+                Row['parent_user_id'] = user_id
         Row = utils.prune_empty(Row)
         return Row
 

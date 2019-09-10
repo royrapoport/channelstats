@@ -38,28 +38,22 @@ class ChannelConfiguration(object):
     def set_channel_config(
             self,
             slack_cid,
-            last_message_timestamp,
-            refetch=None):
+            last_message_timestamp):
         """
         Sets configuration for the given slack_cid
         """
 
-        if refetch is None:
-            refetch = config.refetch
-
         self.table.put_item(
             Item={
                 'slack_cid': slack_cid,
-                'last_message_timestamp': str(last_message_timestamp),
-                'refetch': refetch
+                'last_message_timestamp': str(last_message_timestamp)
             }
         )
 
     def get_channel_config(self, cid):
         """
-        returns (last_message_timestamp, refetch) for cid
+        returns last_message_timestamp for cid
         If we have never gotten cid, last_message_timestamp will be 0
-        if we don't have a defined refetch, refetch will be 0
         """
         response = self.table.get_item(
             Key={
@@ -70,7 +64,5 @@ class ChannelConfiguration(object):
             return (0, 0)
         item = response['Item']
         last_message_timestamp = item['last_message_timestamp']
-        refetch = int(item['refetch'])
-        ret = (last_message_timestamp, refetch)
-        # print("Configuration for {} is {}".format(cid, ret))
+        ret = last_message_timestamp
         return ret

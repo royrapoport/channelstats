@@ -71,7 +71,7 @@ class MessageTableFactory(object):
 
         table_name = self.get_message_table_name(timestamp_or_dt)
         if table_name not in self.__day_tables:
-            DDB = ddb.DDB(table_name, [("timestamp", "S"), ("slack_cid", "S")])
+            DDB = ddb.DDB(table_name, [("ts", "S"), ("slack_cid", "S")])
             table = DDB.get_table(readonly=self.readonly)
             self.__day_tables[table_name] = table
         return self.__day_tables[table_name]

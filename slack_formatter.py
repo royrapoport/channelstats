@@ -140,7 +140,7 @@ class SlackFormatter(object):
             return "<#{}>".format(cid)
         entry = self.channel.get(cid)
         if entry:
-            choice = entry['channel_name']
+            choice = entry['friendly_name']
         else:
             choice = rn.name()
         return "#{}".format(choice)
@@ -167,9 +167,9 @@ class SlackFormatter(object):
         given a friendly channel name, return a fake one
         """
         c = self.channel.get(cname)
-        cid = c['channel_name']
+        cid = c['friendly_name']
         c = self.fake_channel.get(cid)
-        cname = c['channel_name']
+        cname = c['friendly_name']
         return cname
 
     def make_fields(self, ftext):

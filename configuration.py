@@ -11,14 +11,14 @@ class Configuration(object):
         self.fake = fake
         if fake:
             self.table_name = self.fake_table_name
-        self.ddb = ddb.DDB(self.table_name, [('key', 'S')])
+        self.ddb = ddb.DDB(self.table_name, [('item_key', 'S')])
         self.table = self.ddb.get_table()
         self.cache = {}
 
     def get(self, key):
         if key in self.cache:
             return self.cache[key]
-        response = self.table.get_item(Key={'key': key})
+        response = self.table.get_item(Key={'item_key': key})
         item = response.get("Item")
         self.cache[key] = item
         return item
@@ -26,7 +26,7 @@ class Configuration(object):
     def set_count(self, count_label, value):
         self.table.update_item(
             Key={
-                'key': 'counts'
+                'item_key': 'counts'
             },
             UpdateExpression="set {}=:v".format(count_label),
             ExpressionAttributeValues={
@@ -52,7 +52,7 @@ class Configuration(object):
         now = int(time.time())
         self.table.put_item(
             Item={
-                'key': "last run",
+                'item_key': "last run",
                 "last run": now
             }
         )

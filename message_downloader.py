@@ -51,11 +51,11 @@ class Downloader(object):
         cid_count = len(cids)
         idx = 1
         for cid in cids:
-            channel_name = self.channel.get(cid)['name']
+            channel_name = self.channel.get(cid)['friendly_name']
             sys.stdout.write("{}/{} {} - {} ".format(idx, cid_count, cid, channel_name))
             sys.stdout.flush()
             idx += 1
-            (last_timestamp, refetch) = self.cconfig.get_channel_config(cid)
+            last_timestamp = self.cconfig.get_channel_config(cid)
             refetch = (config.refetch * 86400)
             last_timestamp = int(float(last_timestamp))
             # print("\t Last timestamp is {}".format(self.dt(last_timestamp)))
@@ -86,9 +86,9 @@ class Downloader(object):
                             "ts"):  # thread head
                         threads += 1
                         if 'user' in message:
-                            thread_author = message['user']
+                            parent_user_id = message['user']
                         elif 'bot_id' in message:
-                            thread_author = message['bot_id']
+                            parent_user_id = message['bot_id']
                         else:
                             raise RuntimeError("Could not deduce message author: {}".format(message))
                         thread_messages = self.slack.get_thread_responses(
@@ -96,7 +96,7 @@ class Downloader(object):
                         thread_messages = [
                             x for x in thread_messages if x['thread_ts'] != x['ts']]
                         self.MessageWriter.write(
-                            thread_messages, cid, thread_author)
+                            thread_messages, cid, parent_user_id)
             # WRITE_MESSAGES(messages, cid)
             sys.stdout.write(
                 "Downloaded {} messages and {} threads\n".format(

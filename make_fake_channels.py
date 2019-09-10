@@ -19,8 +19,7 @@ rtable = realc.table
 ftable = fakec.table
 items = []
 for item in realc.ddb.items(rtable):
-    # {'channel_name': 'C471F3NLB', 'created': Decimal('1487352987'), 'is_channel': True, 'channel_key': 'office-pets'}
-    item['channel_name'] = rc.name()
+    item['friendly_name'] = rc.name()
     items.append(item)
 
 with ftable.batch_writer() as batch:

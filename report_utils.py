@@ -30,7 +30,7 @@ def override(o):
         o = o[1:]
         match = c.get(o)
         if match:
-            return match['channel_id']
+            return match['slack_cid']
         else:
             raise RuntimeError("Couldn't find a CID for #{}".format(o))
 
@@ -62,7 +62,7 @@ def cid_for(token):
     cid = token.upper()
     entry = c.get(cid)
     if entry:
-        return entry['channel_id']
+        return entry['slack_cid']
 
     if token[0] != '#':
         raise RuntimeError("Channel names must start with '#'")
@@ -70,5 +70,5 @@ def cid_for(token):
     token = token[1:]
     entry = c.get(token)
     if entry:
-        return entry['channel_id']
+        return entry['slack_cid']
     raise RuntimeError("Could not find a channel with name '{}'".format(token))

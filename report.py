@@ -188,12 +188,12 @@ class Report(object):
             k = keys.pop(0)
             cur = cur[k]
         cur[0] += 1
-        cur[1] += message.get("wordcount", 1)
+        cur[1] += message.get("word_count", 1)
 
     def accum_timestats(self, message):
         uid = message['user_id']
         cid = message['slack_cid']
-        timestamp = int(float(message['timestamp']))
+        timestamp = int(float(message['ts']))
         # First, get stats unadjusted and by UTC
         localtime = time.gmtime(timestamp)
         hour = localtime.tm_hour
@@ -451,7 +451,7 @@ class Report(object):
         self.create_key(["user_stats", uid, "reactions"], 0)
         self._data["user_stats"][uid]["reactions"] += reaction_count
 
-        mid = message['timestamp']
+        mid = message['ts']
         cid = message['slack_cid']
         mrecord = (reaction_count, mid, cid, uid)
         self.reactions_accumulator.append(mrecord)
@@ -487,7 +487,7 @@ class Report(object):
                 self._data['enriched_user'][mention]['mentioned_you'][uid] += 1
 
     def accum_threads(self, message):
-        ta = message.get("thread_author")
+        ta = message.get("parent_user_id")
         uid = message['user_id']
         if not ta:
             return
@@ -510,7 +510,7 @@ class Report(object):
         keep track of the longest  threads
         """
         uid = message['user_id']
-        mid = message['timestamp']
+        mid = message['ts']
         cid = message['slack_cid']
         reply_count = message.get('reply_count', 0)
         if reply_count == 0:

@@ -16,7 +16,7 @@ class User(object):
         self.fake = fake
         if fake:
             self.table_name = self.fake_table_name
-        self.ddb = ddb.DDB(self.table_name, [('id', 'S')])
+        self.ddb = ddb.DDB(self.table_name, [('slack_uid', 'S')])
         self.table = self.ddb.get_table()
         self.users = {}
         self.userhash = userhash.UserHash(fake=fake)
@@ -62,7 +62,7 @@ class User(object):
         """
 
         dummy = {
-            'id': 'USLACKBOT',
+            'slack_uid': 'USLACKBOT',
             'tz_offset': -25200,
             'insert_timestamp': 1567210676,
             'user_name': 'dummy',
@@ -84,7 +84,7 @@ class User(object):
 
     def make_pretty(self, user_structure):
         url = "https://{}.slack.com/team/{}"
-        url = url.format(config.slack_name, user_structure['id'])
+        url = url.format(config.slack_name, user_structure['slack_uid'])
         ret = {
             'label': '@' + self.pick_name(user_structure),
             'hover': user_structure.get("real_name", ""),
@@ -95,7 +95,7 @@ class User(object):
     def get(self, key):
         if key in self.users:
             return self.users[key]
-        response = self.table.get_item(Key={'id': key})
+        response = self.table.get_item(Key={'slack_uid': key})
         item = response.get("Item")
         self.users[key] = item
         return item
@@ -119,7 +119,7 @@ class User(object):
         expr = re.sub(", $", "", expr)
         self.table.update_item(
             Key={
-                'id': row['id']
+                'slack_uid': row['id']
             },
             UpdateExpression=expr,
             ExpressionAttributeValues=values,
@@ -147,7 +147,7 @@ class User(object):
         for user in users:
             uid = user['id']
             Row = {
-                'id': user['id'],
+                'slack_uid': user['id'],
                 'real_name': user.get("real_name"),
                 'deleted': user.get("deleted"),
                 'user_name': user.get("name"),
@@ -173,4 +173,4 @@ class User(object):
         self.configuration.set_last_run()
 
     def f(self, row):
-        return "{} ({})".format(row['id'], row['display_name'])
+        return "{} ({})".format(row['slack_uid'], row['display_name'])
