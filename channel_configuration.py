@@ -61,7 +61,7 @@ class ChannelConfiguration(object):
             }
         )
         if 'Item' not in response:
-            return (0, 0)
+            return 0
         item = response['Item']
         last_message_timestamp = item['last_message_timestamp']
         ret = last_message_timestamp
