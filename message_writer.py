@@ -90,7 +90,7 @@ class MessageWriter(object):
         if parent_user_id:
             Row['parent_user_id'] = parent_user_id
         if mentions:
-            Row['mentions'] = ":".join(mentions)
+            Row['mentions'] = ",".join(mentions)
         else:  # if it's a thread head, we want to capture that
             if message.get("thread_ts") == message.get("ts"):
                 Row['parent_user_id'] = user_id
@@ -105,8 +105,9 @@ class MessageWriter(object):
         If no replies, returns (0,"")
         """
         reply_count = 0
-        replies = []
-        for reply in message.get("replies", []):
+        replies = message.get("replies", [])
+        replies.sort(key = lambda x: int(float(x['ts'])))
+        for reply in replies:
             reply_count += 1
             reply_string = "{}:{}".format(reply['user'], reply['ts'])
             replies.append(reply_string)
@@ -127,9 +128,9 @@ class MessageWriter(object):
         reactions = []
         for reaction in message.get("reactions", []):
             reaction_name = reaction['name']
-            users = ":".join(reaction['users'])
+            users = ";".join(reaction['users'])
             count += len(reaction['users'])
-            reaction_text = "{}:{}".format(reaction_name, users)
+            reaction_text = "{};{}".format(reaction_name, users)
             reactions.append(reaction_text)
         if reactions:
             reactions = ",".join(reactions)
