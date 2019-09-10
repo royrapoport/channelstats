@@ -51,8 +51,11 @@ class Downloader(object):
         cid_count = len(cids)
         idx = 1
         for cid in cids:
-            channel_name = self.channel.get(cid)['friendly_name']
-            sys.stdout.write("{}/{} {} - {} ".format(idx, cid_count, cid, channel_name))
+            centry = self.channel.get(cid)
+            friendly_name = "unknown"
+            if centry:
+                friendly_name = centry['friendly_name']
+            sys.stdout.write("{}/{} {} - {} ".format(idx, cid_count, cid, friendly_name))
             sys.stdout.flush()
             idx += 1
             last_timestamp = self.cconfig.get_channel_config(cid)
