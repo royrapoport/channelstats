@@ -144,7 +144,7 @@ class SlackFormatter(object):
         if entry:
             choice = entry['friendly_name']
         else:
-            choice = rn.name()
+            choice = self.rn.name()
         return "#{}".format(choice)
 
     def show_uid(self, uid):
@@ -152,7 +152,7 @@ class SlackFormatter(object):
             return "<@{}>".format(uid)
         entry = self.user.get(uid)
         if not entry:
-            choice = rn.name()
+            choice = self.rn.name()
         elif random.choice(range(2)) == 1:
             choice = entry['user_name']
         else:
