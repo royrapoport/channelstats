@@ -33,7 +33,28 @@ class DDB(object):
         self.table_name = config.prefix + "." + table_name
         self.table = None
 
-    def delete_empty_tables(self):
+    @staticmethod
+    def items(table):
+        """
+        generator function to return the items in the table
+        (basically, a wrapper around table.scan()
+        """
+        done = False
+        ExclusiveStartKey = None
+        while not done:
+            if ExclusiveStartKey:
+                response = table.scan(ExclusiveStartKey=ExclusiveStartKey)
+            else:
+                response = table.scan()
+            if "LastEvaluatedKey" in response:
+                ExclusiveStartKey = response['LastEvaluatedKey']
+            else:
+                done = True
+            for item in response['Items']:
+                yield item
+
+    @staticmethod
+    def delete_empty_tables():
         """
         In case we accidentally created some empty tables in this
         namespace, find them and delete them
@@ -141,8 +162,9 @@ class DDB(object):
         table.delete()
 
     def dump(self, fname):
-        response = self.get_table().scan()
-        items = response['Items']
+        items = []
+        for item in self.items(self.get_table()):
+            items.append(item)
         f = open(fname, "w")
         f.write(utils.dumps(items))
         f.close()

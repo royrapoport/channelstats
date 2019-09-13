@@ -4,6 +4,7 @@ import collections
 import decimal
 import json
 import re
+import time
 
 # Helper class to convert a DynamoDB item to JSON.
 
@@ -70,3 +71,26 @@ def find_user_mentions(text):
     """
     # text is of the form "whatever <@UID> and also ..."
     return [x[2:-1] for x in re.findall("<@U[A-Z0-9]+>", text)]
+
+def rank(n):
+    r = {0: 'th', 1: 'st', 2: 'nd', 3: 'rd'}
+    if n in r:
+        return "{}{}".format(n, r[n])
+    return "{}th".format(n)
+
+def valid_cid(cid):
+    return re.match("^C[A-Z0-9]+$", cid)
+
+def valid_uid(uid):
+    return re.match("^U[A-Z0-9]+$", uid)
+
+def make_day(ts):
+    """
+    Given a str ts, return yyyy-mm-dd
+    """
+    lt = time.localtime(int(float(ts)))
+    return time.strftime("%Y-%m-%d", lt)
+
+def today():
+    lt = time.localtime(time.time())
+    return time.strftime("%Y-%m-%d", lt)

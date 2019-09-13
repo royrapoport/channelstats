@@ -13,7 +13,7 @@ class UserHash(object):
         self.fake = fake
         if fake:
             self.table_name = self.fake_table_name
-        self.ddb = ddb.DDB(self.table_name, [('key', 'S')])
+        self.ddb = ddb.DDB(self.table_name, [('user_key', 'S')])
         self.table = self.ddb.get_table()
         self.modified = {}
         self.cache = {}
@@ -21,7 +21,7 @@ class UserHash(object):
     def get(self, key):
         if key in self.cache:
             return self.cache[key]
-        response = self.table.get_item(Key={'key': key})
+        response = self.table.get_item(Key={'user_key': key})
         item = response.get("Item")
         self.cache[key] = item
         return item
@@ -48,7 +48,7 @@ class UserHash(object):
         k = self.make_key(uid)
         row = self.get(k)
         if not row:
-            row = {'key': k, 'uids': ""}
+            row = {'user_key': k, 'uids': ""}
         else:
             row["uids"] += " {}".format(uid)
         self.cache[k] = row

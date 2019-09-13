@@ -1,5 +1,6 @@
 #! /usr/bin/env python
 
+import collections
 import datetime
 import time
 
@@ -12,7 +13,7 @@ class Enricher(object):
 
     def __init__(self, fake=False):
         self.fake = fake
-        self.user = user.User(fake=fake)
+        self.user = user.User(fake=self.fake)
         self.channel = channel.Channel()
 
     def get_channels(self, list_of_cid, report_start_date):
@@ -26,15 +27,15 @@ class Enricher(object):
         """
         (y, m, d) = [int(x) for x in report_start_date.split("-")]
         dt = datetime.datetime(y, m, d, 0, 0, 0)
-        report_start_timestamp = dt.timestamp()
+        report_start_ts = dt.timestamp()
 
         entries = self.channel.batch_get_channel(list_of_cid)
         ret = {}
         for cid in entries:
             entry = entries[cid]
-            name = entry['channel_name']
+            name = entry['friendly_name']
             created = int(entry['created'])
-            new = created > report_start_timestamp
+            new = created > report_start_ts
             members = entry.get("members", 0)
             ret[cid] = {'name': name, 'new': new, 'members': members}
         return ret
@@ -43,21 +44,23 @@ class Enricher(object):
     def popular_messages(messages, cinfo, uinfo):
         """
         given a list of lists where each list is
-        [reaction count, timestamp, cid, uid]
-        convert to dict with 'count', 'dt', 'channel', 'user', 'url'
+        [reaction count, ts, cid, uid]
+        convert to dict with 'count', 'dt', 'channel', 'cid', 'uid', 'user', 'url'
         """
         ret = []
         for message in messages:
             if not isinstance(message, list):
                 continue
-            (reactions, timestamp, cid, uid) = message
+            (reactions, ts, cid, uid) = message
             url = "https://{}.slack.com/archives/{}/p{}"
             ret.append({
                 'count': reactions,
-                'dt': time.strftime("%m/%d/%Y %H:%M", time.localtime(int(float(timestamp)))),
+                'dt': time.strftime("%m/%d/%Y %H:%M", time.localtime(int(float(ts)))),
                 'channel': cinfo[cid]['name'],
                 'user': uinfo[uid]['label'],
-                'url': url.format(config.slack_name, cid, timestamp.replace(".", ""))
+                'uid': uid,
+                'cid': cid,
+                'url': url.format(config.slack_name, cid, ts.replace(".", ""))
             })
         return ret
 
@@ -96,6 +99,11 @@ class Enricher(object):
         report['replied_messages'] = Enricher.popular_messages(
             report['reply_count'], channel_info, user_info)
         report['replied_messages'] = report['replied_messages'][0:10]
+
+        for cid in report.get('enriched_channel', {}):
+            for k in ['most_replied', 'most_reacted']:
+                report['enriched_channel'][cid][k] = Enricher.popular_messages(
+                    report['enriched_channel'][cid][k], channel_info, user_info)
 
     def user_enrich(self, report, uid):
         self.enrich(report)
@@ -136,7 +144,11 @@ class Enricher(object):
             channel_list.append(c)
         channel_list.sort(key=lambda x: x['words'])
         channel_list.reverse()
-        report['enriched_channels'] = channel_list
+        d = collections.OrderedDict()
+        for channel in channel_list:
+            name = channel['name']
+            d[name] = channel
+        report['enriched_channels'] = d
 
         ci = report['channel_info']
         ui = report['user_info']

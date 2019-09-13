@@ -1,6 +1,7 @@
 #! /usr/bin/env python
 
 import channel
+import decimal
 
 import collections
 import copy
@@ -49,12 +50,15 @@ class Report(object):
     # Where we keep the 'top X' of messages, what X should we go for?
     top_limit = 10
 
-    def __init__(self, channels=None):
+    def __init__(self):
         self._data = {}
+        self._data['enriched_channel'] = {}
         self.user = user.User()
         self.reactions_accumulator = Accumulator(
             self.top_limit, lambda x: x[0])
         self.reply_accumulator = Accumulator(self.top_limit, lambda x: x[0])
+        self.channel_reply_accumulators = {}
+        self.channel_reaction_accumulators = {}
         self.user_reply_accumulators = {}
         self.user_reaction_accumulators = {}
         self.reactions = {}
@@ -63,8 +67,20 @@ class Report(object):
         self.accum_methods = [x for x in dir(self) if x.find("accum_") == 0]
         self.track = {}
         self.channel = channel.Channel()
-        self.channels = channels
         self.hydrated_channels = {}
+
+    def set_channels(self, channels):
+        if channels:
+            self.channel_reply_accumulators = {}
+            self.channel_reaction_accumulators = {}
+            for channel in channels:
+                print("Will keep track of channel {}".format(channel))
+                self.create_key(["enriched_channel", channel, 'most_replied'], {})
+                self.create_key(["enriched_channel", channel, 'most_reacted'], {})
+                self.channel_reply_accumulators[channel] = Accumulator(
+                    self.top_limit, lambda x: x[0])
+                self.channel_reaction_accumulators[channel] = Accumulator(
+                    self.top_limit, lambda x: x[0])
 
     def set_users(self, users):
         dummyenriched = {}
@@ -91,6 +107,9 @@ class Report(object):
             "cum_percent_of_words": 0
         }
 
+        self.create_key(["enriched_user"], {})
+        if not users:
+            return
         for user in users:
             self.user_reply_accumulators[user] = Accumulator(
                 self.top_limit, lambda x: x[0])
@@ -101,6 +120,7 @@ class Report(object):
             self.create_key(["enriched_user", user], copy.deepcopy(dummyenriched))
             self.create_key(["users", user], [0,0])
             self.create_key(["user_stats", user], copy.deepcopy(dummy_user))
+            self.create_key(["user_stats", user, "posting_hours"], {})
 
     def data(self):
         return utils.dump(self._data)
@@ -117,11 +137,6 @@ class Report(object):
             self.hydrated_channels[cid] = self.channel.get(cid)
 
         if 'subtype' in message:
-            return
-        if self.channels and message.get('slack_cid') not in self.channels:
-            return
-        if not self.channels and self.hydrated_channels[cid].get('is_private'):
-            # If no channels are specified, assume we want public only channels.
             return
 
         self.accum_channel(message)
@@ -173,13 +188,14 @@ class Report(object):
             k = keys.pop(0)
             cur = cur[k]
         cur[0] += 1
-        cur[1] += message.get("wordcount", 1)
+        cur[1] += message.get("word_count", 1)
 
     def accum_timestats(self, message):
         uid = message['user_id']
-        timestamp = int(float(message['timestamp']))
+        cid = message['slack_cid']
+        ts = int(float(message['ts']))
         # First, get stats unadjusted and by UTC
-        localtime = time.gmtime(timestamp)
+        localtime = time.gmtime(ts)
         hour = localtime.tm_hour
         wday = localtime.tm_wday
         self.increment(["weekday", wday], message)
@@ -194,14 +210,23 @@ class Report(object):
         tz_offset = user['tz_offset']
         tz = user.get("tz", "Unknown")
         self.increment(["timezone", tz], message)
-        timestamp += tz_offset
-        localtime = time.gmtime(timestamp)
+        ts += tz_offset
+        localtime = time.gmtime(ts)
         hour = localtime.tm_hour
         wday = localtime.tm_wday
         self.increment(["user_weekday", wday], message)
+        if uid in self.track:
+            self.increment(["user_stats", uid, "posting_days", wday], message)
+        if cid in self._data['enriched_channel']:
+            self.increment(["enriched_channel", cid, "posting_days", wday], message)
         if wday < 5:  # We only look at weekday activity
             self.increment(["user_weekday_hour", hour], message)
             self.increment(["user_weekday_hour_per_user", uid, hour], message)
+            if uid in self.track:
+                self.increment(["user_stats", uid, "posting_hours", hour], message)
+            if cid in self._data['enriched_channel']:
+                self.increment(["enriched_channel", cid, "posting_hours", hour], message)
+
 
     def finalize(self):
         self._finalize_channels()
@@ -276,11 +301,15 @@ class Report(object):
         self._data['reply_count'] = self.reply_accumulator.dump()
         for uid in self.user_reply_accumulators:
             self._data['enriched_user'][uid]['replies'] = self.user_reply_accumulators[uid].dump()
+        for cid in self.channel_reply_accumulators:
+            self._data['enriched_channel'][cid]['most_replied'] = self.channel_reply_accumulators[cid].dump()
 
     def _finalize_reaction_popularity(self):
         self._data['reaction_count'] = self.reactions_accumulator.dump()
         for uid in self.user_reaction_accumulators:
             self._data['enriched_user'][uid]['reactions'] = self.user_reaction_accumulators[uid].dump()
+        for cid in self.channel_reaction_accumulators:
+            self._data['enriched_channel'][cid]['most_reacted'] = self.channel_reaction_accumulators[cid].dump()
 
     def _finalize_period_activity(self):
         # Two-step process:
@@ -327,6 +356,7 @@ class Report(object):
         keep track of most popular reacjis
         """
         uid = message['user_id']
+        cid = message['slack_cid']
         reactions = message.get("reactions")
         if not reactions:
             return
@@ -334,14 +364,14 @@ class Report(object):
         # reactions are of the form reaction_name:uid:uid...,reaction_name...
         reaction_list = reactions.split(",")
         for reaction in reaction_list:
-            elements = reaction.split(":")
+            elements = reaction.split(";")
             reaction_name = elements.pop(0)
             reactors = elements
-            # reactions are sometimes e.g. point_up_2::skin-tone-3
-            # which means that some of the reactors might be blank
-            # and some may be 'skin-tone-X".  Remove these since
-            # they're not actually reactors
-            reactors = [x for x in reactors if (x and x[0] == "U")]
+            if cid in self._data.get("enriched_channel", {}):
+                self.create_key(['enriched_channel', cid, 'reaction_count'], 0)
+                self._data['enriched_channel'][cid]['reaction_count'] += len(reactors)
+                self.create_key(['enriched_channel', cid, 'reactions', reaction_name], 0)
+                self._data['enriched_channel'][cid]['reactions'][reaction_name] += len(reactors)
             if uid in self.track:
                 # The UID of the person who wrote the message is someone
                 # we're tracking
@@ -381,16 +411,26 @@ class Report(object):
         """
         # What fields do we expect?
         expect = {}
-        for k in d:
-            v = d[k]
-            if type(v) == int:
-                expect[k] = 0
-            elif type(v) in [dict, collections.OrderedDict]:
-                expect[k] = {}
-        for k in d:
+        for user in d:
+            for k in d[user]:
+                if k in expect:
+                    continue
+                v = d[user][k]
+                if type(v) in [int, float, decimal.Decimal]:
+                    expect[k] = 0
+                elif type(v) in [dict, collections.OrderedDict, collections.defaultdict]:
+                    expect[k] = {}
+                elif type(v) == list and len(v) == 2:
+                    expect[k] = [0,0]
+                elif type(v) == list:
+                    expect[k] = []
+                else:
+                    print("I don't know what to do with type {}".format(type(v)))
+        for user in d:
+            udict = d[user]
             for ek in expect.keys():
-                if ek not in d[k]:
-                    d[k][ek] = expect[ek]
+                if ek not in udict:
+                    udict[ek] = expect[ek]
 
     def accum_reaction_count(self, message):
         """
@@ -406,19 +446,21 @@ class Report(object):
         self.create_key(["user_stats", uid, "reactions"], 0)
         self._data["user_stats"][uid]["reactions"] += reaction_count
 
-        mid = message['timestamp']
+        mid = message['ts']
         cid = message['slack_cid']
         mrecord = (reaction_count, mid, cid, uid)
         self.reactions_accumulator.append(mrecord)
         if uid in self.user_reaction_accumulators:
             self.user_reaction_accumulators[uid].append(mrecord)
+        if cid in self.channel_reaction_accumulators:
+            self.channel_reaction_accumulators[cid].append(mrecord)
 
     def accum_mentions(self, message):
         uid = message['user_id']
         mentions = message.get("mentions")
         if not mentions:
             return
-        mentions = mentions.split(":")
+        mentions = mentions.split(",")
         # Due to a bug, about 800 messages have a mention that is the
         # message's UID.  We'll fix that later, but for now, filter this out
         mentions = [x for x in mentions if x != uid]
@@ -440,7 +482,7 @@ class Report(object):
                 self._data['enriched_user'][mention]['mentioned_you'][uid] += 1
 
     def accum_threads(self, message):
-        ta = message.get("thread_author")
+        ta = message.get("parent_user_id")
         uid = message['user_id']
         if not ta:
             return
@@ -463,7 +505,7 @@ class Report(object):
         keep track of the longest  threads
         """
         uid = message['user_id']
-        mid = message['timestamp']
+        mid = message['ts']
         cid = message['slack_cid']
         reply_count = message.get('reply_count', 0)
         if reply_count == 0:
@@ -476,6 +518,8 @@ class Report(object):
         self.reply_accumulator.append(mrecord)
         if uid in self.user_reaction_accumulators:
             self.user_reply_accumulators[uid].append(mrecord)
+        if cid in self.channel_reply_accumulators:
+            self.channel_reply_accumulators[cid].append(mrecord)
 
     def accum_channel(self, message):
         self.increment(["channels", message['slack_cid']], message)
@@ -506,6 +550,8 @@ class Report(object):
 
     def _finalize_reaction(self):
         self._data['reaction'] = Report.order_dict(self._data['reaction'])
+        for cid in self._data.get("enriched_channel", {}):
+            self._data['enriched_channel'][cid]['reactions'] = Report.order_dict(self._data['enriched_channel'][cid]['reactions'])
 
     def _finalize_channels(self):
         """

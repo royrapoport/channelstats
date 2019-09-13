@@ -12,7 +12,7 @@ class FirstPost(object):
     table_name = "FirstPost"
 
     def __init__(self):
-        self.ddb = ddb.DDB(self.table_name, [('key', 'S')])
+        self.ddb = ddb.DDB(self.table_name, [('slack_uid', 'S')])
         self.table = self.ddb.get_table()
         self.users = {}
         self.modified = {}
@@ -23,7 +23,7 @@ class FirstPost(object):
     def get(self, key):
         if key in self.users:
             return self.users[key]
-        response = self.table.get_item(Key={'key': key})
+        response = self.table.get_item(Key={'slack_uid': key})
         item = response.get("Item")
         if item:
             item['ts'] = int(item['ts'])
@@ -61,15 +61,13 @@ class FirstPost(object):
 
         if entry:
             if entry['ts'] > ts:
-                # f = "For {} found an earlier entry than {}/{}: {}/{}".format(entry['key'], entry['channel'], entry['ts'], self.channel, ts)
-                # print(f)
                 entry['ts'] = ts
-                entry['channel'] = self.channel
+                entry['slack_cid'] = self.channel
                 entry['message_id'] = str(mid)
         else:
             self.users[uid] = {
-                "key": uid,
-                "channel": self.channel,
+                "slack_uid": uid,
+                "slack_cid": self.channel,
                 "message_id": str(mid),
                 "ts": int(float(ts))
             }
@@ -77,19 +75,6 @@ class FirstPost(object):
 
     def get_channel(self, cid):
         return self.get(cid)
-
-    def save_channel(self, cid):
-        if cid in self.saved:
-            return
-        row = {
-            "key": cid,
-            "channel": cid,
-            "ts": 0
-        }
-        # print("Saving {}".format(row))
-        self.saved[cid] = 1
-
-        self.table.put_item(Item=row)
 
     def save(self):
         channels = {}
@@ -99,7 +84,7 @@ class FirstPost(object):
                 row = self.users[uid]
                 if not row:
                     continue
-                channel = row['channel']
+                channel = row['slack_cid']
                 if channel not in channels:
                     channels[channel] = 1
                 if uid in self.saved:
@@ -107,5 +92,3 @@ class FirstPost(object):
                 # print("Inserting new {}".format(row))
                 batch.put_item(row)
                 self.saved[uid] = 1
-        for channel in channels.keys():
-            self.save_channel(channel)

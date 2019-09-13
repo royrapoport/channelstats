@@ -28,12 +28,12 @@ class Slacker(object):
                 cid, thread_ts))
         return messages
 
-    def get_messages(self, cid, timestamp, callback=None):
-        timestamp = int(float(timestamp))
-        # print("Getting messages from {} starting {}".format(cid, time.asctime(time.localtime(int(timestamp)))))
+    def get_messages(self, cid, ts, callback=None):
+        ts = int(float(ts))
+        # print("Getting messages from {} starting {}".format(cid, time.asctime(time.localtime(int(ts)))))
         return self.paginated_lister(
             "conversations.history?channel={}&oldest={}".format(
-                cid, timestamp), callback=callback)
+                cid, ts), callback=callback)
 
     def get_all_users(self):
         return self.paginated_lister("users.list")
@@ -51,6 +51,7 @@ class Slacker(object):
         channels = self.paginated_lister(
             "conversations.list?types={types}".format(types=types_param))
 
+        channels.sort(key = lambda x: x['id'])
         if 'private_channel' in types:
             channels_to_iterate = channels
             for index, channel in enumerate(channels_to_iterate):
@@ -83,6 +84,7 @@ class Slacker(object):
         """
         lists = [k for k in response if isinstance(response[k], list)]
         if len(lists) == 0:
+            print("Response was {}".format(json.dumps(response, indent=4)))
             raise RuntimeError("No list of objects found")
         if len(lists) > 1:
             raise RuntimeError(

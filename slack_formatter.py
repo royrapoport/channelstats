@@ -1,10 +1,16 @@
 #! /usr/bin/env python
 
+import copy
 import json
+import random
+import time
 import sys
 
 import slack
 
+import random_name
+import channel
+import user
 import utils
 import enricher
 import slack_token
@@ -12,9 +18,17 @@ import slack_token
 
 class SlackFormatter(object):
 
-    def __init__(self):
+    def __init__(self, fake=False):
+        random.seed(time.time())
+        self.fake = fake
+        self.channel = channel.Channel()
+        self.fake_channel = channel.Channel(fake=True)
+        if self.fake:
+            self.channel = self.fake_channel
+        self.rn = random_name.RandomName()
+        self.user = user.User(fake=fake)
         self.client = slack.WebClient(token=slack_token.token)
-        self.enricher = enricher.Enricher()
+        self.enricher = enricher.Enricher(fake=fake)
 
     def text_block(self, text, markdown=True):
         if markdown:
@@ -27,89 +41,149 @@ class SlackFormatter(object):
     def divider(self):
         return { "type": "divider" }
 
-    def make_header(self, ur, us):
+    def simple_comparison(self, cur_item, prev_item, found_prev=True, print_num=True, is_percent=False):
+        if prev_item == 0:
+            if cur_item == 0:
+                return "0"
+            else:
+                if is_percent:
+                    return "{}% :infinity:".format(cur_item)
+                else:
+                    return "{} :infinity:".format(cur_item)
+        diff = (cur_item * 100.0) / prev_item
+        diff = diff - 100
+        ds = ""
+        emoji = False
+        if not found_prev:
+            emoji = ":new:"
+        if print_num:
+            if is_percent:
+                ds = "{}%".format(cur_item)
+            else:
+                ds = "{}".format(cur_item)
+        if diff > 0.5 or diff < -0.5:
+            if diff > 0:
+                emoji = emoji or ":green_arrow_up:"
+                ds += " (+{:.0f}%)".format(diff)
+            else:
+                emoji = emoji or ":red_arrow_down:"
+                ds += " ({:.0f}%)".format(diff)
+        else:
+            emoji = emoji or ":same:"
+        ds += emoji
+        return ds
+
+    def comparison(self, cur, prev, idx, print_num=True):
+        """
+        cur and prev are dicts with identical structures
+        idx is a list of keys to delve into each dict into
+        returns a difference between the items pointed to by idx
+        """
+        found_prev = True
+        cur_item = cur
+        for i in idx:
+            cur_item = cur_item[i]
+        prev_item = prev
+        for i in idx:
+            # TODO: Figure out a better answer to "what if there is
+            # no number from last time? the answer should be 0, but
+            # then we divide by 0 and bad things happen
+            try:
+                prev_item = prev_item[i]
+            except:
+                prev_item = cur_item
+                found_prev = False
+        return self.simple_comparison(cur_item, prev_item, found_prev, print_num)
+
+    def histogram(self, d, m, idx, header):
+        """
+        With d as a dict with {k:v} where v are (messages, words)
+        output a histogram with percent of total activity for each k
+        m is a method to call with each key of the dictionary which will
+        return the formatted version of that key
+        idx is 0 if you want to go by messages, 1 if words
+        returns a list of blocks
+        """
+        if idx == 0:
+            label = "m"
+        elif idx == 1:
+            label = "w"
+        else:
+            raise RuntimeError("idx has to be 0 or 1")
+        total = sum([x[idx] for x in d.values()])
+        new = {}
+        for i in d:
+            value = d[i][idx]
+            percent = (value * 100.0 / total)
+            new[i] = (percent, value)
+        k = list(d.keys())
+        k.sort(key = lambda x: int(x))
+        fields = [header, "*Percent of Activity*"]
+        for i in k:
+            fields.append("{}".format(m(i)))
+            histo = "`{}` ".format('*' * int(new[i][0])) if int(new[i][0]) > 0 else ''
+            fields.append("{}{:.1f}% ({} {})".format(histo, new[i][0], new[i][1], label))
         blocks = []
-        header = "Public User Activity Report for *{}* Between {} and {}"
-        header = header.format(ur['user'], ur['start_date'], ur['end_date'])
-        blocks.append(self.text_block(header))
-        blocks.append(self.divider())
-        m = "You posted *{:,}* words in *{:,}* public messages."
-        m = m.format(us['count'][1], us['count'][0])
-        m += "\n"
-        tm = us.get("thread_messages")
-        if tm:
-            m += "In total, {} messages were posted as threaded responses to your messages".format(tm)
-        m += "That made you the *{}*-ranked poster on the Slack and meant you contributed "
-        m += "*{:.1f}%* of this Slack's total public volume"
-        m = m.format(us['rank'], us['percent_of_words'])
-        blocks.append(self.text_block(m))
-        return blocks
-
-    def make_report(self, ur, us, uid):
-        blocks = []
-        blocks += self.make_header(ur, us)
-        blocks.append(self.divider())
-        blocks += self.make_channels(ur)
-        blocks += self.reacted_messages(ur, uid)
-        blocks += self.replied_messages(ur, uid)
-        blocks.append(self.text_block("You got {} reactions".format(ur['enriched_user'][uid]['reaction_count'])))
-        blocks += self.popular_reactions(ur, uid)
-        blocks += self.topten(ur, uid, 'reactions_from', "The people who most responded to you are")
-        blocks += self.topten(ur, uid, 'reacted_to', "The people you most responded to are")
-        blocks += self.topten(ur, uid, 'reactions_combined', "Reaction Affinity")
-        blocks += self.topten(ur, uid, 'author_thread_responded', "Authors whose threads you responded to the most")
-        blocks += self.topten(ur, uid, 'thread_responders', "Most frequent responders to your threads")
-        blocks += self.topten(ur, uid, 'threads_combined', "Thread Affinity")
-        blocks += self.topten(ur, uid, 'you_mentioned', "The people you mentioned the most")
-        blocks += self.topten(ur, uid, 'mentioned_you', "The people who mentioned you the most")
-        blocks += self.topten(ur, uid, 'mentions_combined', "Mention Affinity")
-        return blocks
-
-    def topten(self, ur, uid, label, header):
-        blocks = []
-        blocks.append(self.text_block("*{}*".format(header)))
-        fields = ["*Person*", "*Count*"]
-
-        d = ur['enriched_user'][uid].get(label)
-        if not d:
-            return []
-        uids = list(d.keys())[0:10]
-        for uid in uids:
-            # fields.append(ur['user_info'][uid]['label'])
-            fields.append("<@{}>".format(uid))
-            fields.append(str(d[uid]))
-
         for fset in self.make_fields(fields):
             block = {'type': 'section', 'fields': fset}
             blocks.append(block)
         return blocks
 
-    def reacted_messages(self, ur, uid):
-        return self.messager(ur, uid, "reactions")
+    def hour_formatter(self, hr):
+        hr = int(hr)
+        return "{0:02d}00-{0:02d}59".format(hr, hr)
 
-    def replied_messages(self, ur, uid):
-        return self.messager(ur, uid, "replies")
+    def day_formatter(self, day):
+        days = "Monday Tuesday Wednesday Thursday Friday Saturday Sunday".split()
+        return days[int(day)]
+
+    def show_cid(self, cid):
+        if not self.fake:
+            return "<#{}>".format(cid)
+        entry = self.channel.get(cid)
+        if entry:
+            choice = entry['friendly_name']
+        else:
+            choice = self.rn.name()
+        return "#{}".format(choice)
+
+    def show_uid(self, uid):
+        if not self.fake:
+            return "<@{}>".format(uid)
+        entry = self.user.get(uid)
+        if not entry:
+            choice = self.rn.name()
+        elif random.choice(range(2)) == 1:
+            choice = entry['user_name']
+        else:
+            choice = entry['real_name']
+        return "@{}".format(choice)
 
     def make_link_button(self, text, buttontext, url):
         block = {'type':'section', 'text': { 'type': 'mrkdwn', 'text':text} }
         block['accessory'] = { 'type':'button', 'text':{'type':'plain_text', 'text':buttontext }, 'url':url }
         return block
 
-    def messager(self, ur, uid, label):
-        blocks = []
-        for message in ur['reenriched_user'][uid][label]:
-            m = "*{}* {} in #{} on {}"
-            m = m.format(message['count'], label, message['channel'], message['dt'])
-            block = self.make_link_button(m, 'link', message['url'])
-            blocks.append(block)
-        if not blocks:
-            return blocks
-        blocks = [self.divider()] + blocks
-        blocks = [(self.text_block("*Your messages which got the most {}*".format(label)))] + blocks
-        return blocks
+    def get_fake_channel(self, cname):
+        """
+        given a friendly channel name, return a fake one
+        """
+        c = self.channel.get(cname)
+        cid = c['friendly_name']
+        c = self.fake_channel.get(cid)
+        cname = c['friendly_name']
+        return cname
 
-    def popular_reactions(self, ur, uid):
-        popularity = ur['enriched_user'][uid]['reaction_popularity']
+    def make_fields(self, ftext):
+        """
+        given a list of field texts, convert to a list of lists of fields,
+        where each list of fields is no more than 10 fields, and each field
+        is {'type': 'mrkdwn', 'text': text}
+        """
+        fields = [{'type': 'mrkdwn', 'text': x} for x in ftext]
+        return utils.chunks(fields, 10)
+
+    def reactions(self, popularity):
         fields = []
         if not popularity:
             return fields
@@ -125,55 +199,42 @@ class SlackFormatter(object):
             blocks.append(block)
         return blocks
 
-    def make_channels(self, ur):
-        fields = []
-        ctr = 1
-        if not ur['enriched_channels']:
-            return fields
-        fields.append("*Channel*")
-        fields.append("*Rank, Messages, Words*")
-        for channel in ur['enriched_channels']:
-            f1 = "{} *{}*".format(ctr, channel['name'])
-            f2 = "*{}* rank, *{}* m, *{}* w"
-            f2 = f2.format(channel['rank'], channel['messages'], channel['words'])
-            fields.append(f1)
-            fields.append(f2)
-            ctr += 1
+    def messager(self, message_list, label, show_user=False, show_channel=False):
         blocks = []
-        for fset in self.make_fields(fields):
-            block = {'type': 'section', 'fields': fset}
+        for message in message_list:
+            cid = message['cid']
+            m = "*{}* {}".format(message['count'], label)
+            if show_channel:
+                m += " in {}".format(self.show_cid(cid))
+            if show_user:
+                m += " to a message from {}".format(self.show_uid(message['uid']))
+            m += " on {}".format(message['dt'])
+            block = self.make_link_button(m, 'link', message['url'])
             blocks.append(block)
+        if not blocks:
+            return blocks
+        blocks = [self.divider()] + blocks
+        blocks = [(self.text_block("*Messages which got the most {}*".format(label)))] + blocks
         return blocks
 
-    def make_fields(self, ftext):
+    def posting_hours(self, d):
         """
-        given a list of field texts, convert to a list of lists of fields,
-        where each list of fields is no more than 10 fields, and each field
-        is {'type': 'mrkdwn', 'text': text}
+        Report on activity per hour of the workday
         """
-        fields = [{'type': 'mrkdwn', 'text': x} for x in ftext]
-        return utils.chunks(fields, 10)
+        blocks = []
+        blocks.append(self.text_block("*Weekday posting activity by (local) hour of the day:*"))
+        # We'll use messages (idx 0) rather than words (idx 1)
+        idx = 0
+        blocks += self.histogram(d, self.hour_formatter, idx, "*(Local) Time of Weekday*")
+        return blocks
 
-    def send_report(self, uid, ur, send=True, override_uid=None):
-        self.enricher.user_enrich(ur, uid)
-        us = ur['user_stats'].get(uid, {})
-        blocks = self.make_report(ur, us, uid)
-        # If set to true, this message will be sent as the user who owns the token we use
-        as_user = True
-        for blockset in utils.chunks(blocks, 49):
-            if send:
-                print("Sending report to {}".format(uid))
-                if override_uid:
-                    uid=override_uid
-                try:
-                    self.client.chat_postMessage(
-                        channel=uid,
-                        blocks=blockset,
-                        parse='full',
-                        as_user=as_user,
-                        unfurl_links=True,
-                        link_names=True)
-                except Exception:
-                    print(Exception)
-                    print(json.dumps(blockset, indent=4))
-                    sys.exit(0)
+    def posting_days(self, d):
+        """
+        Report on activity per day of the week
+        """
+        blocks = []
+        blocks.append(self.text_block("*Posting activity by day of the week:*"))
+        # We'll use messages (idx 0) rather than words (idx 1)
+        idx = 0
+        blocks += self.histogram(d, self.day_formatter, idx, "*Day of Week*")
+        return blocks

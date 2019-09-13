@@ -175,12 +175,12 @@
                                 <!--
                                     We estimate approximately 500 words per page
                                 -->
-                                {{macros.flprint(statistics.words / 500)}} pages <br/>
-                                {{macros.flprint(statistics.words / statistics.posters)}}
+                                {{macros.flprint(statistics.words / 500, False)}} pages <br/>
+                                {{macros.flprint(statistics.words / statistics.posters, False)}}
                                 w/p<br/>
-                                {{macros.flprint(statistics.messages / statistics.posters)}}
+                                {{macros.flprint(statistics.messages / statistics.posters, False)}}
                                 m/p<br/>
-                                {{macros.flprint(statistics.words / statistics.messages)}}
+                                {{macros.flprint(statistics.words / statistics.messages, False)}}
                                 w/m<br/>
 
                             </b>
@@ -193,8 +193,9 @@
                                     {{macros.flprint(us.percent_of_words, True)}} of total <br/>
                                     {{macros.flprint(us.cum_percent_of_words, True)}} running total <br/>
                                     {{macros.percent(us.reactions, us.count.1, False)}} rphw <br/>
-                                    {{macros.percent(us.get("replies", 0) * 100, us.count.1, False)}} replies/w <br/>
-                                    {{macros.flprint(us.count.1 / us.count.0)}} w/m <br/>
+                                    {{us.replies}} replies <br/>
+                                    {{macros.flprint(us.replies * 100.0 /  us.count.1, False)}} replies/hw <br/>
+                                    {{macros.flprint(us.count.1 / us.count.0, False)}} w/m <br/>
                                     {{us['thread_messages']}} t
                                 {% endwith %}
                             </td>
