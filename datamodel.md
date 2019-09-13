@@ -66,12 +66,14 @@ Channel ID, and a ts which is 0 (so no message_id, and no reference to a user).
 I'm not at this point clear why these entries exist.
 
 
-## Message-yyyy-mm-dd
+## Message
 
 | column      | values |
 | ----------- | -------- |
-| **ts** (H) | timestamp of the message |
-| **slack_cid** (R)   | Channel ID of the message |
+| **cid_ts** (H) | combination of slack_cid and ts of the message |
+| **date** | date of message in yyyy-mm-dd |
+| **ts** | timestamp of the message |
+| **slack_cid**  | Channel ID of the message |
 | **word_count** | int number of words in the message |
 | **slack_uid** | | Slack UID of the author of the message |
 | **mentions** | UID:UID:UID of mentioned users in message text |
@@ -86,13 +88,11 @@ I'm not at this point clear why these entries exist.
 | **is_threadhead** | this message starts a thread |
 | **is_threaded** | this message is part of a thread |
 
-For each day, we create a table named Message-yyyy-mm-dd with the day's messages in it.
-
 For `replies`, we keep the replies as pairs of UID:TS (UID of the author of the reply, timestamp of the reply),
 joined by a ','.  Replies are guaranteed to be in the same channel (of course), so the combination of this
 message's channel and the reply's TS gives a unique message.
 
-A message's `thread_author` may by the same as the message's `user_id` (either because this is the
+A message's `parent_user_id` may by the same as the message's `user_id` (either because this is the
 originating message in the thread or because the author of the thread replies in it).
 The message is the head of the thread if the `thread_timestamp` is identical to the
 `timestamp`.
@@ -166,7 +166,7 @@ to about 700K users.
 
 This table allows us to quickly ascertain whether we already know about a user before
 deciding whether to simply upload the user or modify it.  By using this hash approach,
-we can do one DB get() per approximately 20K userIDs (or at most, we'll end up with ~35 
+we can do one DB get() per approximately 20K userIDs (or at most, we'll end up with ~35
 DB gets) rather than one per userID.  
 
 **uids** is a text field with UIDs separated by spaces.
