@@ -6,6 +6,7 @@ import json
 import sys
 import time
 
+import message
 import channel
 import ddb
 import html_formatter
@@ -21,8 +22,8 @@ class ReportGenerator(object):
 
     def __init__(self, fake=False):
         self.fake = fake
-        self.mtf = messagetablefactory.MessageTableFactory(readonly=True)
         self.report_store = report_store.ReportStore()
+        self.Message = message.Message()
 
     def make_report_id(self, start_day, days):
         return "{}-{}".format(start_day, days)
@@ -61,7 +62,7 @@ class ReportGenerator(object):
         """
         return yyyy-mm-dd of the latest week for which we have a whole week's data
         """
-        latest = self.mtf.latest_date()
+        latest = utils.today()
         y, m, d = [int(x) for x in latest.split('-')]
         dt = datetime.date(y, m, d)
         weekday = dt.weekday()
@@ -72,43 +73,10 @@ class ReportGenerator(object):
         proposed_s = proposed.strftime("%Y-%m-%d")
         return proposed_s
 
-    def validate(self, start_day, days):
-        """
-        start_day must 1. Be after when we started collecting stats;
-        2. If days = 7, start_day must be Sunday
-        """
-        # Make sure our start date is not before we started collecting data
-        earliest = self.mtf.earliest_date()
-        if start_day < earliest:
-            m = "Earliest available start date is {}, later than requested report start date {}"
-            m = m.format(earliest, start_day)
-            raise RuntimeError(m)
-        # Make sure our calculated end date is not after we started collecting data
-        y, m, d = [int(x) for x in start_day.split('-')]
-        dt = datetime.date(y, m, d)
-        delta = datetime.timedelta(days=days)
-        ndt = dt + delta
-        end_day = ndt.strftime("%Y-%m-%d")
-        latest = self.mtf.latest_date()
-        if end_day > latest:
-            m = "Latest available start date is {}, sooner than calculated report end date {}"
-            m = m.format(latest, end_day)
-            raise RuntimeError(m)
-
-        # Make sure that for 7-day (weekly) reports, we start on a Sunday
-        weekday = dt.weekday()
-        if weekday != 6 and days == 7:
-            proposed = dt - datetime.timedelta(days = (weekday + 1))
-            proposed_s = proposed.strftime("%Y-%m-%d")
-            m = "Weekly reports must start on a Sunday.  Consider using {} instead of {}"
-            m = m.format(proposed_s, start_day)
-            raise RuntimeError(m)
-
     def report(self, start_day, days, users=None, force_generate=False, channels=None):
         """
         Returns (current_report, previous_report)
         """
-        self.validate(start_day, days)
         current_report = self.get_report(start_day, days, users, force_generate, channels)
         try:
             previous_report = self.previous_report(start_day, days, users, force_generate, channels)
@@ -164,10 +132,9 @@ class ReportGenerator(object):
         report_creator.set_start_date(dates[0])
         report_creator.set_end_date(dates[-1])
         # print("For the report of {} days starting {} we have dates {}".format(days, start_day, dates))
-        tables = [self.mtf.get_message_table(date) for date in dates]
         # print("Message table names: {}".format(tables))
-        for table in tables:
-            for message in ddb.DDB.items(table):
+        for date in dates:
+            for message in self.Message.messages_for_day(date):
                 report_creator.message(message)
         report_creator.finalize()
         current_report = report_creator.data()
