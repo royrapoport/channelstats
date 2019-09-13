@@ -4,6 +4,7 @@ import collections
 import decimal
 import json
 import re
+import time
 
 # Helper class to convert a DynamoDB item to JSON.
 
@@ -82,3 +83,14 @@ def valid_cid(cid):
 
 def valid_uid(uid):
     return re.match("^U[A-Z0-9]+$", uid)
+
+def make_day(ts):
+    """
+    Given a str ts, return yyyy-mm-dd
+    """
+    lt = time.localtime(int(float(ts)))
+    return time.strftime("%Y-%m-%d", lt)
+
+def today():
+    lt = time.localtime(time.time())
+    return time.strftime("%Y-%m-%d", lt)
