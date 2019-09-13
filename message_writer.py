@@ -3,15 +3,14 @@
 import json
 import sys
 
-import messagetablefactory
+import message
 import utils
 
 
 class MessageWriter(object):
 
     def __init__(self):
-        self.MessageTableFactory = messagetablefactory.MessageTableFactory()
-        seen = {}
+        self.Message = message.Message()
 
     def write(self, list_of_messages, cid, parent_user_id=None):
         """
@@ -25,33 +24,23 @@ class MessageWriter(object):
         # Map message table names to list of messages
         messages = {}
 
-        for message in list_of_messages:
-            if message.get("type") != "message":
-                continue
-            ts = message['ts']
-            table_name = self.MessageTableFactory.get_message_table_name(
-                ts)
-            if table_name not in message_tables:
-                message_tables[table_name] = self.MessageTableFactory.get_message_table(
-                    ts)
-                messages[table_name] = []
-            messages[table_name].append(message)
-
-        for table_name in messages:
-            # print("Writing to message table {}".format(table_name))
-            table = message_tables[table_name]
-            with table.batch_writer() as batch:
-                for message in messages[table_name]:
-                    Row = self.make_row(message, cid, parent_user_id)
-                    if not Row:
-                        continue
-                    batch.put_item(Row)
+        table = self.Message.table
+        with table.batch_writer() as batch:
+            for message in list_of_messages:
+                if message.get("type") != "message":
+                    continue
+                ts = message['ts']
+                Row = self.make_row(message, cid, parent_user_id)
+                if not Row:
+                    continue
+                batch.put_item(Row)
 
     def make_row(self, message, cid, parent_user_id):
         """
         create a Row dictionary for insertion into DynamoDB
         """
         ts = message['ts']
+        date = utils.make_day(ts)
         try:
             user_id = message.get("user") or message.get("bot_id")
         except BaseException:
@@ -70,9 +59,12 @@ class MessageWriter(object):
         thread_ts = message.get("thread_ts")
         is_threadhead = thread_ts == ts
         is_threaded = 'thread_ts' in message
+        cid_ts = "{}_{}".format(cid, ts)
         if files == 'null':
             files = None
         Row = {
+            "cid_ts": cid_ts,
+            "date": date,
             "is_threaded": is_threaded,
             "is_thread_head": is_threadhead,
             "ts": ts,
