@@ -4,7 +4,9 @@
 
 Download the local version of DynamoDB ( https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/DynamoDBLocal.html ) and run it
 
-Install boto3 and configure it appropriately (likely using `aws configure`)
+`pip3 install -r requirements.txt`
+
+`aws configure`
 
 Then run ./bootstrap
 
