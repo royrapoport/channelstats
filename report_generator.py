@@ -11,7 +11,6 @@ import channel
 import ddb
 import html_formatter
 import pdf_formatter
-import messagetablefactory
 import report
 import report_store
 import user
