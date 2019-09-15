@@ -67,11 +67,11 @@ class Message(object):
         run = True
         while run:
             if ExclusiveStartKey:
-                resp = self.table.query(IndexName="DateIndex",
+                resp = self.table.query(IndexName="Date",
                     ExclusiveStartKey=ExclusiveStartKey,
                     KeyConditionExpression=Key('date').eq(day))
             else:
-                resp = self.table.query(IndexName="DateIndex",
+                resp = self.table.query(IndexName="Date",
                     KeyConditionExpression=Key('date').eq(day))
             if 'LastEvaluatedKey' in resp:
                 ExclusiveStartKey = resp['LastEvaluatedKey']
