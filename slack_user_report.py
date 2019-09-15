@@ -157,7 +157,8 @@ class SlackUserReport(object):
         for channel_name in ur['enriched_channels']:
             channel = ur['enriched_channels'][channel_name]
             cname = channel['name']
-            f1 = "{} *{}*".format(ctr, self.sf.show_cid(cname))
+            cid = channel['slack_cid']
+            f1 = "{} *{}*".format(ctr, self.sf.show_cid(cid))
             f2 = "*{}* rank, *{}* m, *{}* w"
             messages = self.sf.comparison(ur, pur, ['enriched_channels', channel_name, 'messages'])
             words = self.sf.comparison(ur, pur, ['enriched_channels', channel_name, 'words'])
