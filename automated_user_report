@@ -18,7 +18,7 @@ slack = slacker.Slacker(config.slack_name, slack_token.token)
 channel_obj = channel.Channel()
 
 optchan = config.optin_channel
-optchan_id = channel_obj.get(optchan)['channel_id']
+optchan_id = channel_obj.get(optchan)['slack_cid']
 users = slack.get_users_for_channel(optchan_id)
 # users = ["U4430KWBT"]
 last_week = rg.latest_week_start()
