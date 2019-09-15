@@ -11,7 +11,7 @@ import configuration
 class FirstPost(object):
     table_name = "FirstPost"
 
-    def __init__(self):
+    def __init__(self, fake=False):
         self.ddb = ddb.DDB(self.table_name, [('slack_uid', 'S')])
         self.table = self.ddb.get_table()
         self.users = {}
@@ -19,6 +19,7 @@ class FirstPost(object):
         self.saved = {}
         self.count = None
         self.channel = None
+        self.fake = fake
 
     def get(self, key):
         if key in self.users:
@@ -49,7 +50,7 @@ class FirstPost(object):
 
     def message(self, message):
         # print("message: {}".format(message))
-        uid = message.get('user')
+        uid = message.get('user_id')
         if not uid:
             return
         ts = int(float(message['ts']))
