@@ -138,12 +138,16 @@ class SlackFormatter(object):
         return days[int(day)]
 
     def show_cid(self, cid):
-        if not self.fake:
-            return "<#{}>".format(cid)
         entry = self.channel.get(cid)
+        friendly_name = ""
         if entry:
-            choice = entry['friendly_name']
-        else:
+            friendly_name = entry['friendly_name']
+        if not self.fake:
+            if friendly_name:
+                return "<#{}|{}>".format(cid, friendly_name)
+            else:
+                return "<#{}>".format(cid)
+        if not friendly_name:
             choice = self.rn.name()
         return "#{}".format(choice)
 
