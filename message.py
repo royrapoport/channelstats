@@ -1,3 +1,4 @@
+#! /usr/bin/env python3
 
 import re
 import time
@@ -18,21 +19,43 @@ class Message(object):
         self.table = self.ddb.get_table()
         self.create_global_secondary_index()
 
-    def create_global_secondary_index(self):
-        if self.table.global_secondary_indexes:
-            return
-        print("Creating Global Secondary Index")
+    def gsi(self, attname, wait=True):
+        """
+        Create a GSI for attname, named AttnameIndex; wait until done if wait
+        """
+        idxname = attname.capitalize()
         self.ddb.dynamodb_client.update_table(TableName=self.table.name,
-               AttributeDefinitions=[{'AttributeName': 'date', 'AttributeType': 'S'}],
+               AttributeDefinitions=[{'AttributeName': attname, 'AttributeType': 'S'}],
                GlobalSecondaryIndexUpdates=[ {
                  'Create': {
-                        'IndexName': 'DateIndex',
-                        'KeySchema': [{'AttributeName': 'date', 'KeyType': 'HASH'}],
+                        'IndexName': idxname,
+                        'KeySchema': [{'AttributeName': attname, 'KeyType': 'HASH'}],
                         'Projection': {'ProjectionType': 'ALL'},
                             }
                         }
                     ]
               )
+        if wait:
+            done = False
+            while not done:
+                self.table.reload()
+                gsis = self.table.global_secondary_indexes
+                if not gsis:
+                    print("GSI creation incomplete -- no GSIs created.  Waiting")
+                else:
+                    nonactive = [x for x in gsis if x['IndexStatus'] != "ACTIVE"]
+                    if nonactive:
+                        print("GSI creation incomplete -- Inactive GSIs pending: {}.  Waiting".format([x['IndexName'] for x in nonactive]))
+                    else:
+                        done = True
+                if not done:
+                    time.sleep(5)
+
+    def create_global_secondary_index(self):
+        if self.table.global_secondary_indexes:
+            return
+        for attribute in ["date", "slack_cid", "user_id"]:
+            self.gsi(attribute, wait=True)
 
     def messages_for_day(self, day):
         """
@@ -56,3 +79,8 @@ class Message(object):
                 run = False
             for item in resp['Items']:
                 yield item
+
+if __name__ == "__main__":
+    # Just create the table and GSIs
+    m = Message()
+
