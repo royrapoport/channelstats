@@ -9,8 +9,12 @@ import utils
 
 class MessageWriter(object):
 
-    def __init__(self):
+    def __init__(self, fake=False):
         self.Message = message.Message()
+        self.seen = {}
+        self.fake = fake
+        if self.fake:
+            print("Being invoked in fake mode")
 
     def write(self, list_of_messages, cid, parent_user_id=None):
         """
@@ -23,17 +27,35 @@ class MessageWriter(object):
         message_tables = {}
         # Map message table names to list of messages
         messages = {}
+        self.seen = {}
 
         table = self.Message.table
         with table.batch_writer() as batch:
+            ctr = 0
             for message in list_of_messages:
+                ctr += 1
+                if ctr > 0:
+                    if ctr % 2000 == 0:
+                        sys.stdout.write(str(ctr))
+                        sys.stdout.flush()
+                    elif ctr % 200 == 0:
+                        sys.stdout.write(".")
+                        sys.stdout.flush()
                 if message.get("type") != "message":
                     continue
                 ts = message['ts']
                 Row = self.make_row(message, cid, parent_user_id)
                 if not Row:
                     continue
-                batch.put_item(Row)
+                if Row['cid_ts'] in self.seen:
+                    continue
+                self.seen[Row['cid_ts']] = 1
+                if not self.fake:
+                    batch.put_item(Row)
+                else:
+                    pass
+                    # sys.stdout.write("f")
+                    #sys.stdout.flush()
 
     def make_row(self, message, cid, parent_user_id):
         """
@@ -50,8 +72,11 @@ class MessageWriter(object):
                         message,
                         indent=4)))
             return None
-        word_count = len(message['text'].split())
-        mentions = utils.find_user_mentions(message['text'])
+        text = message.get("text", "")
+        if text is None:
+            text = ""
+        word_count = len(text.split())
+        mentions = utils.find_user_mentions(text)
         mentions = [x for x in mentions if x != user_id]
         (reaction_count, reactions) = self.get_reactions(message)
         (reply_count, replies) = self.get_replies(message)
