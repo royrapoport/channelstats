@@ -50,7 +50,7 @@ class FirstPost(object):
 
     def message(self, message):
         # print("message: {}".format(message))
-        uid = message.get('user_id')
+        uid = message.get('user')
         if not uid:
             return
         ts = int(float(message['ts']))
