@@ -135,6 +135,7 @@ class Enricher(object):
             percent_words = words * 100.0 / channel_words
             percent_messages = messages * 100.0 / channel_messages
             c = {
+                'slack_cid': cid,
                 'name': cname,
                 'rank': rank,
                 'words': words,
