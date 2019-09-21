@@ -94,3 +94,11 @@ def make_day(ts):
 def today():
     lt = time.localtime(time.time())
     return time.strftime("%Y-%m-%d", lt)
+
+def save(blob, fname):
+    if type(blob) == str:
+        f = open(fname, "w")
+    else:
+        f = open(fname, "wb")
+    f.write(blob)
+    f.close()
