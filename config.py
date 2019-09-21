@@ -13,7 +13,7 @@ max_age = 21
 # with its own namespace
 prefix = "channelstats"
 # By default, refetch this many days
-refetch = 21
+refetch = 7
 # What channels should we upload weekly reports to?
 report_channel = "zmeta-statistics"
 # Members of this channel will get automated weekly user reports 
