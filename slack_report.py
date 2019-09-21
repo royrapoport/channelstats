@@ -49,5 +49,13 @@ else:
     print("Report {} already exists".format(pdf_fname))
 
 client = slack.WebClient(token=slack_token.token)
-response = client.files_upload(channel=destination, file=pdf_fname)
+comment="Slack activity report for the {} days starting {}".format(days, latest_week_start)
+response = client.files_upload(
+    channels=destination, 
+    channel=destination, 
+    file=pdf_fname,
+    filename=pdf_fname,
+    comment=comment,
+    title=comment
+    )
 print(response)
