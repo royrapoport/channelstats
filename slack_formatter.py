@@ -105,9 +105,9 @@ class SlackFormatter(object):
         returns a list of blocks
         """
         if idx == 0:
-            label = "m"
+            label = "msgs"
         elif idx == 1:
-            label = "w"
+            label = "words"
         else:
             raise RuntimeError("idx has to be 0 or 1")
         total = sum([x[idx] for x in d.values()])
