@@ -4,7 +4,7 @@ import pdfcrowd_token
 
 
 class PDFFormatter(object):
-    size = "100in"
+    size = "25in"
 
     def __init__(self):
         # create the API client instance
