@@ -119,7 +119,7 @@ class User(object):
         expr = re.sub(", $", "", expr)
         self.table.update_item(
             Key={
-                'slack_uid': row['id']
+                'slack_uid': row['slack_uid']
             },
             UpdateExpression=expr,
             ExpressionAttributeValues=values,
