@@ -9,8 +9,6 @@ import time
 import message
 import channel
 import ddb
-import html_formatter
-import pdf_formatter
 import report
 import report_store
 import user
