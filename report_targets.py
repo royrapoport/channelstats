@@ -20,13 +20,15 @@ def users():
     users = slack.get_users_for_channel(optchan_id)
     return users
 
-def channels():
+def channels(debug=False):
     """
     for a cid that we should get activity for, return
     {cid: report_cid} where report_cid is the CID to which we should send the report
     """
     friendly_names = channel_obj.friendly_channel_names()
     stats_channels = [x for x in friendly_names if re.match(".*-stats$", x)]
+    if debug:
+        print("Stats channels: {}".format(stats_channels))
     # channel_names will be a 
     # {channel_name_to_do_report_on: channel_name_to_send_report_to}
     # dict
@@ -47,5 +49,5 @@ def channels():
 
 if __name__ == "__main__":
     print("users: {}".format(users()))
-    print("channels: {}".format(channels()))
+    print("channels: {}".format(channels(debug=True)))
 
