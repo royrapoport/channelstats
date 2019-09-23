@@ -48,11 +48,15 @@ class Configuration(object):
         last_run = int(last_run['last run'])
         return last_run
 
+    def set(self, key, valuedict):
+        """
+        sets valuedict {k:v} as the value in DDB for row identified by key
+        """
+        item = {'item_key': key}
+        for k in valuedict:
+            item[k] = valuedict[k]
+        self.table.put_item(Item=item)
+
     def set_last_run(self):
         now = int(time.time())
-        self.table.put_item(
-            Item={
-                'item_key': "last run",
-                "last run": now
-            }
-        )
+        self.set('last_run', {'last_run': now})

@@ -1,3 +1,4 @@
+import configuration
 import copy
 import ddb
 import utils
@@ -12,13 +13,24 @@ class Channel(object):
             self.table_name = "Fake" + self.table_name
         self.ddb = ddb.DDB(self.table_name, [('channel_key', 'S')])
         self.table = self.ddb.get_table()
+        self.configuration = configuration.Configuration()
 
     def batch_get_channel(self, cids):
         return self.ddb.batch_hash_get(cids)
 
+    def friendly_channel_names(self):
+        """
+        returns list of friendly channel names
+        """
+        item = self.configuration.get("channel_names")
+        return item['names'].split("#")
+
     def batch_upload(self, channels):
         previouslies = {}
         friendly_names = {}
+        friendlies = [x['name'] for x in channels]
+        friendly_string = "#".join(friendlies)
+        self.configuration.set("channel_names", {"names": friendly_string})
         with self.table.batch_writer() as batch:
             for channel in channels:
                 cid = channel['id']
