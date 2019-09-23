@@ -7,15 +7,18 @@ import config
 import slacker
 import slack_token
 import slack_user_report
+import slack_channel_report
 import report_generator
 import report_targets
 
 fake = False
 rg = report_generator.ReportGenerator(fake=fake)
-slack_reporter = slack_user_report.SlackUserReport()
+slack_user_reporter = slack_user_report.SlackUserReport()
+slack_channel_reporter = slack_channel_report.SlackChannelReport()
 
 users = report_targets.users()
-channels = report_targets.channels()
+channel_dict = report_targets.channels()
+channels = channel_dict.keys()
 
 last_week = rg.latest_week_start()
 days = 7
@@ -27,10 +30,14 @@ if len(sys.argv) > 1 and sys.argv[1] == "regen":
 print("users: {}".format(users))
 print("Week start: {}".format(last_week))
 print("Generating report for {}/{}".format(last_week, days))
-(report, previous_report) = rg.report(last_week, days, users=users, force_generate=force_regen)
+(report, previous_report) = rg.report(last_week, days, users=users, channels=channels, force_generate=force_regen)
 f = open("reports/{}-{}days-report.json".format(last_week, days), "w")
 f.write(json.dumps(report, indent=4))
 f.close()
 for user in users:
-    # slack_reporter.send_report(user, report, previous_report, send=True, override_uid=roy)
-    slack_reporter.send_report(user, report, previous_report, send=True)
+    # slack_user_reporter.send_report(user, report, previous_report, send=True, override_uid=roy)
+    slack_user_reporter.send_report(user, report, previous_report, send=True)
+
+for channel in channels:
+    dest = channel_dict[channel]
+    slack_channel_reporter.send_report(channel, report, previous_report, send=True, override_uid=dest)
