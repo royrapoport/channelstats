@@ -21,22 +21,32 @@ def users():
     return users
 
 def channels():
+    """
+    for a cid that we should get activity for, return
+    {cid: report_cid} where report_cid is the CID to which we should send the report
+    """
     friendly_names = channel_obj.friendly_channel_names()
     stats_channels = [x for x in friendly_names if re.match(".*-stats$", x)]
-    report_channel_names = []
+    # channel_names will be a 
+    # {channel_name_to_do_report_on: channel_name_to_send_report_to}
+    # dict
+    channel_names = {}
     for stat_channel in stats_channels:
         rep = re.sub("-stats$", "", stat_channel)
         if rep in friendly_names:
-            report_channel_names.append(rep)
-    report_channel_ids = []
-    for report_channel_name in report_channel_names:
-        entry = channel_obj.get(report_channel_name)
+            channel_names[rep] = stat_channel
+    print("channel_names: {}".format(channel_names))
+    channel_ids = {}
+    for channel_name in channel_names.keys():
+        entry = channel_obj.get(channel_name)
         if entry:
-            report_channel_ids.append(entry['slack_cid'])
-    return report_channel_ids
+            cid = entry['slack_cid']
+            report_cid = channel_obj.get(channel_names[channel_name])['slack_cid']
+            channel_ids[cid] = report_cid
+
+    return channel_ids
 
 if __name__ == "__main__":
     print("users: {}".format(users()))
     print("channels: {}".format(channels()))
-    channels()
 
