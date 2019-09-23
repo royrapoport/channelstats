@@ -35,7 +35,6 @@ def channels():
         rep = re.sub("-stats$", "", stat_channel)
         if rep in friendly_names:
             channel_names[rep] = stat_channel
-    print("channel_names: {}".format(channel_names))
     channel_ids = {}
     for channel_name in channel_names.keys():
         entry = channel_obj.get(channel_name)
