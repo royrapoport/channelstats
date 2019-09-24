@@ -147,7 +147,6 @@ class Report(object):
         self.accum_reply_count(message)
         self.accum_threads(message)
         self.accum_timestats(message)
-        self.accum_timestats(message)
         self.accum_user(message)
 
     def create_key(self, keys, default_value):
