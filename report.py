@@ -181,9 +181,6 @@ class Report(object):
         and increment its message_count by one, word_count by wordcount
         in message
         """
-        if "U0D2D2J6N" in keys:
-            pass
-            # print("increment: {} {}".format(keys, message))
         self.create_key(keys, [0, 0])
         cur = self._data
         while keys:
@@ -205,8 +202,7 @@ class Report(object):
         # Now, adjust stats to the authors' timezone
         user = self.user.get(uid)
         if not user:  # Weird.  We couldn't find this user.  Oh well.
-            pass
-            # print("Couldn't find user {}".format(message['user_id']))
+            print("Couldn't find user {}".format(message['user_id']))
             return
         if 'tz_offset' not in user or 'tz' not in user:
             return
@@ -220,8 +216,6 @@ class Report(object):
         self.increment(["user_weekday", wday], message)
         if uid in self.track:
             self.increment(["user_stats", uid, "posting_days", wday], message)
-            pass
-            # print("Incrementing {}  for posting_day {}: {}".format(uid, wday, message))
         if cid in self._data['enriched_channel']:
             self.increment(["enriched_channel", cid, "posting_days", wday], message)
         if wday < 5:  # We only look at weekday activity
@@ -229,7 +223,6 @@ class Report(object):
             self.increment(["user_weekday_hour_per_user", uid, hour], message)
             if uid in self.track:
                 self.increment(["user_stats", uid, "posting_hours", hour], message)
-                # print("Incrementing {}  for posting_hour {}: {}".format(uid, wday, message))
             if cid in self._data['enriched_channel']:
                 self.increment(["enriched_channel", cid, "posting_hours", hour], message)
 
