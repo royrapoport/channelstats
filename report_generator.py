@@ -5,6 +5,7 @@ import datetime
 import json
 import sys
 import time
+import traceback
 
 import message
 import channel
@@ -75,9 +76,11 @@ class ReportGenerator(object):
         Returns (current_report, previous_report)
         """
         current_report = self.get_report(start_day, days, users, force_generate, channels)
+        print("Got current report")
         try:
             previous_report = self.previous_report(start_day, days, users, force_generate, channels)
         except Exception as e:
+            traceback.print_exc()
             print("Exception: {}".format(e))
             previous_report = None
         return current_report, previous_report
@@ -121,7 +124,7 @@ class ReportGenerator(object):
         Generate a channel stats report starting on start_day, which is
         formatted as yyyy-mm-dd, and for the period of DAYS duration
         """
-        # print("Generating report for {}/{}/{}".format(start_day, days, user))
+        print("Generating report for {}/{}".format(start_day, days))
         report_creator = report.Report()
         report_creator.set_users(users)
         report_creator.set_channels(channels)
