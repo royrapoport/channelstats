@@ -550,7 +550,12 @@ class Report(object):
     def _finalize_reaction(self):
         self._data['reaction'] = Report.order_dict(self._data['reaction'])
         for cid in self._data.get("enriched_channel", {}):
-            self._data['enriched_channel'][cid]['reactions'] = Report.order_dict(self._data['enriched_channel'][cid]['reactions'])
+            if "reactions" in self._data['enriched_channel'][cid]:
+                reactions = self._data['enriched_channel'][cid]['reactions']
+                self._data['enriched_channel'][cid]['reactions'] = Report.order_dict(reactions)
+            else:
+                self._data['enriched_channel'][cid]['reactions'] = {}
+
 
     def _finalize_channels(self):
         """
