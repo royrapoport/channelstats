@@ -93,10 +93,6 @@ class SlackChannelReport(object):
         return blocks
 
     def make_report(self, ur, pur, cid):
-        """
-        if abbreviated, just send the header
-        """
-
         blocks = []
         blocks += self.make_header(ur, pur, cid)
         blocks += self.users(cid, ur, pur)
