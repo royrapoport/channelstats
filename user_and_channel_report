@@ -28,8 +28,9 @@ if len(sys.argv) > 1 and sys.argv[1] == "regen":
     force_regen = True
 
 print("users: {}".format(users))
+print("channels: {}".format(channels))
 print("Week start: {}".format(last_week))
-print("Generating report for {}/{}".format(last_week, days))
+print("Getting report for {}/{}".format(last_week, days))
 (report, previous_report) = rg.report(last_week, days, users=users, channels=channels, force_generate=force_regen)
 f = open("reports/{}-{}days-report.json".format(last_week, days), "w")
 f.write(json.dumps(report, indent=4))
@@ -37,7 +38,8 @@ f.close()
 for user in users:
     # slack_user_reporter.send_report(user, report, previous_report, send=True, override_uid=roy)
     slack_user_reporter.send_report(user, report, previous_report, send=True)
+    pass
 
 for channel in channels:
     dest = channel_dict[channel]
-    slack_channel_reporter.send_report(channel, report, previous_report, send=True, override_uid=dest)
+    slack_channel_reporter.send_report(channel, report, previous_report, send=True, override_uid=dest, summary=True)
