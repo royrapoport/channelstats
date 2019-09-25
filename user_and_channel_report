@@ -38,7 +38,6 @@ f.close()
 for user in users:
     # slack_user_reporter.send_report(user, report, previous_report, send=True, override_uid=roy)
     slack_user_reporter.send_report(user, report, previous_report, send=True)
-    pass
 
 for channel in channels:
     dest = channel_dict[channel]
