@@ -6,6 +6,8 @@ import json
 import re
 import time
 
+import config
+
 # Helper class to convert a DynamoDB item to JSON.
 
 
@@ -102,3 +104,10 @@ def save(blob, fname):
         f = open(fname, "wb")
     f.write(blob)
     f.close()
+
+def make_url(cid, ts):
+    """
+    Return a URL for the message specified
+    """
+    return "https://{}.slack.com/archives/{}/p{}".format(config.slack_name, cid, ts.replace(".", ""))
+

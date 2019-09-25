@@ -7,6 +7,7 @@ import time
 import channel
 import config
 import user
+import utils
 
 
 class Enricher(object):
@@ -52,7 +53,6 @@ class Enricher(object):
             if not isinstance(message, list):
                 continue
             (reactions, ts, cid, uid) = message
-            url = "https://{}.slack.com/archives/{}/p{}"
             ret.append({
                 'count': reactions,
                 'dt': time.strftime("%m/%d/%Y %H:%M", time.localtime(int(float(ts)))),
@@ -60,7 +60,7 @@ class Enricher(object):
                 'user': uinfo[uid]['label'],
                 'uid': uid,
                 'cid': cid,
-                'url': url.format(config.slack_name, cid, ts.replace(".", ""))
+                'url': utils.make_url(cid, ts)
             })
         return ret
 
