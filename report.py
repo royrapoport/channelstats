@@ -527,10 +527,10 @@ class Report(object):
     def order_dict(d):
         """
         Given a dict whose values are either (messages, words) or just an int
-        turn it into an ordered dict ordered from key with most to least
+        turn it into an ordered dict ordered from key with most to least.
+        If given something other than a dict, this returns an empty dict
         """
         if type(d) != dict:
-            print("Type of {} is not a dict!".format(d))
             return {}
         dk = list(d.keys())
         first_elem = d[dk[0]]
