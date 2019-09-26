@@ -9,6 +9,7 @@ import sys
 import slack
 
 import random_name
+import config
 import channel
 import channel_members_log
 import user
@@ -89,23 +90,12 @@ class SlackChannelReport(object):
         blocks.append(self.membercount(cid, ur['start_date'], ur['end_date']))
         blocks.append(self.messages(cid, ur, pur))
         blocks.append(self.sf.divider())
-        blocks += self.users(cid, ur, pur)
-        #m = m.format(self.sf.comparison(us, pus, ['count', 1]), self.sf.comparison(us, pus, ['count', 0]))
-        #m += "\n"
-        #m += "That made you the *{}*-ranked poster on the Slack and meant you contributed "
-        #m += "*{:.1f}%*{} of this Slack's total public volume"
-        #m = m.format(utils.rank(us['rank']), us['percent_of_words'], self.sf.comparison(us, pus, ['percent_of_words'], False))
-        #tm = us.get("thread_messages")
-        #if tm:
-            #t = "In total, {} messages were posted as threaded responses to your messages.\n"
-            #t = t.format(self.sf.comparison(us, pus, ['thread_messages']))
-            #m += t
-        #blocks.append(self.sf.text_block(m))
         return blocks
 
     def make_report(self, ur, pur, cid):
         blocks = []
         blocks += self.make_header(ur, pur, cid)
+        blocks += self.users(cid, ur, pur)
         blocks.append(self.sf.divider())
         blocks.append(self.sf.text_block(
                 "People sent {} reactions to the channel".format(
@@ -220,7 +210,7 @@ class SlackChannelReport(object):
         return blocks
 
 
-    def send_report(self, cid, ur, previous, send=True, override_uid=None):
+    def send_report(self, cid, ur, previous, send=True, override_uid=None, summary=False):
         enricher.Enricher(fake=self.fake).enrich(ur)
         enricher.Enricher(fake=self.fake).enrich(previous)
         blocks = self.make_report(ur, previous, cid)
@@ -234,6 +224,7 @@ class SlackChannelReport(object):
         as_user = False
         if override_uid:
             cid=override_uid
+        urls = []
         for blockset in utils.chunks(blocks, 49):
             if send:
                 print("Sending report to {}".format(cid))
@@ -246,7 +237,19 @@ class SlackChannelReport(object):
                         unfurl_links=True,
                         link_names=True)
                     # print("Response: {}".format(response))
+                    urls.append(utils.make_url(response['channel'], response['ts']))
                 except Exception:
                     print(Exception)
                     print(json.dumps(blockset, indent=4))
                     sys.exit(0)
+        if summary and urls:
+            cid = self.channel.get(config.channel_stats)['slack_cid']
+            self.client.chat_postMessage(
+                channel = cid, 
+                parse='full',
+                as_user=as_user,
+                unfurl_links=True,
+                link_names=True,
+                text=urls[0]
+            )
+

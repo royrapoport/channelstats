@@ -18,3 +18,5 @@ refetch = 7
 report_channel = "zmeta-statistics"
 # Members of this channel will get automated weekly user reports 
 optin_channel = "zmeta-per-user-report-optin"
+# Where should we post snippets of channel-specific stats?
+channel_stats = "zmeta-channel-stats"

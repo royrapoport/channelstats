@@ -527,8 +527,11 @@ class Report(object):
     def order_dict(d):
         """
         Given a dict whose values are either (messages, words) or just an int
-        turn it into an ordered dict ordered from key with most to least
+        turn it into an ordered dict ordered from key with most to least.
+        If given something other than a dict, this returns an empty dict
         """
+        if type(d) != dict:
+            return {}
         dk = list(d.keys())
         first_elem = d[dk[0]]
         if type(first_elem) in [tuple, list]:
@@ -550,7 +553,12 @@ class Report(object):
     def _finalize_reaction(self):
         self._data['reaction'] = Report.order_dict(self._data['reaction'])
         for cid in self._data.get("enriched_channel", {}):
-            self._data['enriched_channel'][cid]['reactions'] = Report.order_dict(self._data['enriched_channel'][cid]['reactions'])
+            if "reactions" in self._data['enriched_channel'][cid]:
+                reactions = self._data['enriched_channel'][cid]['reactions']
+                self._data['enriched_channel'][cid]['reactions'] = Report.order_dict(reactions)
+            else:
+                self._data['enriched_channel'][cid]['reactions'] = {}
+
 
     def _finalize_channels(self):
         """
