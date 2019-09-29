@@ -38,7 +38,7 @@ pdf_fname = "reports/{}-{}-report.pdf".format(latest_week_start, days)
 html_fname = "reports/{}-{}-report.html".format(latest_week_start, days)
 print("Will find, or create, {}".format(pdf_fname))
 
-if not os.path.exists(pdf_fname):
+if args.regen or not os.path.exists(pdf_fname):
     print("Generating report")
     (report, previous_report) = rg.report(latest_week_start, days, force_generate=args.regen)
     report_html = html.format(report)
