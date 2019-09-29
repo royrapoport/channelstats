@@ -1,13 +1,12 @@
 #! /usr/bin/env python
 
-import channel
-import decimal
-
 import collections
 import copy
+import decimal
 import json
 import time
 
+import channel
 import config
 import configuration
 import user
@@ -530,7 +529,7 @@ class Report(object):
         turn it into an ordered dict ordered from key with most to least.
         If given something other than a dict, this returns an empty dict
         """
-        if type(d) != dict:
+        if type(d) not in [dict, collections.OrderedDict, collections.defaultdict]:
             return {}
         dk = list(d.keys())
         first_elem = d[dk[0]]
