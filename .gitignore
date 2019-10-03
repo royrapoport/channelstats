@@ -11,3 +11,5 @@ reports
 dynamodb_local_latest
 *.json
 *.ipynb
+
+config.py
