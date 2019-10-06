@@ -205,7 +205,9 @@ class Report(object):
             return
         if 'tz_offset' not in user or 'tz' not in user:
             return
-        tz_offset = user['tz_offset']
+        tz_offset = user.get("tz_offset")
+        if tz_offset is None:
+            tz_offset = config.default_tz_offset
         tz = user.get("tz", "Unknown")
         self.increment(["timezone", tz], message)
         ts += tz_offset
