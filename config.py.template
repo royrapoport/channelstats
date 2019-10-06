@@ -1,6 +1,7 @@
 #! /usr/bin/env python2.7
 
-# What region do we use DDB in? Ex. us-west-2
+# What region do we use DDB in?
+# Examples regions here: https://docs.aws.amazon.com/general/latest/gr/rande.html#ddb_region
 region = ""
 # What's the Slack name? Used for creating URLs
 slack_name = ""
