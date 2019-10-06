@@ -20,3 +20,8 @@ report_channel = "zmeta-statistics"
 optin_channel = "zmeta-per-user-report-optin"
 # Where should we post snippets of channel-specific stats?
 channel_stats = "zmeta-channel-stats"
+# What timezone offset (in seconds) should we use for users whose tz_offset 
+# is unknown?
+# We chose -25200 because at the time of deciding this about 3500/11000 
+# of our users were in this tz
+default_tz_offset = -25200
