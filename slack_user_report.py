@@ -73,7 +73,7 @@ class SlackUserReport(object):
         blocks += self.topten(ur, pur, uid, 'you_mentioned', "The people you mentioned the most")
         blocks += self.topten(ur, pur, uid, 'mentioned_you', "The people who mentioned you the most")
         blocks += self.topten(ur, pur, uid, 'mentions_combined', "Mention Affinity")
-        blocks += self.firstpost(uid)
+        # blocks += self.firstpost(uid)
         return blocks
 
     def firstpost(self, uid):
