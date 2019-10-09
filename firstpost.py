@@ -81,16 +81,12 @@ class FirstPost(object):
         return self.get(cid)
 
     def save(self):
-        channels = {}
         # print("self.users: {}".format(json.dumps(self.users, indent=4)))
         with self.table.batch_writer() as batch:
             for uid in self.users:
                 row = self.users[uid]
                 if not row:
                     continue
-                channel = row['slack_cid']
-                if channel not in channels:
-                    channels[channel] = 1
                 if uid in self.saved:
                     continue
                 # print("Inserting new {}".format(row))
