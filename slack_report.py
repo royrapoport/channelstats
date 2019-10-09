@@ -25,10 +25,13 @@ html = html_formatter.HTMLFormatter()
 pdf = pdf_formatter.PDFFormatter()
 
 send = not args.nosend
-if not args.destination:
-    raise RuntimeError("Must specify --destination")
-destination = report_utils.override(args.destination)
-print("Will send report to {}".format(destination))
+if send and not args.destination:
+    raise RuntimeError("Must specify --destination if did not specify --nosend")
+if args.destination and args.nosend:
+    raise RuntimeError("You cannot specify both --nosend and a --destination")
+if args.destination:
+    destination = report_utils.override(args.destination)
+    print("Will send report to {}".format(destination))
 
 
 latest_week_start = rg.latest_week_start()
@@ -44,18 +47,21 @@ if args.regen or not os.path.exists(pdf_fname):
     report_html = html.format(report)
     report_pdf = pdf.convert(report_html)
     utils.save(report_html, html_fname)
+    print("Saved HTML report to {}".format(html_fname))
     utils.save(report_pdf, pdf_fname)
+    print("Saved PDF report to {}".format(pdf_fname))
 else:
     print("Report {} already exists".format(pdf_fname))
 
-client = slack.WebClient(token=slack_token.token)
-comment="Slack activity report for the {} days starting {}".format(days, latest_week_start)
-response = client.files_upload(
-    channels=destination, 
-    channel=destination, 
-    file=pdf_fname,
-    filename=pdf_fname,
-    comment=comment,
-    title=comment
-    )
-print(response)
+if send:
+    client = slack.WebClient(token=slack_token.token)
+    comment="Slack activity report for the {} days starting {}".format(days, latest_week_start)
+    response = client.files_upload(
+        channels=destination, 
+        channel=destination, 
+        file=pdf_fname,
+        filename=pdf_fname,
+        comment=comment,
+        title=comment
+        )
+    print(response)
