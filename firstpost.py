@@ -16,7 +16,6 @@ class FirstPost(object):
         self.table = self.ddb.get_table()
         self.users = {}
         self.modified = {}
-        self.saved = {}
         self.count = None
         self.channel = None
         self.fake = fake
@@ -87,8 +86,5 @@ class FirstPost(object):
                 row = self.users[uid]
                 if not row:
                     continue
-                if uid in self.saved:
-                    continue
                 # print("Inserting new {}".format(row))
                 batch.put_item(row)
-                self.saved[uid] = 1
