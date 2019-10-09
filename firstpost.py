@@ -53,24 +53,27 @@ class FirstPost(object):
         uid = message.get('user')
         if not uid:
             return
-        ts = int(float(message['ts']))
         mid = message['ts']
+        ts = int(float(mid))
         entry = self.get(uid)
 
         self.count += 1
         self.print_progress(ts)
 
         if entry:
+            # We have an existing entry.  Was it later than this one?
             if entry['ts'] > ts:
+                # The existing entry is later than this one.
                 entry['ts'] = ts
                 entry['slack_cid'] = self.channel
                 entry['message_id'] = str(mid)
         else:
+            # No existing entry -- this is the first one
             self.users[uid] = {
                 "slack_uid": uid,
                 "slack_cid": self.channel,
                 "message_id": str(mid),
-                "ts": int(float(ts))
+                "ts": ts
             }
         return message
 
