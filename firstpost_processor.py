@@ -31,8 +31,6 @@ class Downloader(object):
                 name = channel_entry['friendly_name']
             else:
                 name = "Unknown"
-            if name != "announcements":
-                continue
             m = "Getting messages for {}/{} {} - {}"
             m = m.format(idx, cid_count, cid, name)
             print(m)
