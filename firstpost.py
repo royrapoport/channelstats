@@ -62,6 +62,8 @@ class FirstPost(object):
         uid = message.get('user')
         if not uid:
             return
+        if message.get("subtype") == "channel_join":
+            return
         mid = message['ts']
         ts = int(float(mid))
         entry = self.get(uid)
