@@ -6,6 +6,7 @@ import time
 
 import ddb
 import configuration
+import utils
 
 
 class FirstPost(object):
@@ -19,6 +20,15 @@ class FirstPost(object):
         self.count = None
         self.channel = None
         self.fake = fake
+
+    def url(self, uid):
+        entry = self.get(uid)
+        if not entry:
+            return None
+        mid = entry['message_id']
+        cid = entry['slack_cid']
+        url = utils.make_url(cid, mid)
+        return url
 
     def get(self, key):
         if key in self.users:
