@@ -26,12 +26,14 @@ class Downloader(object):
         cid_count = len(cids)
         idx = 1
         for cid in cids:
-            print("Getting messages for {}/{} {} - {}".format(idx,
-                                                              cid_count, cid, self.channel.get(cid)))
-            gotit = self.fp.get_channel(cid)
-            if gotit:
-                print("\tSkipping channel -- already got it")
-                continue
+            channel_entry = self.channel.get(cid)
+            if channel_entry:
+                name = channel_entry['friendly_name']
+            else:
+                name = "Unknown"
+            m = "Getting messages for {}/{} {} - {}"
+            m = m.format(idx, cid_count, cid, name)
+            print(m)
             idx += 1
             self.fp.set_channel(cid)
             messages = self.slack.get_messages(cid, 0, self.fp.message)

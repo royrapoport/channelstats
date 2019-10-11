@@ -6,6 +6,7 @@ import time
 
 import ddb
 import configuration
+import utils
 
 
 class FirstPost(object):
@@ -16,10 +17,18 @@ class FirstPost(object):
         self.table = self.ddb.get_table()
         self.users = {}
         self.modified = {}
-        self.saved = {}
         self.count = None
         self.channel = None
         self.fake = fake
+
+    def url(self, uid):
+        entry = self.get(uid)
+        if not entry:
+            return None
+        mid = entry['message_id']
+        cid = entry['slack_cid']
+        url = utils.make_url(cid, mid)
+        return url
 
     def get(self, key):
         if key in self.users:
@@ -53,24 +62,29 @@ class FirstPost(object):
         uid = message.get('user')
         if not uid:
             return
-        ts = int(float(message['ts']))
+        if message.get("subtype") == "channel_join":
+            return
         mid = message['ts']
+        ts = int(float(mid))
         entry = self.get(uid)
 
         self.count += 1
         self.print_progress(ts)
 
         if entry:
+            # We have an existing entry.  Was it later than this one?
             if entry['ts'] > ts:
+                # The existing entry is later than this one.
                 entry['ts'] = ts
                 entry['slack_cid'] = self.channel
                 entry['message_id'] = str(mid)
         else:
+            # No existing entry -- this is the first one
             self.users[uid] = {
                 "slack_uid": uid,
                 "slack_cid": self.channel,
                 "message_id": str(mid),
-                "ts": int(float(ts))
+                "ts": ts
             }
         return message
 
@@ -78,18 +92,11 @@ class FirstPost(object):
         return self.get(cid)
 
     def save(self):
-        channels = {}
         # print("self.users: {}".format(json.dumps(self.users, indent=4)))
         with self.table.batch_writer() as batch:
             for uid in self.users:
                 row = self.users[uid]
                 if not row:
                     continue
-                channel = row['slack_cid']
-                if channel not in channels:
-                    channels[channel] = 1
-                if uid in self.saved:
-                    continue
                 # print("Inserting new {}".format(row))
                 batch.put_item(row)
-                self.saved[uid] = 1

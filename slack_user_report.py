@@ -8,13 +8,14 @@ import sys
 
 import slack
 
-import random_name
 import channel
+import enricher
+import firstpost
+import random_name
+import slack_formatter
+import slack_token
 import user
 import utils
-import enricher
-import slack_token
-import slack_formatter
 
 
 class SlackUserReport(object):
@@ -24,6 +25,7 @@ class SlackUserReport(object):
         random.seed(time.time())
         self.fake = fake
         self.fake_channel = channel.Channel(fake=True)
+        self.fp = firstpost.FirstPost()
         self.channel = channel.Channel()
         self.rn = random_name.RandomName()
         self.user = user.User(fake=fake)
@@ -71,6 +73,18 @@ class SlackUserReport(object):
         blocks += self.topten(ur, pur, uid, 'you_mentioned', "The people you mentioned the most")
         blocks += self.topten(ur, pur, uid, 'mentioned_you', "The people who mentioned you the most")
         blocks += self.topten(ur, pur, uid, 'mentions_combined', "Mention Affinity")
+        blocks += self.firstpost(uid)
+        return blocks
+
+    def firstpost(self, uid):
+        blocks = []
+        entry = self.fp.get(uid)
+        if not entry:
+            return blocks
+        url = utils.make_url(entry['slack_cid'], entry['message_id'])
+        m = "By the way, your first-ever message (to the best of our knowledge) was {}"
+        m = m.format(url)
+        blocks.append(self.sf.text_block(m))
         return blocks
 
     def posting_days(self, ur, pur, uid):
