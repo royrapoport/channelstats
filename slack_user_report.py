@@ -81,9 +81,9 @@ class SlackUserReport(object):
         entry = self.fp.get(uid)
         if not entry:
             return blocks
-        url = utils.make_url(entry['slack_cid'], entry['message_id'])
-        m = "By the way, your first-ever message (to the best of our knowledge) was {}"
-        m = m.format(url)
+        m = "By the way, your first-ever message (to the best of our knowledge) was {}, "
+        m += "on {}, {} days ago"
+        m = m.format(entry['url'], entry['date'], entry['days'])
         blocks.append(self.sf.text_block(m))
         return blocks
 

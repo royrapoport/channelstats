@@ -1,5 +1,6 @@
 
 
+import datetime
 import json
 import sys
 import time
@@ -21,14 +22,21 @@ class FirstPost(object):
         self.channel = None
         self.fake = fake
 
-    def url(self, uid):
-        entry = self.get(uid)
-        if not entry:
-            return None
-        mid = entry['message_id']
-        cid = entry['slack_cid']
-        url = utils.make_url(cid, mid)
-        return url
+    def date(self, ts):
+        """
+        return yyyy-mm-dd for ts
+        """
+        localtime = time.localtime(ts)
+        return time.strftime("%Y-%m-%d", localtime)
+
+    def days(self, ts):
+        """
+        return date difference between today and the ts
+        """
+        then = datetime.datetime.fromtimestamp(ts)
+        now = datetime.datetime.now()
+        diff = now - then
+        return diff.days
 
     def get(self, key):
         if key in self.users:
@@ -37,6 +45,9 @@ class FirstPost(object):
         item = response.get("Item")
         if item:
             item['ts'] = int(item['ts'])
+            item['url'] = utils.make_url(item['slack_cid'], item['message_id'])
+            item['days'] = self.days(item['ts'])
+            item['date'] = self.date(item['ts'])
         self.users[key] = item
         return item
 
