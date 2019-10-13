@@ -8,7 +8,6 @@ from boto3.dynamodb.conditions import Key
 import ddb
 import utils
 import config
-import userhash
 import configuration
 
 class Message(object):
