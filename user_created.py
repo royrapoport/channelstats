@@ -37,6 +37,10 @@ class UserCreated(object):
         return diff.days
 
     def load(self):
+        """
+        Loads the entirety of the table into memory; this is both way faster than
+        doing per-user gets() and saves us money (since we're using bulk gets)
+        """
         start = time.time()
         for item in self.ddb.items(self.table):
             self.users[item['slack_uid']] = item
