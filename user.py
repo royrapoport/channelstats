@@ -3,9 +3,9 @@ import re
 import time
 
 import ddb
+import user_created
 import utils
 import config
-import userhash
 import configuration
 
 class User(object):
@@ -19,9 +19,9 @@ class User(object):
         self.ddb = ddb.DDB(self.table_name, [('slack_uid', 'S')])
         self.table = self.ddb.get_table()
         self.users = {}
-        self.userhash = userhash.UserHash(fake=fake)
         self.configuration = configuration.Configuration(fake=fake)
         self.modified = {}
+        self.uc = user_created.UserCreated()
 
     def find(self, username):
         """
@@ -100,52 +100,17 @@ class User(object):
         self.users[key] = item
         return item
 
-    def update_user(self, row):
-        values = {
-            ":t": row["tz"],
-            ":D": row["deleted"],
-            ":o": row["tz_offset"]
-        }
-        expr = "set deleted=:D, tz=:t, tz_offset=:o, "
-        if row['real_name']:
-            expr += "real_name=:r, "
-            values[":r"] = row["real_name"]
-        if row["user_name"]:
-            expr += "user_name=:n, "
-            values[":n"] = row["user_name"]
-        if row["display_name"]:
-            expr += "display_name=:d, "
-            values[":d"] = row["display_name"]
-        expr = re.sub(", $", "", expr)
-        self.table.update_item(
-            Key={
-                'slack_uid': row['slack_uid']
-            },
-            UpdateExpression=expr,
-            ExpressionAttributeValues=values,
-            ReturnValues="UPDATED_NEW"
-        )
-
     def batch_upload(self, users):
-        # How should this work?
-        # Download all users from Slack
-        # For each user
-        #   If they do not exist
-        #        insert them, with insert_date set to today
-        #        mark that they exist
-        #    If they do exist
-        #        If the slack user.update is later than the last time we ran
-        #            update the user (but don't change insert_date)
-        # Mark last run time
 
+        self.uc.load()
         active_users = [x for x in users if x['deleted'] == False]
         self.configuration.set_count("active_users", len(active_users))
         self.configuration.set_count("all_users", len(users))
         insert_users = []
         now = int(time.time())
-        last_run = self.configuration.get_last_run()
         for user in users:
             uid = user['id']
+            self.uc.set(uid)
             Row = {
                 'slack_uid': user['id'],
                 'real_name': user.get("real_name"),
@@ -155,22 +120,14 @@ class User(object):
                 'tz': user.get("tz"),
                 'tz_offset': user.get("tz_offset"),
             }
-            if not self.userhash.user_exists(uid):
-                self.userhash.register_user(uid)
-                Row['insert_ts'] = now
-                Row = utils.prune_empty(Row)
-                insert_users.append(Row)
-            else:  # user already exists.  Updated?
-                updated = user['updated']
-                if updated > last_run:
-                    self.update_user(Row)
+            Row = utils.prune_empty(Row)
+            insert_users.append(Row)
 
         with self.table.batch_writer() as batch:
             for row in insert_users:
                 batch.put_item(row)
 
-        self.userhash.finish_registration()
-        self.configuration.set_last_run()
+        self.uc.save()
 
     def f(self, row):
         return "{} ({})".format(row['slack_uid'], row['display_name'])

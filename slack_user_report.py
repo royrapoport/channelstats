@@ -15,6 +15,7 @@ import random_name
 import slack_formatter
 import slack_token
 import user
+import user_created
 import utils
 
 
@@ -31,6 +32,7 @@ class SlackUserReport(object):
         self.user = user.User(fake=fake)
         self.client = slack.WebClient(token=slack_token.token)
         self.enricher = enricher.Enricher(fake=fake)
+        self.uc = user_created.UserCreated()
 
     def make_header(self, ur, us, pur, pus):
         blocks = []
@@ -74,6 +76,17 @@ class SlackUserReport(object):
         blocks += self.topten(ur, pur, uid, 'mentioned_you', "The people who mentioned you the most")
         blocks += self.topten(ur, pur, uid, 'mentions_combined', "Mention Affinity")
         blocks += self.firstpost(uid)
+        blocks += self.created(uid)
+        return blocks
+
+    def created(self, uid):
+        blocks = []
+        entry = self.uc.get(uid)
+        if not entry:
+            return blocks
+        m = "Your account was created on {}, {:,} days ago"
+        m = m.format(entry['date'], entry['days'])
+        blocks.append(self.sf.text_block(m))
         return blocks
 
     def firstpost(self, uid):
@@ -82,7 +95,7 @@ class SlackUserReport(object):
         if not entry:
             return blocks
         m = "By the way, your first-ever message (to the best of our knowledge) was {}, "
-        m += "on {}, {} days ago"
+        m += "on {}, {:,} days ago"
         m = m.format(entry['url'], entry['date'], entry['days'])
         blocks.append(self.sf.text_block(m))
         return blocks
