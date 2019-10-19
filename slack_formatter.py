@@ -69,7 +69,7 @@ class SlackFormatter(object):
                 emoji = emoji or ":red_arrow_down:"
                 ds += " ({:.0f}%)".format(diff)
         else:
-            emoji = emoji or ":same:"
+            emoji = emoji or ""
         ds += emoji
         return ds
 
