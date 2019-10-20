@@ -33,8 +33,8 @@ class FirstPost(object):
         """
         return date difference between today and the ts
         """
-        then = datetime.datetime.fromtimestamp(ts)
-        now = datetime.datetime.now()
+        then = datetime.datetime.fromtimestamp(ts).date()
+        now = datetime.date.today()
         diff = now - then
         return diff.days
 
