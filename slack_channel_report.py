@@ -48,6 +48,9 @@ class SlackChannelReport(object):
         m = "*{}* messages and *{}* words were posted to the channel"
         m = m.format(self.sf.comparison(ur, pur, ['channels', cid, 0]), self.sf.comparison(ur, pur, ['channels', cid, 1]))
         text += m
+        cur_user_count = len(ur['channel_user'].get(cid, []))
+        prev_user_count = len(pur['channel_user'].get(cid, []))
+        text += " from {} unique users".format(self.sf.simple_comparison(cur_user_count, prev_user_count))
         curchannelvol = ur['channels'][cid][1]
         curtotal = ur['statistics']["words"]
         prevchannelvol = pur['channels'][cid][1]
