@@ -38,7 +38,9 @@ class SlackChannelReport(object):
         ec = self.cml.latest_count(cid, end)
         text = self.sf.simple_comparison(sc, ec)
         diff = sc - ec
-        text = "{} ended this period with {} members, a change of {} members".format(self.sf.show_cid(cid), text, diff)
+        text = "{} ended this period with {} members".format(self.sf.show_cid(cid), text)
+        if diff:
+            text += ", a change of {} members".format(diff)
         return self.sf.text_block(text)
 
     def messages(self, cid, ur, pur):
