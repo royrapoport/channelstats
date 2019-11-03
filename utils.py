@@ -42,7 +42,7 @@ def prune_empty(row):
     """
     new_row = {}
     for k in row:
-        if row[k]:
+        if row[k] or row[k] == 0:
             new_row[k] = row[k]
     return new_row
 
