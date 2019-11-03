@@ -132,6 +132,8 @@ class Enricher(object):
             channel_words = report['channels'][cid][1]
             messages = channel[uid][0]
             words = channel[uid][1]
+            if not words:
+                continue
             percent_words = words * 100.0 / channel_words
             percent_messages = messages * 100.0 / channel_messages
             c = {
