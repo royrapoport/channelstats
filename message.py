@@ -56,28 +56,54 @@ class Message(object):
         for attribute in ["date", "slack_cid", "user_id"]:
             self.gsi(attribute, wait=True)
 
-    def messages_for_day(self, day):
+    def gsi_search(self, field_name, GSIname, field_value):
         """
-        given a yyyy-mm-dd day, returns generator you can use to get
-        all the messages we have for that day
+        Given a field_name, a GSIname, and a field_value
+        return generator you can use to get all items that have
+        that field_value for that field_name indexed by GSIname
+        (GlobalSecondaryIndex)
         """
 
         ExclusiveStartKey = None
         run = True
         while run:
             if ExclusiveStartKey:
-                resp = self.table.query(IndexName="Date",
+                resp = self.table.query(IndexName=GSIname,
                     ExclusiveStartKey=ExclusiveStartKey,
-                    KeyConditionExpression=Key('date').eq(day))
+                    KeyConditionExpression=Key(field_name).eq(field_value))
             else:
-                resp = self.table.query(IndexName="Date",
-                    KeyConditionExpression=Key('date').eq(day))
+                resp = self.table.query(IndexName=GSIname,
+                    KeyConditionExpression=Key(field_name).eq(field_value))
             if 'LastEvaluatedKey' in resp:
                 ExclusiveStartKey = resp['LastEvaluatedKey']
             else:
                 run = False
             for item in resp['Items']:
                 yield item
+
+    def messages_for_channel(self, cid):
+        """
+        given a cid (Channel ID), return generator you can use to get all messages
+        we have for that channel 
+        """
+
+        return self.gsi_search("slack_cid", "Slack_cid", cid)
+
+    def messages_for_user(self, user):
+        """
+        given a user_id, return generator you can use to get all messages
+        we have for that user
+        """
+
+        return self.gsi_search("user_id", "User_id", user)
+
+    def messages_for_day(self, day):
+        """
+        given a yyyy-mm-dd day, returns generator you can use to get
+        all the messages we have for that day
+        """
+
+        return self.gsi_search("date", "Date", day)
 
 if __name__ == "__main__":
     # Just create the table and GSIs
