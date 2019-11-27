@@ -115,6 +115,7 @@ class User(object):
                 'slack_uid': user['id'],
                 'real_name': user.get("real_name"),
                 'deleted': user.get("deleted"),
+                'admin': user.get("is_admin"),
                 'user_name': user.get("name"),
                 'display_name': user.get('profile', {}).get('display_name'),
                 'tz': user.get("tz"),
