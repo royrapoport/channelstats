@@ -18,6 +18,10 @@ class Slacker(object):
         self.api_calls = 0
         self.api_wait = 0
 
+    def delete(self, channel, ts):
+        api_endpoint = "chat.delete?channel={}&ts={}".format(channel, ts)
+        return self.api_call(api_endpoint, method=requests.post)
+
     def get_users_for_channel(self, cid):
         response = self.paginated_lister("conversations.members?channel={}".format(cid))
         return response
