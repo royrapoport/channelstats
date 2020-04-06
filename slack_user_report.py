@@ -36,10 +36,9 @@ class SlackUserReport(object):
 
     def make_header(self, ur, us, pur, pus):
         blocks = []
-        header = "Public User Activity Report for *{}* Between {} and {}"
-        header = header.format(ur['user'], ur['start_date'], ur['end_date'])
+        header = "*Public User Activity Report for {}*"
+        header = header.format(ur['user'])
         blocks.append(self.sf.text_block(header))
-        blocks.append(self.sf.divider())
         
         uc_entry = self.uc.get(uid)
         fp_entry = self.fp.get(uid)
@@ -50,7 +49,11 @@ class SlackUserReport(object):
             first_message = "Your first public message was posted on {}, {:,} days ago. {}".format(fp_entry['date'], fp_entry['days'], fp_entry['url'])
             blocks.append(self.sf.text_block(first_message))
             
-        m = "*Last Week*\nYou posted *{}* words in *{}* public messages."
+        blocks.append(self.sf.divider())
+            
+        blocks.append(self.sf.text_block("*Last Week (between {} and {}".format(ur['start_date'], ur['end_date'])))
+            
+        m = "You posted *{}* words in *{}* public messages."
         m = m.format(self.sf.comparison(us, pus, ['count', 1]), self.sf.comparison(us, pus, ['count', 0]))
         m += "\n"
         m += "That made you the *{}*-ranked poster on the Slack and meant you contributed "
