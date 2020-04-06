@@ -51,7 +51,7 @@ class SlackUserReport(object):
             
         blocks.append(self.sf.divider())
             
-        blocks.append(self.sf.text_block("*Last Week (between {} and {}".format(ur['start_date'], ur['end_date'])))
+        blocks.append(self.sf.text_block("*Last Week (between {} and {})*".format(ur['start_date'], ur['end_date'])))
             
         m = "You posted *{}* words in *{}* public messages."
         m = m.format(self.sf.comparison(us, pus, ['count', 1]), self.sf.comparison(us, pus, ['count', 0]))
