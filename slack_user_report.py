@@ -40,7 +40,17 @@ class SlackUserReport(object):
         header = header.format(ur['user'], ur['start_date'], ur['end_date'])
         blocks.append(self.sf.text_block(header))
         blocks.append(self.sf.divider())
-        m = "You posted *{}* words in *{}* public messages."
+        
+        uc_entry = self.uc.get(uid)
+        fp_entry = self.fp.get(uid)
+        if uc_entry:
+            user_created = "Your account was created on {}, {:,} days ago.".format(uc_entry['date'], uc_entry['days'])
+            blocks.append(self.sf.text_block(user_created))
+        if fp_entry:
+            first_message = "Your first public message was posted on {}, {:,} days ago. {}".format(fp_entry['date'], fp_entry['days'], fp_entry['url'])
+            blocks.append(self.sf.text_block(first_message))
+            
+        m = "*Last Week*\nYou posted *{}* words in *{}* public messages."
         m = m.format(self.sf.comparison(us, pus, ['count', 1]), self.sf.comparison(us, pus, ['count', 0]))
         m += "\n"
         m += "That made you the *{}*-ranked poster on the Slack and meant you contributed "
@@ -75,8 +85,6 @@ class SlackUserReport(object):
         blocks += self.topten(ur, pur, uid, 'you_mentioned', "The people you mentioned the most")
         blocks += self.topten(ur, pur, uid, 'mentioned_you', "The people who mentioned you the most")
         blocks += self.topten(ur, pur, uid, 'mentions_combined', "Mention Affinity")
-        blocks += self.firstpost(uid)
-        blocks += self.created(uid)
         blocks += self.unsubscribe()
         return blocks
 
