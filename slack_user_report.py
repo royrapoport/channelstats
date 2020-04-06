@@ -77,6 +77,7 @@ class SlackUserReport(object):
         blocks += self.topten(ur, pur, uid, 'mentions_combined', "Mention Affinity")
         blocks += self.firstpost(uid)
         blocks += self.created(uid)
+        blocks += self.unsubscribe()
         return blocks
 
     def created(self, uid):
@@ -89,6 +90,10 @@ class SlackUserReport(object):
         blocks.append(self.sf.text_block(m))
         return blocks
 
+    def unsubscribe(self):
+        unsub_block = self.sf.text_block('You are receiving this because you are a member of #zmeta-per-user-report-optin. Feedback is welcome over in #rands-slack-statistics.')
+        return [unsub_block]
+    
     def firstpost(self, uid):
         blocks = []
         entry = self.fp.get(uid)
