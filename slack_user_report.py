@@ -34,7 +34,7 @@ class SlackUserReport(object):
         self.enricher = enricher.Enricher(fake=fake)
         self.uc = user_created.UserCreated()
 
-    def make_header(self, ur, us, pur, pus):
+    def make_header(self, ur, us, pur, pus, uid):
         blocks = []
         header = "*Public User Activity Report for {}*"
         header = header.format(ur['user'])
@@ -69,7 +69,7 @@ class SlackUserReport(object):
 
     def make_report(self, ur, us, pur, pus, uid):
         blocks = []
-        blocks += self.make_header(ur, us, pur, pus)
+        blocks += self.make_header(ur, us, pur, pus, uid)
         blocks.append(self.sf.divider())
         blocks += self.make_channels(ur, pur)
         blocks.append(self.sf.divider())
