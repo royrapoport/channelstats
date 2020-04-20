@@ -5,7 +5,7 @@ region = "us-west-2"
 # What's the Slack name? Used for creating URLs
 slack_name = "rands-leadership"
 # Use DDB in local mode?
-local = False
+local = True
 # How far back are we willing to go for old messages
 max_age = 21
 # What prefix, should we give DDB table names? This makes it easy to
