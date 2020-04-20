@@ -188,20 +188,12 @@ class SlackFormatter(object):
         return utils.chunks(fields, 10)
 
     def reactions(self, popularity):
-        fields = []
-        if not popularity:
-            return fields
-        fields.append("*Reactji*")
-        fields.append("*Count*")
+        t = "*Count* *Reactji*\n"
         for rname in list(popularity.keys())[0:10]:
             num = popularity[rname]
-            fields.append(":{}:".format(rname))
-            fields.append(str(num))
-        blocks = []
-        for fset in self.make_fields(fields):
-            block = {'type': 'section', 'fields': fset}
-            blocks.append(block)
-        return blocks
+            t += "{} :{}:\n".format(str(num), rname)
+        block = self.text_block(t)
+        return [block]
 
     def messager(self, message_list, label, show_user=False, show_channel=False):
         blocks = []
