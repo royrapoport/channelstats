@@ -49,8 +49,7 @@ for channel in channels:
         dest = channel_dict[channel]
         name = cobj.get(channel)['name']
         nt = topic.format(name)
-        sobj.conditional_set_topic(dest, nt)
+        sobj.conditional_set_topic(dest, nt, leave=True)
         slack_channel_reporter.send_report(channel, report, previous_report, send=True, override_uid=dest, summary=True)
     except:
         print("Failed to send report to {}".format(channel))
-
