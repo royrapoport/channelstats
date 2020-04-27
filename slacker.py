@@ -18,21 +18,39 @@ class Slacker(object):
         self.api_calls = 0
         self.api_wait = 0
 
-    def conditional_set_topic(self, cid, topic):
+    def conditional_set_topic(self, cid, topic, leave=False):
         """
         Set the topic for cid it it's not already the expected topic
+        If leave is True, leaves the channel after setting topic
         """
         current_topic = self.get_topic(cid)
         if current_topic != topic:
-            self.set_topic(cid, topic)
+            self.set_topic(cid, topic, leave=leave)
+
+    def leave_channel(self, cid):
+        response = self.api_call("conversations.leave?channel={}".format(cid), method=requests.post)
+        return response
+
+    def join_channel(self, cid):
+        response = self.api_call("conversations.join?channel={}".format(cid), method=requests.post)
+        return response
 
     def get_topic(self, cid):
         response = self.api_call("conversations.info?channel={}".format(cid))
         return response.get("channel", {}).get("topic", {}).get("value")
 
-    def set_topic(self, cid, topic):
+    def set_topic(self, cid, topic, leave=False):
+        """
+        Sets topic on the channel.  Because we can only do that if we are in the
+        channel, automatically joins the channel before doing so.
+        If leave is True, leaves channel after setting topic
+        """
+        self.join_channel(cid)
         j = {'channel': cid, 'topic': topic}
-        return self.api_call(api_endpoint="conversations.setTopic", method=requests.post, json=j, header_for_token=True)
+        ret = self.api_call(api_endpoint="conversations.setTopic", method=requests.post, json=j, header_for_token=True)
+        if leave:
+            self.leave_channel(cid)
+        return ret
 
     def set_purpose(self, cid, topic):
         j = {'channel': cid, 'topic': topic}

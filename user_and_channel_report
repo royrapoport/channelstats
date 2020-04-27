@@ -40,8 +40,8 @@ f.write(json.dumps(report, indent=4))
 f.close()
 for user in users:
     # slack_user_reporter.send_report(user, report, previous_report, send=True, override_uid=roy)
-    slack_user_reporter.send_report(user, report, previous_report, send=True)
-
+    # slack_user_reporter.send_report(user, report, previous_report, send=True)
+    pass
 topic = "Channel for automated postings of channel stats for the #{} channel.  Feedback/questions to #rands-slack-statistics"
 
 for channel in channels:
@@ -49,8 +49,7 @@ for channel in channels:
         dest = channel_dict[channel]
         name = cobj.get(channel)['name']
         nt = topic.format(name)
-        sobj.conditional_set_topic(dest, nt)
-        slack_channel_reporter.send_report(channel, report, previous_report, send=True, override_uid=dest, summary=True)
+        sobj.conditional_set_topic(dest, nt, leave=True)
+        # slack_channel_reporter.send_report(channel, report, previous_report, send=True, override_uid=dest, summary=True)
     except:
         print("Failed to send report to {}".format(channel))
-
