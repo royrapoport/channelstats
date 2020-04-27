@@ -18,6 +18,10 @@ class Slacker(object):
         self.api_calls = 0
         self.api_wait = 0
 
+    def set_topic(self, cid, topic):
+        j = {'channel': cid, 'topic': topic}
+        return self.api_call(api_endpoint="conversations.setTopic", method=requests.post, json=j, header_for_token=True)
+
     def delete(self, channel, ts):
         api_endpoint = "chat.delete?channel={}&ts={}".format(channel, ts)
         return self.api_call(api_endpoint, method=requests.post)
