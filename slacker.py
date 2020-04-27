@@ -28,7 +28,7 @@ class Slacker(object):
 
     def get_topic(self, cid):
         response = self.api_call("conversations.info?channel={}".format(cid))
-        return response .get("channel", {}).get("topic", {}).get("value")
+        return response.get("channel", {}).get("topic", {}).get("value")
 
     def set_topic(self, cid, topic):
         j = {'channel': cid, 'topic': topic}
