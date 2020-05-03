@@ -11,8 +11,6 @@ import slack
 import random_name
 import config
 import channel
-import channel_members_log
-import user
 import utils
 import enricher
 import slack_token
@@ -28,10 +26,8 @@ class SlackGlobalReport(object):
         self.fake_channel = channel.Channel(fake=True)
         self.channel = channel.Channel(fake=fake)
         self.rn = random_name.RandomName()
-        self.user = user.User(fake=fake)
         self.client = slack.WebClient(token=slack_token.token)
         self.enricher = enricher.Enricher(fake=fake)
-        self.cml = channel_members_log.ChannelMembersLog()
         self.report_channel  = self.channel.get(config.report_channel)['slack_cid']
 
     def make_header(self, ur, pur):
