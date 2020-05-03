@@ -142,7 +142,7 @@ class SlackGlobalReport(object):
 
     def hours(self, ur, pur):
         blocks = []
-        header = "*Activity Per Hour (on Weeekdays)*"
+        header = "*Activity Per Hour (on Weekdays)*"
         blocks.append(self.sf.text_block(header))
         hours = ur['weekday_activity_percentage']
         text = ""
