@@ -45,7 +45,8 @@ class SlackGlobalReport(object):
         # We approximate 500 words to a page
         it = "People posted *{:,}* words in *{:,}* messages (approximately *{:,}* pages), "
         it += "or about *{:.1f}* words per message, *{:.1f}* words per poster, "
-        it += "or *{:.1f}* messages per poster"
+        it += "or *{:.1f}* messages per poster\n"
+        it += "(We estimate number of pages using the figure of 500 words per page)"
         text = it.format(int(w), int(m), int(w / 500), w/m, w/posters, m/posters)
         blocks.append(self.sf.text_block(text))
         blocks.append(self.sf.divider())
