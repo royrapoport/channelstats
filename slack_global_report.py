@@ -116,7 +116,8 @@ class SlackGlobalReport(object):
 
     def timezones(self, ur, pur):
         blocks = []
-        header = "*Activity Per Author Timezone*"
+        header = "*Activity Per Author Timezone*\n"
+        header += "Counts are based on the poster's profile-based timezone"
         blocks.append(self.sf.text_block(header))
         timezones = ur['timezone']
         text = ""
