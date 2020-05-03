@@ -43,7 +43,7 @@ class SlackGlobalReport(object):
         posters = int(stats['posters'])
         active_users = stats['active_users']
         percent = (posters * 100.0) / active_users
-        text = "*{}/{}* (or *{:.1f}%*) users posted messages\n".format(posters, active_users, percent)
+        text = "*{:,}/{:,}* (or *{:.1f}%*) users posted messages\n".format(posters, active_users, percent)
         text += "Median message count was *{}*\n".format(stats['median messages'])
         text += "The top ten posters contributed *{:.1f}%* of all messages (lower is better)\n".format(stats['topten messages'])
         text += "The top *{}* posters (higher is better) accounted for about 50% of total volume\n".format(stats['50percent of words'])
@@ -51,7 +51,7 @@ class SlackGlobalReport(object):
         w = stats['words']
         m = stats['messages']
         # it = interim text
-        it = "People posted *{}* words in *{}* messages (approximately *{}* pages), "
+        it = "People posted *{:,}* words in *{:,}* messages (approximately *{:,}* pages), "
         it += "or about *{:.1f}* words per message, *{:.1f}* words per poster, "
         it += "or *{:.1f}* messages per poster"
         text = it.format(int(w), int(m), int(w / 500), w/m, w/posters, m/posters)
@@ -76,12 +76,12 @@ class SlackGlobalReport(object):
             cu = cusers[channel]
             if ci['new']:
                 it += " (new)"
-            it += "{} members ".format(ci['members'])
+            it += "{:,} members ".format(ci['members'])
 
             m = channels[channel][0]
             w = channels[channel][1]
             p = len(cu)
-            it += "*{}* posters *{}* words *{}* messages ".format(p, w, m)
+            it += "*{:,}* posters *{:,}* words *{:,}* messages ".format(p, w, m)
             it += "*{:.1f}* words/poster ".format(w/p)
             it += "*{:.1f}%* of total traffic, ".format(cs['percent'])
             it += "*{:.1f}%* cumulative of total ".format(cs['cpercent'])
@@ -107,7 +107,7 @@ class SlackGlobalReport(object):
             w_per_m = w / m
             t = usu['thread_messages']
             it = "{}. *{}* ".format(idx + 1, self.sf.show_uid(uid))
-            it += "*{}* words *{}* messages *{:.1f}* w/m ".format(w, m, w_per_m)
+            it += "*{:,}* words *{:,}* messages *{:.1f}* w/m ".format(w, m, w_per_m)
             it += "*{:.1f}* rphw ".format(rphw)
             it += "*{:.1f}%* *{:.1f}%* cumulative\n".format(per, cper)
             blocks.append(self.sf.text_block(it))
@@ -122,7 +122,8 @@ class SlackGlobalReport(object):
         text = ""
         for idx, tz in enumerate(timezones):
             it = "{}. *{}* ".format(idx + 1, tz)
-            it += " {} words in {} messages\n".format(timezones[tz][1], timezones[tz][0])
+            posters = len(ur['posters_per_timezone'][tz].keys())
+            it += " {:,} posters wrote {:,} words in {:,} messages\n".format(posters, timezones[tz][1], timezones[tz][0])
             text += it
         blocks.append(self.sf.text_block(text))
         blocks.append(self.sf.divider())
@@ -139,7 +140,7 @@ class SlackGlobalReport(object):
             match = uwd.get(str(idx), [0,0])
             m = match[0]
             w = match[1]
-            it = "*{}* *{}* words in *{}* messages\n".format(day, w, m)
+            it = "*{}* *{:,}* words in *{:,}* messages\n".format(day, w, m)
             text += it
         blocks.append(self.sf.text_block(text))
         blocks.append(self.sf.divider())
@@ -165,7 +166,7 @@ class SlackGlobalReport(object):
         reacjis = ur['top_ten_reactions']
         text = ""
         for reacji in reacjis:
-            it = ":{}: *{}*\n".format(reacji, ur['reaction'][reacji])
+            it = ":{}: *{:,}*\n".format(reacji, ur['reaction'][reacji])
             text += it
         blocks.append(self.sf.text_block(text))
         blocks.append(self.sf.divider())
@@ -198,16 +199,9 @@ class SlackGlobalReport(object):
             show_user=True,
             show_channel=False)
 
-    def send_report(self, ur, previous, send=True, override_uid=None, summary=False):
-        send=True
+    def send_report(self, ur, previous, send=True, destination=None, summary=False):
         enricher.Enricher(fake=self.fake).enrich(ur)
         enricher.Enricher(fake=self.fake).enrich(previous)
-        f = open("ur.json", "w")
-        f.write(utils.dumps(ur, indent=4))
-        f.close()
-        f = open("previous.json", "w")
-        f.write(utils.dumps(previous, indent=4))
-        f.close()
         blocks = self.make_report(ur, previous)
         if not send:
             print("Saving report to slack.json")
@@ -216,14 +210,13 @@ class SlackGlobalReport(object):
             f.close()
         # If set to true, this message will be sent as the user who owns the token we use
         as_user = False
-        if override_uid:
-            cid=override_uid
         urls = []
+        destination = destination or self.report_channel
         for blockset in utils.chunks(blocks, 49):
             if send:
                 try:
                     response = self.client.chat_postMessage(
-                        channel=self.report_channel,
+                        channel=destination,
                         blocks=blockset,
                         parse='full',
                         as_user=as_user,
@@ -235,7 +228,7 @@ class SlackGlobalReport(object):
                     print(e)
                     # print(json.dumps(blockset, indent=4))
                     sys.exit(0)
-        if False and summary and urls:
+        if summary and urls:
             cid = self.channel.get(config.channel_stats)['slack_cid']
             self.client.chat_postMessage(
                 channel = cid,
