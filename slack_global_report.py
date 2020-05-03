@@ -36,12 +36,13 @@ class SlackGlobalReport(object):
         percent = (posters * 100.0) / active_users
         text = "*{:,}/{:,}* (or *{:.1f}%* of) users posted messages\n".format(posters, active_users, percent)
         text += "Median message count was *{}*\n".format(stats['median messages'])
-        text += "The top ten posters contributed *{:.1f}%* of all messages (lower is better)\n".format(stats['topten messages'])
+        text += "The top *10* posters contributed *{:.1f}%* of all messages (lower is better)\n".format(stats['topten messages'])
         text += "The top *{}* posters (higher is better) accounted for about 50% of total volume\n".format(stats['50percent of words'])
         blocks.append(self.sf.text_block(text))
         w = stats['words']
         m = stats['messages']
         # it = interim text
+        # We approximate 500 words to a page
         it = "People posted *{:,}* words in *{:,}* messages (approximately *{:,}* pages), "
         it += "or about *{:.1f}* words per message, *{:.1f}* words per poster, "
         it += "or *{:.1f}* messages per poster"
