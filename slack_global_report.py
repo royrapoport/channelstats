@@ -8,7 +8,6 @@ import sys
 
 import slack
 
-import random_name
 import config
 import channel
 import utils
@@ -19,15 +18,11 @@ import slack_formatter
 
 class SlackGlobalReport(object):
 
-    def __init__(self, fake=False):
+    def __init__(self):
         self.sf = slack_formatter.SlackFormatter()
-        random.seed(time.time())
-        self.fake = fake
-        self.fake_channel = channel.Channel(fake=True)
-        self.channel = channel.Channel(fake=fake)
-        self.rn = random_name.RandomName()
+        self.channel = channel.Channel()
         self.client = slack.WebClient(token=slack_token.token)
-        self.enricher = enricher.Enricher(fake=fake)
+        self.enricher = enricher.Enricher()
         self.report_channel  = self.channel.get(config.report_channel)['slack_cid']
 
     def make_header(self, ur, pur):
@@ -197,8 +192,8 @@ class SlackGlobalReport(object):
             show_channel=False)
 
     def send_report(self, ur, previous, send=True, destination=None, summary=False):
-        enricher.Enricher(fake=self.fake).enrich(ur)
-        enricher.Enricher(fake=self.fake).enrich(previous)
+        enricher.Enricher().enrich(ur)
+        enricher.Enricher().enrich(previous)
         blocks = self.make_report(ur, previous)
         if not send:
             print("Saving report to slack.json")
