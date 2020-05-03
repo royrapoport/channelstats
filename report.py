@@ -52,6 +52,7 @@ class Report(object):
     def __init__(self):
         self._data = {}
         self._data['enriched_channel'] = {}
+        self._data['posters_per_timezone'] = {}
         self.user = user.User()
         self.reactions_accumulator = Accumulator(
             self.top_limit, lambda x: x[0])
@@ -210,6 +211,9 @@ class Report(object):
             tz_offset = config.default_tz_offset
         tz = user.get("tz", "Unknown")
         self.increment(["timezone", tz], message)
+        if tz not in self._data['posters_per_timezone']:
+            self._data['posters_per_timezone'][tz] = {}
+        self._data['posters_per_timezone'][tz][uid] = 1
         ts += tz_offset
         localtime = time.gmtime(ts)
         hour = localtime.tm_hour
