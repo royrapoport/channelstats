@@ -68,13 +68,13 @@ class SlackGlobalReport(object):
             cu = cusers[channel]
             if ci['new']:
                 it += " (new)"
-            it += "{:,} members ".format(ci['members'])
+            it += "{:,} members, ".format(ci['members'])
 
             m = channels[channel][0]
             w = channels[channel][1]
             p = len(cu)
-            it += "*{:,}* posters *{:,}* words *{:,}* messages ".format(p, w, m)
-            it += "*{:.1f}* words/poster ".format(w/p)
+            it += "*{:,}* posters, *{:,}* words, *{:,}* messages, ".format(p, w, m)
+            it += "*{:.1f}* words/poster, ".format(w/p)
             it += "*{:.1f}%* of total traffic, ".format(cs['percent'])
             it += "*{:.1f}%* cumulative of total ".format(cs['cpercent'])
             blocks.append(self.sf.text_block(it))
@@ -99,9 +99,9 @@ class SlackGlobalReport(object):
             w_per_m = w / m
             t = usu['thread_messages']
             it = "{}. *{}* ".format(idx + 1, self.sf.show_uid(uid))
-            it += "*{:,}* words *{:,}* messages *{:.1f}* w/m ".format(w, m, w_per_m)
-            it += "*{:.1f}* rphw ".format(rphw)
-            it += "*{:.1f}%* *{:.1f}%* cumulative\n".format(per, cper)
+            it += "*{:,}* words, *{:,}* messages, *{:.1f}* w/m, ".format(w, m, w_per_m)
+            it += "*{:.1f}* rphw, ".format(rphw)
+            it += "*{:.1f}%*, *{:.1f}%* cumulative\n".format(per, cper)
             blocks.append(self.sf.text_block(it))
         blocks.append(self.sf.divider())
         return blocks
