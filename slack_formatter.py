@@ -198,14 +198,15 @@ class SlackFormatter(object):
     def messager(self, message_list, label, show_user=False, show_channel=False):
         blocks = []
         for message in message_list:
-            m = "*{}* {}".format(message['count'], label)
+            link_text = "*{}* {}".format(message['count'], label)
+            description = ""
             if show_channel:
-                m += " in #{}".format(message['channel'])
+                description += " in {}".format(self.show_cid(message['cid']))
             if show_user:
-                m += " to a message from {}".format(message['user'])
-            m += " on {}".format(message['dt'])
-            t = "<{}|{}>".format(message['url'], m)
-            block = self.make_link_button(m, 'link', message['url'])
+                description += " to a message from {}".format(message['user'])
+            description += " on {}".format(message['dt'])
+            t = "<{}|{}> {}".format(message['url'], link_text, description)
+            # block = self.make_link_button(m, 'link', message['url'])
             block = self.text_block(t)
             blocks.append(block)
         if not blocks:
