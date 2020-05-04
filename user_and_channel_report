@@ -2,6 +2,7 @@
 
 import json
 import sys
+import traceback
 
 import channel
 import config
@@ -11,6 +12,8 @@ import slack_user_report
 import slack_channel_report
 import report_generator
 import report_targets
+
+roy = "U06NSQT34"
 
 fake = False
 rg = report_generator.ReportGenerator(fake=fake)
@@ -39,17 +42,28 @@ f = open("reports/{}-{}days-report.json".format(last_week, days), "w")
 f.write(json.dumps(report, indent=4))
 f.close()
 for user in users:
-    # slack_user_reporter.send_report(user, report, previous_report, send=True, override_uid=roy)
-    slack_user_reporter.send_report(user, report, previous_report, send=True)
+    try:
+        # slack_user_reporter.send_report(user, report, previous_report, send=True, override_uid=roy)
+        slack_user_reporter.send_report(user, report, previous_report, send=True)
+    except Exception as ex:
+        print("Failed to send a report to {}: {} {}".format(user, ex, sys.exc_info()[0]))
+        traceback.print_exc()
 
 topic = "Channel for automated postings of channel stats for the #{} channel.  Feedback/questions to #rands-slack-statistics"
 
+sys.exit(0)
+
 for channel in channels:
+    dest = channel_dict[channel]
+    name = cobj.get(channel)['name']
+    nt = topic.format(name)
     try:
-        dest = channel_dict[channel]
-        name = cobj.get(channel)['name']
-        nt = topic.format(name)
         sobj.conditional_set_topic(dest, nt, leave=True)
-        slack_channel_reporter.send_report(channel, report, previous_report, send=True, override_uid=dest, summary=True)
-    except:
-        print("Failed to send report to {}".format(channel))
+    except Exception as ex:
+        print("Failed to set topic on {}/{}: {} {}".format(channel, name, ex, sys.exc_info()[0]))
+        traceback.print_exc()
+    try:
+        slack_channel_reporter.send_report(channel, report, previous_report, send=True, override_uid=roy, summary=True)
+    except Exception as ex:
+        print("Failed to send report to {}/{}: {} {}".format(channel, name, ex, sys.exc_info()[0]))
+        traceback.print_exc()
