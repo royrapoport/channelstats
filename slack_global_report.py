@@ -102,7 +102,7 @@ class SlackGlobalReport(object):
             t = usu['thread_messages']
             it = "{}. *{}* ".format(idx + 1, self.sf.show_uid(uid))
             it += "*{:,}* words, *{:,}* messages, *{:.1f}* w/m, ".format(w, m, w_per_m)
-            it += "*{:.1f}* rphw, ".format(rphw)
+            it += "*{:.1f}* rphw, *{:,}* messages in threads, ".format(rphw, t)
             it += "*{:.1f}%*, *{:.1f}%* cumulative of total\n".format(per, cper)
             blocks.append(self.sf.text_block(it))
         blocks.append(self.sf.divider())
