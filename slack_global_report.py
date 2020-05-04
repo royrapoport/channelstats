@@ -39,15 +39,16 @@ class SlackGlobalReport(object):
         text += "The top *10* posters contributed *{:.1f}%* of all messages (lower is better)\n".format(stats['topten messages'])
         text += "The top *{}* posters (higher is better) accounted for about 50% of total volume\n".format(stats['50percent of words'])
         blocks.append(self.sf.text_block(text))
-        w = stats['words']
-        m = stats['messages']
+        w = int(stats['words'])
+        m = int(stats['messages'])
+        pages = int(w/500)
         # it = interim text
         # We approximate 500 words to a page
-        it = "People posted *{:,}* words in *{:,}* messages (approximately *{:,}* pages), "
-        it += "or about *{:.1f}* words per message, *{:.1f}* words per poster, "
-        it += "or *{:.1f}* messages per poster\n"
+        it = "People posted {} in {} (approximately {}), ".format(self.sf.pn(w, "word"), self.sf.pn(m, "message"), self.sf.pn(pages, "page"))
+        it += "or about *{:.1f}* words per message, *{:.1f}* words per poster, ".format(w/m, w/posters)
+        it += "or *{:.1f}* messages per poster\n".format(m/posters)
         it += "(We estimate number of pages using the figure of 500 words per page)"
-        text = it.format(int(w), int(m), int(w / 500), w/m, w/posters, m/posters)
+        text = it
         blocks.append(self.sf.text_block(text))
         blocks.append(self.sf.divider())
         return blocks
@@ -69,12 +70,12 @@ class SlackGlobalReport(object):
             cu = cusers[channel]
             if ci['new']:
                 it += " (new)"
-            it += "{:,} members, ".format(ci['members'])
+            it += "{}, ".format(self.sf.pn(ci['members'], "member"))
 
             m = channels[channel][0]
             w = channels[channel][1]
             p = len(cu)
-            it += "*{:,}* posters, *{:,}* words, *{:,}* messages, ".format(p, w, m)
+            it += "{}, {}, {}, ".format(self.sf.pn(p, "poster"), self.sf.pn(w, "word"), self.sf.pn(m, "message"))
             it += "*{:.1f}* words/poster, ".format(w/p)
             it += "*{:.1f}%* of total traffic, ".format(cs['percent'])
             it += "*{:.1f}%* cumulative of total ".format(cs['cpercent'])
@@ -101,8 +102,8 @@ class SlackGlobalReport(object):
             w_per_m = w / m
             t = usu['thread_messages']
             it = "{}. *{}* ".format(idx + 1, self.sf.show_uid(uid))
-            it += "*{:,}* words, *{:,}* messages, *{:.1f}* w/m, ".format(w, m, w_per_m)
-            it += "*{:.1f}* rphw, *{:,}* messages in threads, ".format(rphw, t)
+            it += "{}, {}, *{:.1f}* w/m, ".format(self.sf.pn(w, "word"), self.sf.pn(m, "message"), w_per_m)
+            it += "*{:.1f}* rphw, {} in threads, ".format(rphw, self.sf.pn(t, "message"))
             it += "*{:.1f}%*, *{:.1f}%* cumulative of total\n".format(per, cper)
             blocks.append(self.sf.text_block(it))
         blocks.append(self.sf.divider())
@@ -118,7 +119,7 @@ class SlackGlobalReport(object):
         for idx, tz in enumerate(timezones):
             it = "{}. *{}* ".format(idx + 1, tz)
             posters = len(ur['posters_per_timezone'][tz].keys())
-            it += " {:,} posters wrote {:,} words in {:,} messages\n".format(posters, timezones[tz][1], timezones[tz][0])
+            it += " {} wrote {} in {}\n".format(self.sf.pn(posters, "poster"), self.sf.pn(timezones[tz][1], "word"), self.sf.pn(timezones[tz][0], "message"))
             text += it
         blocks.append(self.sf.text_block(text))
         blocks.append(self.sf.divider())
@@ -135,7 +136,7 @@ class SlackGlobalReport(object):
             match = uwd.get(str(idx), [0,0])
             m = match[0]
             w = match[1]
-            it = "*{}* *{:,}* words in *{:,}* messages\n".format(day, w, m)
+            it = "*{}* {} in {}\n".format(day, self.sf.pn(w, "word"), self.sf.pn(m, "message"))
             text += it
         blocks.append(self.sf.text_block(text))
         blocks.append(self.sf.divider())

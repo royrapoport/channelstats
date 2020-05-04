@@ -234,3 +234,14 @@ class SlackFormatter(object):
         idx = 0
         blocks += self.histogram(d, self.day_formatter, idx, "*Day of Week*")
         return blocks
+    
+    def pn(self, num, label):
+        """
+        Output string "*num* label" but if num is > 1, change 'label' to 'labels'
+        Also use thousands separator
+        So pn(1, "poster") outputs "*1* poster", but pn(2, "poster") outputs "*2* posters"
+        """
+        f = "*{:,}* {}".format(num, label)
+        if num > 1:
+            f += "s"
+        return f
