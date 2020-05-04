@@ -13,8 +13,6 @@ import slack_channel_report
 import report_generator
 import report_targets
 
-roy = "U06NSQT34"
-
 fake = False
 rg = report_generator.ReportGenerator(fake=fake)
 slack_user_reporter = slack_user_report.SlackUserReport()
@@ -43,7 +41,7 @@ f.write(json.dumps(report, indent=4))
 f.close()
 for user in users:
     try:
-        # slack_user_reporter.send_report(user, report, previous_report, send=True, override_uid=roy)
+        # slack_user_reporter.send_report(user, report, previous_report, send=True, override_uid=config.test_uid)
         slack_user_reporter.send_report(user, report, previous_report, send=True)
     except Exception as ex:
         print("Failed to send a report to {}: {} {}".format(user, ex, sys.exc_info()[0]))
@@ -61,7 +59,7 @@ for channel in channels:
         print("Failed to set topic on {}/{}: {} {}".format(channel, name, ex, sys.exc_info()[0]))
         traceback.print_exc()
     try:
-        slack_channel_reporter.send_report(channel, report, previous_report, send=True, override_uid=roy, summary=True)
+        slack_channel_reporter.send_report(channel, report, previous_report, send=True, override_uid=config.test_uid, summary=True)
     except Exception as ex:
         print("Failed to send report to {}/{}: {} {}".format(channel, name, ex, sys.exc_info()[0]))
         traceback.print_exc()
