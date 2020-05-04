@@ -25,3 +25,5 @@ channel_stats = "zmeta-channel-stats"
 # We chose -25200 because at the time of deciding this about 3500/11000
 # of our users were in this tz
 default_tz_offset = -25200
+# Which user should we send test reports to?
+test_uid = "U06NSQT34"

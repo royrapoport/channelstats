@@ -198,14 +198,16 @@ class SlackFormatter(object):
     def messager(self, message_list, label, show_user=False, show_channel=False):
         blocks = []
         for message in message_list:
-            cid = message['cid']
-            m = "*{}* {}".format(message['count'], label)
+            link_text = "*{}* {}".format(message['count'], label)
+            description = ""
             if show_channel:
-                m += " in {}".format(self.show_cid(cid))
+                description += " in {}".format(self.show_cid(message['cid']))
             if show_user:
-                m += " to a message from {}".format(self.show_uid(message['uid']))
-            m += " on {}".format(message['dt'])
-            block = self.make_link_button(m, 'link', message['url'])
+                description += " to a message from {}".format(message['user'])
+            description += " on {}".format(message['dt'])
+            t = "<{}|{}> {}".format(message['url'], link_text, description)
+            # block = self.make_link_button(m, 'link', message['url'])
+            block = self.text_block(t)
             blocks.append(block)
         if not blocks:
             return blocks
@@ -234,3 +236,14 @@ class SlackFormatter(object):
         idx = 0
         blocks += self.histogram(d, self.day_formatter, idx, "*Day of Week*")
         return blocks
+
+    def pn(self, num, label):
+        """
+        Output string "*num* label" but if num is > 1, change 'label' to 'labels'
+        Also use thousands separator
+        So pn(1, "poster") outputs "*1* poster", but pn(2, "poster") outputs "*2* posters"
+        """
+        f = "*{:,}* {}".format(num, label)
+        if num > 1:
+            f += "s"
+        return f

@@ -1,10 +1,13 @@
 #! /usr/bin/env python3
 
+import argparse
 import json
 import sys
+import traceback
 
 import channel
 import config
+import report_utils
 import slacker
 import slack_token
 import slack_user_report
@@ -12,8 +15,18 @@ import slack_channel_report
 import report_generator
 import report_targets
 
-fake = False
-rg = report_generator.ReportGenerator(fake=fake)
+parser = argparse.ArgumentParser(description="Send user and channel reports")
+parser.add_argument("--destination", help="Specify @username or #channel to send all reports to")
+parser.add_argument("--regen", action="store_true", help="Force regeneration of reports")
+parser.add_argument("--nochannel", action="store_true", help="Do not send channel activity reports")
+parser.add_argument("--nouser", action="store_true", help="Do not send user activity reports")
+
+args = parser.parse_args()
+destination = None
+if args.destination:
+    destination = report_utils.override(args.destination)
+
+rg = report_generator.ReportGenerator()
 slack_user_reporter = slack_user_report.SlackUserReport()
 slack_channel_reporter = slack_channel_report.SlackChannelReport()
 cobj = channel.Channel()
@@ -26,30 +39,38 @@ channels = channel_dict.keys()
 last_week = rg.latest_week_start()
 days = 7
 
-force_regen = False
-if len(sys.argv) > 1 and sys.argv[1] == "regen":
-    force_regen = True
-
 print("users: {}".format(users))
 print("channels: {}".format(channels))
 print("Week start: {}".format(last_week))
 print("Getting report for {}/{}".format(last_week, days))
-(report, previous_report) = rg.report(last_week, days, users=users, channels=channels, force_generate=force_regen)
+(report, previous_report) = rg.report(last_week, days, users=users, channels=channels, force_generate=args.regen)
 f = open("reports/{}-{}days-report.json".format(last_week, days), "w")
 f.write(json.dumps(report, indent=4))
 f.close()
-for user in users:
-    # slack_user_reporter.send_report(user, report, previous_report, send=True, override_uid=roy)
-    slack_user_reporter.send_report(user, report, previous_report, send=True)
+if not args.nouser:
+    for user in users:
+        user_destination = destination or user
+        try:
+            slack_user_reporter.send_report(user, report, previous_report, send=True, override_uid=user_destination)
+        except Exception as ex:
+            print("Failed to send a report to {}: {} {}".format(user, ex, sys.exc_info()[0]))
+            traceback.print_exc()
 
 topic = "Channel for automated postings of channel stats for the #{} channel.  Feedback/questions to #rands-slack-statistics"
 
-for channel in channels:
-    try:
+if not args.nochannel:
+    for channel in channels:
         dest = channel_dict[channel]
         name = cobj.get(channel)['name']
         nt = topic.format(name)
-        sobj.conditional_set_topic(dest, nt, leave=True)
-        slack_channel_reporter.send_report(channel, report, previous_report, send=True, override_uid=dest, summary=True)
-    except:
-        print("Failed to send report to {}".format(channel))
+        channel_destination = destination or channel
+        try:
+            sobj.conditional_set_topic(dest, nt, leave=True)
+        except Exception as ex:
+            print("Failed to set topic on {}/{}: {} {}".format(channel, name, ex, sys.exc_info()[0]))
+            traceback.print_exc()
+        try:
+            slack_channel_reporter.send_report(channel, report, previous_report, send=True, override_uid=channel_destination, summary=True)
+        except Exception as ex:
+            print("Failed to send report to {}/{}: {} {}".format(channel, name, ex, sys.exc_info()[0]))
+            traceback.print_exc()

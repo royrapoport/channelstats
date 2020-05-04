@@ -80,7 +80,6 @@ class Downloader(object):
                 #            time.localtime(max_ts))))
                 self.cconfig.update_channel_ts(cid, max_ts)
                 # print("Got {} messages for CID {}".format(len(messages), cid))
-                self.MessageWriter.write(messages, cid)
                 self.fp.set_channel(cid)
                 for message in messages:
                     message_count += 1
@@ -98,8 +97,10 @@ class Downloader(object):
                             cid, message['thread_ts'])
                         thread_messages = [
                             x for x in thread_messages if x['thread_ts'] != x['ts']]
+                        message['replies'] = thread_messages
                         self.MessageWriter.write(
                             thread_messages, cid, parent_user_id)
+                self.MessageWriter.write(messages, cid)
             # WRITE_MESSAGES(messages, cid)
             m = "Downloaded {} messages and {} threads\n".format(
                     message_count, threads)
