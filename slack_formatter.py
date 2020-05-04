@@ -234,7 +234,7 @@ class SlackFormatter(object):
         idx = 0
         blocks += self.histogram(d, self.day_formatter, idx, "*Day of Week*")
         return blocks
-    
+
     def pn(self, num, label):
         """
         Output string "*num* label" but if num is > 1, change 'label' to 'labels'
