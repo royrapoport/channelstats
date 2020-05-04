@@ -51,8 +51,6 @@ for user in users:
 
 topic = "Channel for automated postings of channel stats for the #{} channel.  Feedback/questions to #rands-slack-statistics"
 
-sys.exit(0)
-
 for channel in channels:
     dest = channel_dict[channel]
     name = cobj.get(channel)['name']
