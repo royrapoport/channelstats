@@ -101,6 +101,10 @@ class SlackChannelReport(object):
             text = "There was no activity in this channel for this time period"
             blocks.append(self.sf.text_block(text))
             return blocks
+        if cid not in pur['channel_stats']:
+            print("Oops -- no previous week data")
+            text = "*Note:* No data exists for the previous (penultimate) week"
+            blocks.append(self.sf.text_block(text))
         blocks.append(self.membercount(cid, ur['start_date'], ur['end_date']))
         blocks.append(self.messages(cid, ur, pur))
         blocks.append(self.sf.divider())
@@ -139,7 +143,14 @@ class SlackChannelReport(object):
         """
         Report on activity per hour of the workday
         """
-        d = ur['enriched_channel'][cid]['posting_hours']
+        # Why might we not have posting hours? One possibility is
+        # that posting hours are just for weekdays, so if the only Activity
+        # was during the weekend, we won't see posting hours stats
+        d = ur['enriched_channel'][cid].get("posting_hours")
+        if not d:
+            text = "*Note*: No weekday posting hours statistics are available, possibly because all activity during this time period was during the weekend"
+            block = self.sf.text_block(text)
+            return [block]
         return self.sf.posting_hours(d)
 
     def reacted_messages(self, ur, cid):
