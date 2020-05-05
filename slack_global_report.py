@@ -146,13 +146,13 @@ class SlackGlobalReport(object):
         blocks = []
         header = "*Activity Per Hour (on Weekdays)*"
         blocks.append(self.sf.text_block(header))
+        # Grr, the way we keep things is in percentages, but we need total numbers.  Convert
         hours = ur['weekday_activity_percentage']
-        text = ""
-        for hour in hours:
-            it = "*{}* *{:.2f}%*\n".format(hour, hours[hour])
-            text += it
-        blocks.append(self.sf.text_block(text))
-        blocks.append(self.sf.divider())
+        words = ur['statistics']['words']
+        new_hours = {}
+        for idx in hours:
+            new_hours[idx] = [int(hours[idx] * words / 100)]
+        blocks += self.sf.histogram(new_hours, self.sf.hour_formatter, 0, "*(Local) Time of Weekday*", label="words")
         return blocks
 
     def reacji(self, ur, pur):
