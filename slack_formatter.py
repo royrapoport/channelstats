@@ -95,7 +95,7 @@ class SlackFormatter(object):
                 found_prev = False
         return self.simple_comparison(cur_item, prev_item, found_prev, print_num)
 
-    def histogram(self, d, m, idx, header):
+    def histogram(self, d, m, idx, header, label = None):
         """
         With d as a dict with {k:v} where v are (messages, words)
         output a histogram with percent of total activity for each k
@@ -104,12 +104,13 @@ class SlackFormatter(object):
         idx is 0 if you want to go by messages, 1 if words
         returns a list of blocks
         """
-        if idx == 0:
-            label = "msgs"
-        elif idx == 1:
-            label = "words"
-        else:
-            raise RuntimeError("idx has to be 0 or 1")
+        if not label:
+            if idx == 0:
+                label = "msgs"
+            elif idx == 1:
+                label = "words"
+            else:
+                raise RuntimeError("idx has to be 0 or 1")
         total = sum([x[idx] for x in d.values()])
         new = {}
         for i in d:
@@ -122,7 +123,7 @@ class SlackFormatter(object):
         for i in k:
             fields.append("{}".format(m(i)))
             histo = "`{}` ".format('*' * int(new[i][0])) if int(new[i][0]) > 0 else ''
-            fields.append("{}{:.1f}% ({} {})".format(histo, new[i][0], new[i][1], label))
+            fields.append("{}{:.1f}% ({:,} {})".format(histo, new[i][0], new[i][1], label))
         blocks = []
         for fset in self.make_fields(fields):
             block = {'type': 'section', 'fields': fset}
