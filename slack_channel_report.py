@@ -102,7 +102,6 @@ class SlackChannelReport(object):
             blocks.append(self.sf.text_block(text))
             return blocks
         if cid not in pur['channel_stats']:
-            print("Oops -- no previous week data")
             text = "*Note:* No data exists for the previous (penultimate) week"
             blocks.append(self.sf.text_block(text))
         blocks.append(self.membercount(cid, ur['start_date'], ur['end_date']))
