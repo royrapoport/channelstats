@@ -21,6 +21,10 @@ class DecimalEncoder(json.JSONEncoder):
         return super(DecimalEncoder, self).default(o)
 
 
+def save_json(j, fname):
+    s = dumps(j)
+    save(s, fname)
+
 def dumps(j, indent=4):
     """
     json.dumps(j), but deal with Decimal encoding
@@ -110,4 +114,3 @@ def make_url(cid, ts):
     Return a URL for the message specified
     """
     return "https://{}.slack.com/archives/{}/p{}".format(config.slack_name, cid, ts.replace(".", ""))
-

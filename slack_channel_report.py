@@ -92,14 +92,21 @@ class SlackChannelReport(object):
         header = header.format(self.sf.show_cid(cid), ur['start_date'], ur['end_date'])
         blocks.append(self.sf.text_block(header))
         blocks.append(self.sf.divider())
-        blocks.append(self.membercount(cid, ur['start_date'], ur['end_date']))
-        blocks.append(self.messages(cid, ur, pur))
-        blocks.append(self.sf.divider())
         return blocks
 
     def make_report(self, ur, pur, cid):
         blocks = []
         blocks += self.make_header(ur, pur, cid)
+        if cid not in ur['channel_stats']:
+            text = "There was no activity in this channel for this time period"
+            blocks.append(self.sf.text_block(text))
+            return blocks
+        if cid not in pur['channel_stats']:
+            text = "*Note:* No data exists for the previous (penultimate) week"
+            blocks.append(self.sf.text_block(text))
+        blocks.append(self.membercount(cid, ur['start_date'], ur['end_date']))
+        blocks.append(self.messages(cid, ur, pur))
+        blocks.append(self.sf.divider())
         blocks += self.users(cid, ur, pur)
         blocks.append(self.sf.divider())
         blocks.append(self.sf.text_block(
@@ -135,7 +142,14 @@ class SlackChannelReport(object):
         """
         Report on activity per hour of the workday
         """
-        d = ur['enriched_channel'][cid]['posting_hours']
+        # Why might we not have posting hours? One possibility is
+        # that posting hours are just for weekdays, so if the only Activity
+        # was during the weekend, we won't see posting hours stats
+        d = ur['enriched_channel'][cid].get("posting_hours")
+        if not d:
+            text = "*Note*: No weekday posting hours statistics are available, possibly because all activity during this time period was during the weekend"
+            block = self.sf.text_block(text)
+            return [block]
         return self.sf.posting_hours(d)
 
     def reacted_messages(self, ur, cid):
@@ -218,6 +232,8 @@ class SlackChannelReport(object):
     def send_report(self, cid, ur, previous, send=True, override_uid=None, summary=False):
         enricher.Enricher(fake=self.fake).enrich(ur)
         enricher.Enricher(fake=self.fake).enrich(previous)
+        utils.save_json(ur, "ur.json")
+        utils.save_json(previous, "previous.json")
         blocks = self.make_report(ur, previous, cid)
         if not send:
             print("Saving report to slack.json")
@@ -250,11 +266,10 @@ class SlackChannelReport(object):
         if summary and urls:
             cid = self.channel.get(config.channel_stats)['slack_cid']
             self.client.chat_postMessage(
-                channel = cid, 
+                channel = cid,
                 parse='full',
                 as_user=as_user,
                 unfurl_links=True,
                 link_names=True,
                 text=urls[0]
             )
-
