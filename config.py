@@ -1,5 +1,7 @@
 #! /usr/bin/env python2.7
 
+import os
+
 # What region do we use DDB in?
 region = "us-west-2"
 # What's the Slack name? Used for creating URLs
@@ -27,3 +29,11 @@ channel_stats = "zmeta-channel-stats"
 default_tz_offset = -25200
 # Which user should we send test reports to?
 test_uid = "U06NSQT34"
+
+# Allow user to set environmental variables that override the above vars
+if os.environ.get("CHANNELSTATS_LOCALSTORAGE") == "True":
+    local = True
+if os.environ.get("CHANNELSTATS_REFETCH"):
+    refetch = int(os.environ.get("CHANNELSTATS_REFETCH"))
+if os.environ.get("CHANNELSTATS_MAX_AGE"):
+    max_age = int(os.environ.get("CHANNELSTATS_MAX_AGE"))
