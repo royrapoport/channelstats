@@ -20,6 +20,8 @@ parser.add_argument("--destination", help="Specify @username or #channel to send
 parser.add_argument("--regen", action="store_true", help="Force regeneration of reports")
 parser.add_argument("--nochannel", action="store_true", help="Do not send channel activity reports")
 parser.add_argument("--nouser", action="store_true", help="Do not send user activity reports")
+parser.add_argument("--user", help="Send user report for just this @user")
+parser.add_argument("--channel", help="Send channel report for just this #channel")
 
 args = parser.parse_args()
 destination = None
@@ -38,6 +40,17 @@ channels = channel_dict.keys()
 
 last_week = rg.latest_week_start()
 days = 7
+
+if args.user and args.channel:
+    print("Sorry, you can't specify both --user and --channel")
+    sys.exit(0)
+
+if args.user:
+    users = [report_utils.override(args.user)]
+    args.nochannel = True
+elif args.channel:
+    channels = [report_utils.override(args.channel)]
+    args.nouser = True
 
 print("users: {}".format(users))
 print("channels: {}".format(channels))
