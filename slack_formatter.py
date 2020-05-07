@@ -47,9 +47,9 @@ class SlackFormatter(object):
                 return "0"
             else:
                 if is_percent:
-                    return "{}% :infinity:".format(cur_item)
+                    return "*{}%* :infinity:".format(cur_item)
                 else:
-                    return "{} :infinity:".format(cur_item)
+                    return "*{}* :infinity:".format(cur_item)
         diff = (cur_item * 100.0) / prev_item
         diff = diff - 100
         ds = ""
@@ -58,9 +58,9 @@ class SlackFormatter(object):
             emoji = ":new:"
         if print_num:
             if is_percent:
-                ds = "{:.1f}%".format(cur_item)
+                ds = "*{:.1f}%*".format(cur_item)
             else:
-                ds = "{}".format(cur_item)
+                ds = "*{}*".format(cur_item)
         if diff > 0.5 or diff < -0.5:
             if diff > 0:
                 emoji = emoji or ":green_arrow_up:"
