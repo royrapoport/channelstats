@@ -58,7 +58,7 @@ class SlackFormatter(object):
             emoji = ":new:"
         if print_num:
             if is_percent:
-                ds = "{}%".format(cur_item)
+                ds = "{:.1f}%".format(cur_item)
             else:
                 ds = "{}".format(cur_item)
         if diff > 0.5 or diff < -0.5:
@@ -73,7 +73,7 @@ class SlackFormatter(object):
         ds += emoji
         return ds
 
-    def comparison(self, cur, prev, idx, print_num=True):
+    def comparison(self, cur, prev, idx, print_num=True, is_percent=False):
         """
         cur and prev are dicts with identical structures
         idx is a list of keys to delve into each dict into
@@ -93,7 +93,7 @@ class SlackFormatter(object):
             except:
                 prev_item = cur_item
                 found_prev = False
-        return self.simple_comparison(cur_item, prev_item, found_prev, print_num)
+        return self.simple_comparison(cur_item, prev_item, found_prev, print_num, is_percent)
 
     def histogram(self, d, m, idx, header, label = None):
         """
