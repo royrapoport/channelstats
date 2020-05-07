@@ -102,6 +102,22 @@ class FirstPost(object):
     def get_channel(self, cid):
         return self.get(cid)
 
+    def firstpost_count(self, start_date, days):
+        """
+        based on a yyyy-mm-dd start_date and an int days, report how many
+        people had their first post in this period
+        """
+        (y, m, d) = [int(x) for x in start_date.split("-")]
+        dt = datetime.datetime(y, m, d, 0, 0, 0)
+        report_start_ts = dt.timestamp()
+        report_end_ts = report_start_ts + 86400 * days
+        matches =[]
+        for item in self.ddb.items(self.ddb.get_table()):
+            ts = item['ts']
+            if ts >= report_start_ts and ts <= report_end_ts:
+                matches.append(item)
+        return len(matches)
+
     def save(self):
         # print("self.users: {}".format(json.dumps(self.users, indent=4)))
         with self.table.batch_writer() as batch:

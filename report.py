@@ -131,6 +131,9 @@ class Report(object):
     def set_end_date(self, end_date):
         self._data['end_date'] = end_date
 
+    def set_days(self, days):
+        self._data['days'] = days
+
     def message(self, message):
         cid = message.get('slack_cid')
         if cid not in self.hydrated_channels:
