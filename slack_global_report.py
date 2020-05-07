@@ -43,12 +43,14 @@ class SlackGlobalReport(object):
         stats = ur['statistics']
         posters = int(stats['posters'])
         active_users = stats['active_users']
+        cur_new_users = self.firstposters(ur)
+        prev_new_users = self.firstposters(pur)
         percent = (posters * 100.0) / active_users
         text = "*{:,}/{:,}* (or *{:.1f}%* of) users posted messages\n".format(posters, active_users, percent)
         text += "Median message count was *{}*\n".format(stats['median messages'])
         text += "The top *10* posters contributed *{:.1f}%* of all messages (lower is better)\n".format(stats['topten messages'])
         text += "The top *{}* posters (higher is better) accounted for about 50% of total volume\n".format(stats['50percent of words'])
-        text += "*{:,}* people posted for the first time in this Slack!\n".format(self.firstposters(ur))
+        text += "{} people posted for the first time in this Slack!\n".format(self.sf.simple_comparison(cur_new_users, prev_new_users))
         blocks.append(self.sf.text_block(text))
         w = int(stats['words'])
         m = int(stats['messages'])
@@ -164,6 +166,7 @@ class SlackGlobalReport(object):
         for idx in hours:
             new_hours[idx] = [int(hours[idx] * words / 100)]
         blocks += self.sf.histogram(new_hours, self.sf.hour_formatter, 0, "*(Local) Time of Weekday*", label="words")
+        blocks.append(self.sf.divider())
         return blocks
 
     def reacji(self, ur, pur):
