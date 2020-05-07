@@ -212,8 +212,8 @@ class SlackFormatter(object):
             blocks.append(block)
         if not blocks:
             return blocks
-        blocks = [self.divider()] + blocks
         blocks = [(self.text_block("*Messages which got the most {}*".format(label)))] + blocks
+        blocks.append(self.divider())
         return blocks
 
     def posting_hours(self, d):
