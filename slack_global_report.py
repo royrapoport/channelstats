@@ -40,26 +40,39 @@ class SlackGlobalReport(object):
         header = "*Slack Activity Report for the Week Between {} and {}*"
         header = header.format(ur['start_date'], ur['end_date'])
         blocks.append(self.sf.text_block(header))
-        stats = ur['statistics']
-        posters = int(stats['posters'])
-        active_users = stats['active_users']
+        s = ur['statistics']
+        ps = pur['statistics']
+        posters = int(s['posters'])
+        pposters = int(ps['posters'])
+        active_users = s['active_users']
         cur_new_users = self.firstposters(ur)
         prev_new_users = self.firstposters(pur)
         percent = (posters * 100.0) / active_users
-        text = "*{:,}/{:,}* (or *{:.1f}%* of) users posted messages\n".format(posters, active_users, percent)
-        text += "Median message count was *{}*\n".format(stats['median messages'])
-        text += "The top *10* posters contributed *{:.1f}%* of all messages (lower is better)\n".format(stats['topten messages'])
-        text += "The top *{}* posters (higher is better) accounted for about 50% of total volume\n".format(stats['50percent of words'])
+        text = "{}/".format (self.sf.comparison(s, ps, ['posters']))
+        text += "{} ".format (self.sf.comparison(s, ps, ['active_users']))
+        text += " (or *{:.1f}%* of) users posted messages\n".format(percent)
+        text += "Median message count was *{}*\n".format(s['median messages'])
+        text += "The top *10* posters contributed "
+        text += "{} ".format(self.sf.comparison(s, ps, ['topten messages'], is_percent=True))
+        text += "of all messages (lower is better)\n"
+        text += "The top {} ".format(self.sf.comparison(s, ps, ['50percent of words']))
+        text += "posters (higher is better) accounted for about 50% of total volume\n"
         text += "{} people posted for the first time in this Slack!\n".format(self.sf.simple_comparison(cur_new_users, prev_new_users))
         blocks.append(self.sf.text_block(text))
-        w = int(stats['words'])
-        m = int(stats['messages'])
-        pages = int(w/500)
+        w = int(s['words'])
+        m = int(s['messages'])
+        pw = int(ps['words'])
+        pm = int(ps['messages'])
+        pages = int(s['words']/500)
+        ppages = int(ps['words']/500)
         # it = interim text
         # We approximate 500 words to a page
-        it = "People posted {} in {} (approximately {}), ".format(self.sf.pn(w, "word"), self.sf.pn(m, "message"), self.sf.pn(pages, "page"))
-        it += "or about *{:.1f}* words per message, *{:.1f}* words per poster, ".format(w/m, w/posters)
-        it += "or *{:.1f}* messages per poster\n".format(m/posters)
+        it = "People posted {} in ".format(self.sf.comparison(s, ps, ['words'], label='word'))
+        it += "{} ".format(self.sf.comparison(s, ps, ['messages'], label='message'))
+        it += "(approximately {})\n".format(self.sf.simple_comparison(pages, ppages, label="page"))
+        it += "That's about {} per message, ".format(self.sf.simple_comparison(w/m, pw/pm, label="word"))
+        it += "{} per poster, ".format(self.sf.simple_comparison(w/posters, pw/pposters, label="word"))
+        it += "or {} per poster.\n".format(self.sf.simple_comparison(m/posters, pm/pposters, label="message"))
         it += "(We estimate number of pages using the figure of 500 words per page)"
         text = it
         blocks.append(self.sf.text_block(text))
@@ -72,26 +85,46 @@ class SlackGlobalReport(object):
         header = "*Top {} Channels*".format(top)
         blocks.append(self.sf.text_block(header))
         channels = ur['channels']
+        pchannels = pur['channels']
         cids = list(channels.keys())[:top]
         cinfo = ur['channel_info']
         cstats = ur['channel_stats']
         cusers = ur['channel_user']
+        pcinfo = pur['channel_info']
+        pcstats = pur['channel_stats']
+        pcusers = pur['channel_user']
         for idx, channel in enumerate(cids):
             it = "{}. {} ".format(idx + 1, self.sf.show_cid(channel))
             ci = cinfo[channel]
             cs = cstats[channel]
             cu = cusers[channel]
+            pci = pcinfo.get(channel, {})
+            pcs = pcstats.get(channel, {})
+            pcu = pcusers.get(channel, [])
             if ci['new']:
                 it += " (new)"
-            it += "{}, ".format(self.sf.pn(ci['members'], "member"))
-
+            it += self.sf.simple_comparison(ci['members'], pci.get('members', 0), label='member') + ", "
             m = channels[channel][0]
             w = channels[channel][1]
             p = len(cu)
-            it += "{}, {}, {}, ".format(self.sf.pn(p, "poster"), self.sf.pn(w, "word"), self.sf.pn(m, "message"))
-            it += "*{:.1f}* words/poster, ".format(w/p)
-            it += "*{:.1f}%* of total traffic, ".format(cs['percent'])
-            it += "*{:.1f}%* cumulative of total ".format(cs['cpercent'])
+            pm = pchannels.get(channel, [0,0])[0]
+            pw = pchannels.get(channel, [0,0])[1]
+            pp = len(pcu)
+            it += self.sf.simple_comparison(p, pp, label='poster') + ", "
+            it += self.sf.simple_comparison(w, pw, label='word') + ", "
+            it += self.sf.simple_comparison(m, pm, label='message') + ","
+            # wp = words per poster.  Make sure we don't divide by 0
+            if p:
+                wp = w/p
+            else:
+                wp = 0
+            if pp:
+                pwp = pw/pp
+            else:
+                pwp = 0
+            it += self.sf.simple_comparison(wp, pwp, label='word') + "/poster, "
+            it += self.sf.simple_comparison(cs['percent'], pcs.get('percent', 0), is_percent=True) + " of total traffic, "
+            it += self.sf.simple_comparison(cs['cpercent'], pcs.get('cpercent', 0), is_percent=True) + " cumulative of total."
             blocks.append(self.sf.text_block(it))
         blocks.append(self.sf.divider())
         return blocks
@@ -104,8 +137,10 @@ class SlackGlobalReport(object):
         blocks.append(self.sf.text_block(header))
         stats = ur['statistics']
         us = ur['user_stats']
+        pus = pur['user_stats']
         uids = stats['50percent users for words'][:top]
         for idx, uid in enumerate(uids):
+            # current stats
             usu = us[uid]
             m = usu['count'][0]
             w = usu['count'][1]
@@ -114,10 +149,32 @@ class SlackGlobalReport(object):
             rphw = usu['reactions'] * 100.0 / w
             w_per_m = w / m
             t = usu['thread_messages']
+            # previous period stats
+            if uid in pus:
+                pusu = pus[uid]
+                pm = pusu['count'][0]
+                pw = pusu['count'][1]
+                pper = pusu['percent_of_words']
+                pcper = pusu['cum_percent_of_words']
+                prphw = pusu['reactions'] * 100.0 / pw
+                pw_per_m = pw / pm
+                pt = pusu['thread_messages']
+            else:
+                pm = 0
+                pw = 0
+                pper = 0
+                pcper = 0
+                prphw = 0
+                pw_per_m = 0
+                pt = 0
+
             it = "{}. *{}* ".format(idx + 1, self.sf.show_uid(uid))
-            it += "{}, {}, *{:.1f}* w/m, ".format(self.sf.pn(w, "word"), self.sf.pn(m, "message"), w_per_m)
-            it += "*{:.1f}* rphw, {} in threads, ".format(rphw, self.sf.pn(t, "message"))
-            it += "*{:.1f}%*, *{:.1f}%* cumulative of total\n".format(per, cper)
+            it += self.sf.simple_comparison(w, pw, label='word') + ", "
+            it += self.sf.simple_comparison(m, pm, label='message') + ","
+            it += self.sf.simple_comparison(rphw, prphw) + "rphw, "
+            it += self.sf.simple_comparison(t, pt, label="message") + " in threads, "
+            it += self.sf.simple_comparison(per, pper, is_percent=True) + " of total traffic, "
+            it += self.sf.simple_comparison(cper, pcper, is_percent=True) + " cumulative of total.\n"
             blocks.append(self.sf.text_block(it))
         blocks.append(self.sf.divider())
         return blocks
@@ -128,13 +185,19 @@ class SlackGlobalReport(object):
         header += "Counts are based on the poster's profile-based timezone"
         blocks.append(self.sf.text_block(header))
         timezones = ur['timezone']
-        text = ""
+        ptimezones = pur['timezone']
         for idx, tz in enumerate(timezones):
             it = "{}. *{}* ".format(idx + 1, tz)
             posters = len(ur['posters_per_timezone'][tz].keys())
-            it += " {} wrote {} in {}\n".format(self.sf.pn(posters, "poster"), self.sf.pn(timezones[tz][1], "word"), self.sf.pn(timezones[tz][0], "message"))
-            text += it
-        blocks.append(self.sf.text_block(text))
+            pposters = len(pur['posters_per_timezone'].get(tz, {}).keys())
+            w = timezones[tz][1]
+            m = timezones[tz][0]
+            pw = ptimezones.get(tz, [0,0])[1]
+            pm = ptimezones.get(tz, [0,0])[0]
+            it += self.sf.simple_comparison(posters, pposters, label="poster") + " wrote "
+            it += self.sf.simple_comparison(w, pw, label="word") + " in "
+            it += self.sf.simple_comparison(m, pm, label="message") + "\n"
+            blocks.append(self.sf.text_block(it))
         blocks.append(self.sf.divider())
         return blocks
 
