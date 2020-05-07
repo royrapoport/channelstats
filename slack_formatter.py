@@ -41,15 +41,26 @@ class SlackFormatter(object):
     def divider(self):
         return { "type": "divider" }
 
-    def simple_comparison(self, cur_item, prev_item, found_prev=True, print_num=True, is_percent=False):
+    def simple_comparison(self, cur_item, prev_item, found_prev=True, print_num=True, is_percent=False, label=None):
+        # Don't print ints as fractional
+        if int(cur_item) == cur_item:
+            cur_item = int(cur_item)
         if prev_item == 0:
             if cur_item == 0:
-                return "0"
+                ret = "0"
+                if label:
+                    ret += " " + label + "s"
+                return ret
             else:
                 if is_percent:
                     return "*{}%* :infinity:".format(cur_item)
                 else:
-                    return "*{}* :infinity:".format(cur_item)
+                    ret = "*{}* :infinity:".format(cur_item)
+                    if label:
+                        ret += " " + label
+                        if cur_item > 1:
+                            ret += "s"
+                    return ret
         diff = (cur_item * 100.0) / prev_item
         diff = diff - 100
         ds = ""
@@ -60,7 +71,10 @@ class SlackFormatter(object):
             if is_percent:
                 ds = "*{:.1f}%*".format(cur_item)
             else:
-                ds = "*{}*".format(cur_item)
+                if int(cur_item) == cur_item:
+                    ds = "*{:,}*".format(cur_item)
+                else:
+                    ds = "*{:,.1f}*".format(cur_item)
         if diff > 0.5 or diff < -0.5:
             if diff > 0:
                 emoji = emoji or ":green_arrow_up:"
@@ -71,9 +85,13 @@ class SlackFormatter(object):
         else:
             emoji = emoji or ""
         ds += emoji
+        if label:
+            ds += " " + label
+            if cur_item > 1:
+                ds += "s"
         return ds
 
-    def comparison(self, cur, prev, idx, print_num=True, is_percent=False):
+    def comparison(self, cur, prev, idx, print_num=True, is_percent=False, label=None):
         """
         cur and prev are dicts with identical structures
         idx is a list of keys to delve into each dict into
@@ -93,7 +111,7 @@ class SlackFormatter(object):
             except:
                 prev_item = cur_item
                 found_prev = False
-        return self.simple_comparison(cur_item, prev_item, found_prev, print_num, is_percent)
+        return self.simple_comparison(cur_item, prev_item, found_prev, print_num, is_percent, label)
 
     def histogram(self, d, m, idx, header, label = None):
         """
