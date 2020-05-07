@@ -12,6 +12,7 @@ import config
 import channel
 import utils
 import enricher
+import firstpost
 import slack_token
 import slack_formatter
 
@@ -22,8 +23,17 @@ class SlackGlobalReport(object):
         self.sf = slack_formatter.SlackFormatter()
         self.channel = channel.Channel()
         self.client = slack.WebClient(token=slack_token.token)
+        self.firstpost = firstpost.FirstPost()
         self.enricher = enricher.Enricher()
         self.report_channel  = self.channel.get(config.report_channel)['slack_cid']
+
+    def firstposters(self, ur):
+        """
+        return the number of people who had first posts during this period
+        """
+        start_date = ur['start_date']
+        days = ur['days']
+        return self.firstpost.firstpost_count(start_date, days)
 
     def make_header(self, ur, pur):
         blocks = []
@@ -38,6 +48,7 @@ class SlackGlobalReport(object):
         text += "Median message count was *{}*\n".format(stats['median messages'])
         text += "The top *10* posters contributed *{:.1f}%* of all messages (lower is better)\n".format(stats['topten messages'])
         text += "The top *{}* posters (higher is better) accounted for about 50% of total volume\n".format(stats['50percent of words'])
+        text += "*{:,}* people posted for the first time in this Slack!\n".format(self.firstposters(ur))
         blocks.append(self.sf.text_block(text))
         w = int(stats['words'])
         m = int(stats['messages'])
