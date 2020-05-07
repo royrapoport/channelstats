@@ -1,6 +1,7 @@
 #! /usr/bin/env python
 
 import copy
+import decimal
 import json
 import random
 import time
@@ -42,6 +43,10 @@ class SlackFormatter(object):
         return { "type": "divider" }
 
     def simple_comparison(self, cur_item, prev_item, found_prev=True, print_num=True, is_percent=False, label=None):
+        if type(cur_item) == decimal.Decimal:
+            cur_item = float(cur_item)
+        if type(prev_item) == decimal.Decimal:
+            prev_item = float(prev_item)
         # Don't print ints as fractional
         if int(cur_item) == cur_item:
             cur_item = int(cur_item)
