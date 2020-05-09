@@ -43,6 +43,18 @@ class SlackFormatter(object):
         return { "type": "divider" }
 
     def simple_comparison(self, cur_item, prev_item, found_prev=True, print_num=True, is_percent=False, label=None):
+        """
+        Returns a string with an emoji indicating difference between
+        cur_item and prev_item (which should be numbers or decimal.Decimals).
+        if not found_prev, this is a new metric, and we'll use the :new: emoji
+        if not print_num, we'll just show the percent difference and emoji
+        if is_percent, we'll print the number as a single-decimal percentage (x.y%)
+        otherwise we'll print ints with {:,} format, and floats with {:,.1f}
+        format.
+        if label is provided, we'll add that at the end of the string, and pluralize
+        the label if we have more than one cur_item
+        """
+        
         if type(cur_item) == decimal.Decimal:
             cur_item = float(cur_item)
         if type(prev_item) == decimal.Decimal:
