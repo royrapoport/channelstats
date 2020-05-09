@@ -1,6 +1,7 @@
 #! /usr/bin/env python
 
 import copy
+import decimal
 import json
 import random
 import time
@@ -17,6 +18,14 @@ import slack_token
 
 
 class SlackFormatter(object):
+
+    emoji_infinity = ":infinity:"
+    emoji_new = ":new:"
+    emoji_down = ":red_arrow_down:"
+    emoji_up = ":green_arrow_up:"
+    # How small of a difference will we actually show in WoW stats? Expressed as percentage
+    # so 0.5 means 0.5% (or 0.005)
+    diff_threshold = 0.5
 
     def __init__(self, fake=False):
         random.seed(time.time())
@@ -41,39 +50,98 @@ class SlackFormatter(object):
     def divider(self):
         return { "type": "divider" }
 
-    def simple_comparison(self, cur_item, prev_item, found_prev=True, print_num=True, is_percent=False):
+    def adjust_values(self, cur, prev, label):
+        """
+        helper method for simple_comparison
+        for both cur and prev, if it's a decimal.Decimal, convert to float
+        for cur, if it's a whole number, convert to int
+        for label, if cur is not 1, add an 's' (pluralize)
+        returns new values for the three as (new_cur, new_prev, new_label)
+        """
+        if type(cur) == decimal.Decimal:
+            cur = float(cur)
+        if type(prev) == decimal.Decimal:
+            prev = float(prev)
+        if int(cur) == cur:
+            cur = int(cur)
+        if cur != 1 and label:
+            label += "s"
+
+        return(cur, prev, label)
+
+
+    def format_percent(self, n):
+        """
+        returns string print of n using our preferred formatting
+        """
+        return "*{:.1f}%*".format(n)
+
+    def format_num(self, n):
+        """
+        returns string print of n using our preferred formatting
+        """
+        if int(n) == n:
+            return "*{:,}*".format(n)
+        else:
+            return "*{:,.1f}*".format(n)
+
+    def simple_comparison(self, cur_item, prev_item, found_prev=True, print_num=True, is_percent=False, label=None):
+        """
+        Returns a string with an emoji indicating difference between
+        cur_item and prev_item (which should be numbers or decimal.Decimals).
+        if not found_prev, this is a new metric, and we'll use the :new: emoji
+        if not print_num, we'll just show the percent difference and emoji
+        if is_percent, we'll print the number as a single-decimal percentage (x.y%)
+        otherwise we'll print ints with {:,} format, and floats with {:,.1f}
+        format.
+        if label is provided, we'll add that at the end of the string, and pluralize
+        the label if we have more than one cur_item
+        """
+
+        cur_item, prev_item, label = self.adjust_values(cur_item, prev_item, label)
+
         if prev_item == 0:
             if cur_item == 0:
-                return "0"
+                ret = self.format_num(0)
             else:
                 if is_percent:
-                    return "{}% :infinity:".format(cur_item)
+                    ret = self.format_percent(cur_item)
                 else:
-                    return "{} :infinity:".format(cur_item)
+                    ret = self.format_num(cur_item)
+                ret += " " + self.emoji_infinity
+            if label:
+                ret += " " + label
+            return ret
         diff = (cur_item * 100.0) / prev_item
         diff = diff - 100
         ds = ""
-        emoji = False
+        emoji = None
         if not found_prev:
-            emoji = ":new:"
+            emoji = self.emoji_new
         if print_num:
             if is_percent:
-                ds = "{}%".format(cur_item)
+                ds = self.format_percent(cur_item)
             else:
-                ds = "{}".format(cur_item)
-        if diff > 0.5 or diff < -0.5:
-            if diff > 0:
-                emoji = emoji or ":green_arrow_up:"
-                ds += " (+{:.0f}%)".format(diff)
-            else:
-                emoji = emoji or ":red_arrow_down:"
-                ds += " ({:.0f}%)".format(diff)
+                ds = self.format_num(cur_item)
+        # If the difference is minor enough, we'll just ignore it
+        if abs(diff) < self.diff_threshold:
+            diff = 0
+        if diff > 0:
+            emoji = emoji or self.emoji_up
+            sign = "+"
+        elif diff < 0:
+            emoji = emoji or self.emoji_down
+            sign = ""
+        if diff: # Don't print change if there's no difference
+            ds += " ({}{:.0f}%)".format(sign, diff)
         else:
             emoji = emoji or ""
         ds += emoji
+        if label:
+            ds += " " + label
         return ds
 
-    def comparison(self, cur, prev, idx, print_num=True):
+    def comparison(self, cur, prev, idx, print_num=True, is_percent=False, label=None):
         """
         cur and prev are dicts with identical structures
         idx is a list of keys to delve into each dict into
@@ -93,7 +161,7 @@ class SlackFormatter(object):
             except:
                 prev_item = cur_item
                 found_prev = False
-        return self.simple_comparison(cur_item, prev_item, found_prev, print_num)
+        return self.simple_comparison(cur_item, prev_item, found_prev, print_num, is_percent, label)
 
     def histogram(self, d, m, idx, header, label = None):
         """
@@ -212,8 +280,8 @@ class SlackFormatter(object):
             blocks.append(block)
         if not blocks:
             return blocks
-        blocks = [self.divider()] + blocks
         blocks = [(self.text_block("*Messages which got the most {}*".format(label)))] + blocks
+        blocks.append(self.divider())
         return blocks
 
     def posting_hours(self, d):
