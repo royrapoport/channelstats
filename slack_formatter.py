@@ -123,10 +123,11 @@ class SlackFormatter(object):
         if diff > 0.5 or diff < -0.5:
             if diff > 0:
                 emoji = emoji or self.emoji_up
-                ds += " (+{:.0f}%)".format(diff)
+                sign = "+"
             else:
                 emoji = emoji or self.emoji_down
-                ds += " ({:.0f}%)".format(diff)
+                sign = ""
+            ds += " ({}{:.0f}%)".format(sign, diff)
         else:
             emoji = emoji or ""
         ds += emoji
