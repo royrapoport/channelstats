@@ -23,6 +23,9 @@ class SlackFormatter(object):
     emoji_new = ":new:"
     emoji_down = ":red_arrow_down:"
     emoji_up = ":green_arrow_up:"
+    # How small of a difference will we actually show in WoW stats? Expressed as percentage
+    # so 0.5 means 0.5% (or 0.005)
+    diff_threshold = 0.5
 
     def __init__(self, fake=False):
         random.seed(time.time())
@@ -120,13 +123,16 @@ class SlackFormatter(object):
                 ds = self.format_percent(cur_item)
             else:
                 ds = self.format_num(cur_item)
-        if diff > 0.5 or diff < -0.5:
-            if diff > 0:
-                emoji = emoji or self.emoji_up
-                sign = "+"
-            else:
-                emoji = emoji or self.emoji_down
-                sign = ""
+        # If the difference is minor enough, we'll just ignore it
+        if abs(diff) < self.diff_threshold:
+            diff = 0
+        if diff > 0:
+            emoji = emoji or self.emoji_up
+            sign = "+"
+        elif diff < 0:
+            emoji = emoji or self.emoji_down
+            sign = ""
+        if diff: # Don't print change if there's no difference
             ds += " ({}{:.0f}%)".format(sign, diff)
         else:
             emoji = emoji or ""
