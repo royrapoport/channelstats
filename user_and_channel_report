@@ -16,17 +16,18 @@ import report_generator
 import report_targets
 
 parser = argparse.ArgumentParser(description="Send user and channel reports")
-parser.add_argument("--destination", help="Specify @username or #channel to send all reports to")
+parser.add_argument("--override", help="Specify @username or #channel to send all reports to")
 parser.add_argument("--regen", action="store_true", help="Force regeneration of reports")
 parser.add_argument("--nochannel", action="store_true", help="Do not send channel activity reports")
 parser.add_argument("--nouser", action="store_true", help="Do not send user activity reports")
 parser.add_argument("--user", help="Send user report for just this @user")
 parser.add_argument("--channel", help="Send channel report for just this #channel")
+parser.add_argument("--nosend", action="store_true", help="Do all processing but don't actually send out any reports")
 
 args = parser.parse_args()
-destination = None
-if args.destination:
-    destination = report_utils.override(args.destination)
+override = None
+if args.override:
+    override = report_utils.override(args.override)
 
 rg = report_generator.ReportGenerator()
 slack_user_reporter = slack_user_report.SlackUserReport()
@@ -62,12 +63,14 @@ f.write(json.dumps(report, indent=4))
 f.close()
 if not args.nouser:
     for user in users:
-        user_destination = destination or user
-        try:
-            slack_user_reporter.send_report(user, report, previous_report, send=True, override_uid=user_destination)
-        except Exception as ex:
-            print("Failed to send a report to {}: {} {}".format(user, ex, sys.exc_info()[0]))
-            traceback.print_exc()
+        user_destination = override or user
+        if not args.nosend:
+            print("Sendnig user reports")
+            try:
+                slack_user_reporter.send_report(user, report, previous_report, send=True, override_uid=user_destination)
+            except Exception as ex:
+                print("Failed to send a report to {}: {} {}".format(user, ex, sys.exc_info()[0]))
+                traceback.print_exc()
 
 topic = "Channel for automated postings of channel stats for the #{} channel.  Feedback/questions to #rands-slack-statistics"
 
@@ -76,14 +79,17 @@ if not args.nochannel:
         dest = channel_dict[channel]
         name = cobj.get(channel)['name']
         nt = topic.format(name)
-        channel_destination = dest or channel
+        channel_destination = override or dest
+        print("For channel {}, will send to {}".format(name, channel_destination))
         try:
             sobj.conditional_set_topic(dest, nt, leave=True)
         except Exception as ex:
             print("Failed to set topic on {}/{}: {} {}".format(channel, name, ex, sys.exc_info()[0]))
             traceback.print_exc()
-        try:
-            slack_channel_reporter.send_report(channel, report, previous_report, send=True, override_uid=channel_destination, summary=True)
-        except Exception as ex:
-            print("Failed to send report to {}/{}: {} {}".format(channel, name, ex, sys.exc_info()[0]))
-            traceback.print_exc()
+        if not args.nosend:
+            print("Sending channel report for {}".format(name))
+            try:
+                slack_channel_reporter.send_report(channel, report, previous_report, send=True, override_uid=channel_destination, summary=True)
+            except Exception as ex:
+                print("Failed to send report to {}/{}: {} {}".format(channel, name, ex, sys.exc_info()[0]))
+                traceback.print_exc()
