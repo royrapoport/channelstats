@@ -53,7 +53,7 @@ class SlackUserReport(object):
 
         blocks.append(self.sf.text_block("*Last Week (between {} and {})*".format(ur['start_date'], ur['end_date'])))
 
-        m = "You posted *{}* words in *{}* public messages."
+        m = "You posted {} words in {} public messages."
         m = m.format(self.sf.comparison(us, pus, ['count', 1]), self.sf.comparison(us, pus, ['count', 0]))
         m += "\n"
         m += "That made you the *{}*-ranked poster on the Slack and meant you contributed "
@@ -150,7 +150,7 @@ class SlackUserReport(object):
             return []
 
         pd = pur['enriched_user'][uid].get(label, {})
-        t = "*{}* times between you and *{}* unique people"
+        t = "{} times between you and {} unique people"
         total = sum(d.values())
         count = len(list(d.keys()))
         ptotal = sum(pd.values())
@@ -202,7 +202,7 @@ class SlackUserReport(object):
             cname = channel['name']
             cid = channel['slack_cid']
             f1 = "{} *{}*".format(ctr, self.sf.show_cid(cid))
-            f2 = "*{}* rank, *{}* m, *{}* w"
+            f2 = "*{}* rank, {} m, {} w"
             messages = self.sf.comparison(ur, pur, ['enriched_channels', channel_name, 'messages'])
             words = self.sf.comparison(ur, pur, ['enriched_channels', channel_name, 'words'])
             f2 = f2.format(channel['rank'], messages, words)

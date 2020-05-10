@@ -45,7 +45,7 @@ class SlackChannelReport(object):
 
     def messages(self, cid, ur, pur):
         text = ""
-        m = "*{}* messages and *{}* words were posted to the channel"
+        m = "{} messages and {} words were posted to the channel"
         m = m.format(self.sf.comparison(ur, pur, ['channels', cid, 0]), self.sf.comparison(ur, pur, ['channels', cid, 1]))
         text += m
         cur_user_count = len(ur['channel_user'].get(cid, []))
@@ -57,7 +57,7 @@ class SlackChannelReport(object):
         prevtotal = pur['statistics']["words"]
         curper = float("{:.1f}".format(curchannelvol * 100.0 / curtotal))
         prevper = float("{:.1f}".format(prevchannelvol * 100.0 / prevtotal))
-        m = "In all, this channel represented *{}* of total traffic"
+        m = "In all, this channel represented {} of total traffic"
         m = m.format(self.sf.simple_comparison(curper, prevper, True, True, True))
         text += "\n" + m
         b = self.sf.text_block(text)
@@ -75,16 +75,14 @@ class SlackChannelReport(object):
         ctr = 1
         for user in cur_user_names:
             fields.append("{} {}".format(ctr, self.sf.show_uid(user)))
-            m = "*{}* m".format(self.sf.comparison(ur, pur, ['channel_user', cid, user, 0]))
-            m += " *{}* w".format(self.sf.comparison(ur, pur, ['channel_user', cid, user, 1]))
+            m = "{} m".format(self.sf.comparison(ur, pur, ['channel_user', cid, user, 0]))
+            m += " {} w".format(self.sf.comparison(ur, pur, ['channel_user', cid, user, 1]))
             fields.append(m)
             ctr += 1
         for fset in self.sf.make_fields(fields):
             block = {'type': 'section', 'fields': fset}
             blocks.append(block)
         return blocks
-
-
 
     def make_header(self, ur, pur, cid):
         blocks = []
@@ -117,18 +115,6 @@ class SlackChannelReport(object):
         blocks += self.replied_messages(ur, cid)
         blocks += self.posting_hours(ur, cid)
         blocks += self.posting_days(ur, cid)
-        #blocks += self.make_channels(ur, pur)
-        #blocks.append(self.sf.divider())
-        #blocks += self.popular_reactions(ur, uid)
-        #blocks += self.topten(ur, pur, uid, 'reactions_from', "The people who most responded to you are")
-        #blocks += self.topten(ur, pur, uid, 'reacted_to', "The people you most responded to are")
-        #blocks += self.topten(ur, pur, uid, 'reactions_combined', "Reaction Affinity")
-        #blocks += self.topten(ur, pur, uid, 'author_thread_responded', "Authors whose threads you responded to the most")
-        #blocks += self.topten(ur, pur, uid, 'thread_responders', "Most frequent responders to your threads")
-        #blocks += self.topten(ur, pur, uid, 'threads_combined', "Thread Affinity")
-        #blocks += self.topten(ur, pur, uid, 'you_mentioned', "The people you mentioned the most")
-        #blocks += self.topten(ur, pur, uid, 'mentioned_you', "The people who mentioned you the most")
-        #blocks += self.topten(ur, pur, uid, 'mentions_combined', "Mention Affinity")
         return blocks
 
     def posting_days(self, ur, cid):
@@ -215,7 +201,7 @@ class SlackChannelReport(object):
             if self.fake:
                 cname = self.sf.get_fake_channel(channel_name)
             f1 = "{} *{}*".format(ctr, cname)
-            f2 = "*{}* rank, *{}* m, *{}* w"
+            f2 = "*{}* rank, {} m, {} w"
             messages = self.sf.comparison(ur, pur, ['enriched_channels', channel_name, 'messages'])
             words = self.sf.comparison(ur, pur, ['enriched_channels', channel_name, 'words'])
             f2 = f2.format(channel['rank'], messages, words)
