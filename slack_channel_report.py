@@ -84,8 +84,6 @@ class SlackChannelReport(object):
             blocks.append(block)
         return blocks
 
-
-
     def make_header(self, ur, pur, cid):
         blocks = []
         header = "Channel Activity Report for *{}* Between {} and {}"
@@ -117,18 +115,6 @@ class SlackChannelReport(object):
         blocks += self.replied_messages(ur, cid)
         blocks += self.posting_hours(ur, cid)
         blocks += self.posting_days(ur, cid)
-        #blocks += self.make_channels(ur, pur)
-        #blocks.append(self.sf.divider())
-        #blocks += self.popular_reactions(ur, uid)
-        #blocks += self.topten(ur, pur, uid, 'reactions_from', "The people who most responded to you are")
-        #blocks += self.topten(ur, pur, uid, 'reacted_to', "The people you most responded to are")
-        #blocks += self.topten(ur, pur, uid, 'reactions_combined', "Reaction Affinity")
-        #blocks += self.topten(ur, pur, uid, 'author_thread_responded', "Authors whose threads you responded to the most")
-        #blocks += self.topten(ur, pur, uid, 'thread_responders', "Most frequent responders to your threads")
-        #blocks += self.topten(ur, pur, uid, 'threads_combined', "Thread Affinity")
-        #blocks += self.topten(ur, pur, uid, 'you_mentioned', "The people you mentioned the most")
-        #blocks += self.topten(ur, pur, uid, 'mentioned_you', "The people who mentioned you the most")
-        #blocks += self.topten(ur, pur, uid, 'mentions_combined', "Mention Affinity")
         return blocks
 
     def posting_days(self, ur, cid):
