@@ -45,7 +45,7 @@ class SlackChannelReport(object):
 
     def messages(self, cid, ur, pur):
         text = ""
-        m = "*{}* messages and *{}* words were posted to the channel"
+        m = "{} messages and {} words were posted to the channel"
         m = m.format(self.sf.comparison(ur, pur, ['channels', cid, 0]), self.sf.comparison(ur, pur, ['channels', cid, 1]))
         text += m
         cur_user_count = len(ur['channel_user'].get(cid, []))
@@ -57,7 +57,7 @@ class SlackChannelReport(object):
         prevtotal = pur['statistics']["words"]
         curper = float("{:.1f}".format(curchannelvol * 100.0 / curtotal))
         prevper = float("{:.1f}".format(prevchannelvol * 100.0 / prevtotal))
-        m = "In all, this channel represented *{}* of total traffic"
+        m = "In all, this channel represented {} of total traffic"
         m = m.format(self.sf.simple_comparison(curper, prevper, True, True, True))
         text += "\n" + m
         b = self.sf.text_block(text)
@@ -75,8 +75,8 @@ class SlackChannelReport(object):
         ctr = 1
         for user in cur_user_names:
             fields.append("{} {}".format(ctr, self.sf.show_uid(user)))
-            m = "*{}* m".format(self.sf.comparison(ur, pur, ['channel_user', cid, user, 0]))
-            m += " *{}* w".format(self.sf.comparison(ur, pur, ['channel_user', cid, user, 1]))
+            m = "{} m".format(self.sf.comparison(ur, pur, ['channel_user', cid, user, 0]))
+            m += " {} w".format(self.sf.comparison(ur, pur, ['channel_user', cid, user, 1]))
             fields.append(m)
             ctr += 1
         for fset in self.sf.make_fields(fields):
@@ -215,7 +215,7 @@ class SlackChannelReport(object):
             if self.fake:
                 cname = self.sf.get_fake_channel(channel_name)
             f1 = "{} *{}*".format(ctr, cname)
-            f2 = "*{}* rank, *{}* m, *{}* w"
+            f2 = "*{}* rank, {} m, {} w"
             messages = self.sf.comparison(ur, pur, ['enriched_channels', channel_name, 'messages'])
             words = self.sf.comparison(ur, pur, ['enriched_channels', channel_name, 'words'])
             f2 = f2.format(channel['rank'], messages, words)
