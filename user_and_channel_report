@@ -76,7 +76,7 @@ if not args.nochannel:
         dest = channel_dict[channel]
         name = cobj.get(channel)['name']
         nt = topic.format(name)
-        channel_destination = destination or channel
+        channel_destination = dest or channel
         try:
             sobj.conditional_set_topic(dest, nt, leave=True)
         except Exception as ex:
