@@ -215,7 +215,14 @@ class SlackChannelReport(object):
         return blocks
 
 
-    def send_report(self, cid, ur, previous, send=True, override_uid=None, summary=False):
+    def send_report(self, cid, ur, previous, send=True, override_cid=None, summary=False):
+        """
+        Send report for channel `cid`
+        ur is current period report; previous is the previous report
+        will not send if `send` is False
+        override_cid will send the report to the provided cid instead of to the channel
+        if summary, will send summary of report to config.channel_stats channel
+        """
         enricher.Enricher(fake=self.fake).enrich(ur)
         enricher.Enricher(fake=self.fake).enrich(previous)
         utils.save_json(ur, "ur.json")
@@ -229,8 +236,10 @@ class SlackChannelReport(object):
             return
         # If set to true, this message will be sent as the user who owns the token we use
         as_user = False
-        if override_uid:
-            cid=override_uid
+        if override_cid == cid:
+            raise RuntimeError("You may not specify an override_cid that is the same as the report cid")
+        if override_cid:
+            cid=override_cid
         urls = []
         for blockset in utils.chunks(blocks, 49):
             if send:

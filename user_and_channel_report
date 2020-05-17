@@ -89,7 +89,7 @@ if not args.nochannel:
         if not args.nosend:
             print("Sending channel report for {}".format(name))
             try:
-                slack_channel_reporter.send_report(channel, report, previous_report, send=True, override_uid=channel_destination, summary=True)
+                slack_channel_reporter.send_report(channel, report, previous_report, send=True, override_cid=channel_destination, summary=True)
             except Exception as ex:
                 print("Failed to send report to {}/{}: {} {}".format(channel, name, ex, sys.exc_info()[0]))
                 traceback.print_exc()
