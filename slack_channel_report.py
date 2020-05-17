@@ -223,6 +223,9 @@ class SlackChannelReport(object):
         override_cid will send the report to the provided cid instead of to the channel
         if summary, will send summary of report to config.channel_stats channel
         """
+        if override_cid == cid:
+            raise RuntimeError("You may not specify an override_cid that is the same as the report cid")
+
         enricher.Enricher(fake=self.fake).enrich(ur)
         enricher.Enricher(fake=self.fake).enrich(previous)
         utils.save_json(ur, "ur.json")
@@ -236,8 +239,6 @@ class SlackChannelReport(object):
             return
         # If set to true, this message will be sent as the user who owns the token we use
         as_user = False
-        if override_cid == cid:
-            raise RuntimeError("You may not specify an override_cid that is the same as the report cid")
         if override_cid:
             cid=override_cid
         urls = []
