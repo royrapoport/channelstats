@@ -109,8 +109,13 @@ def save(blob, fname):
     f.write(blob)
     f.close()
 
-def make_url(cid, ts):
+def make_url(cid, ts, tts=None):
     """
     Return a URL for the message specified
+    if tts (thread_ts) is specified, return a URL which includes the thread_ts
     """
-    return "https://{}.slack.com/archives/{}/p{}".format(config.slack_name, cid, ts.replace(".", ""))
+    new_ts = ts.replace(".", "")
+    url = "https://{}.slack.com/archives/{}/p{}".format(config.slack_name, cid, new_ts)
+    if tts:
+        url += "?thread_ts={}&cid={}".format(tts, cid)
+    return url

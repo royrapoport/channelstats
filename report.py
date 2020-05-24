@@ -246,12 +246,6 @@ class Report(object):
         self._finalize_timezones()
         self._finalize_user_stats()
 
-    @staticmethod
-    def make_url(mrecord):
-        mid = mrecord[1]
-        cid = mrecord[2]
-        return "https://{}.slack.com/archives/{}/p{}".format(config.slack_name, cid, mid)
-
     def _finalize_reactions(self):
         for uid in self.reactions:
             enriched = self.create_key(['enriched_user', uid], {})
@@ -453,7 +447,8 @@ class Report(object):
 
         mid = message['ts']
         cid = message['slack_cid']
-        mrecord = (reaction_count, mid, cid, uid)
+        tts = message.get("thread_ts")
+        mrecord = (reaction_count, mid, cid, uid, tts)
         self.reactions_accumulator.append(mrecord)
         if uid in self.user_reaction_accumulators:
             self.user_reaction_accumulators[uid].append(mrecord)
@@ -519,7 +514,8 @@ class Report(object):
         self.create_key(["user_stats", uid, "replies"], 0)
         self._data["user_stats"][uid]["replies"] += reply_count
 
-        mrecord = (reply_count, mid, cid, uid)
+        tts = message.get("thread_ts")
+        mrecord = (reply_count, mid, cid, uid, tts)
         self.reply_accumulator.append(mrecord)
         if uid in self.user_reaction_accumulators:
             self.user_reply_accumulators[uid].append(mrecord)
