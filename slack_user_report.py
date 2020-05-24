@@ -225,9 +225,9 @@ class SlackUserReport(object):
         blocks = self.make_report(ur, us, previous, pus, uid)
         if not send:
             print("Saving report to slack.json")
-            f = open("slack.json", "w")
-            f.write(json.dumps(blocks, indent=4))
-            f.close()
+            utils.save_json(blocks, "slack.json")
+            utils.save_json(ur, "enriched_current_report.json")
+            utils.save_json(previous, "enriched_previous_report.json")
             return
         # If set to true, this message will be sent as the user who owns the token we use
         as_user = False
