@@ -246,12 +246,6 @@ class Report(object):
         self._finalize_timezones()
         self._finalize_user_stats()
 
-    @staticmethod
-    def make_url(mrecord):
-        mid = mrecord[1]
-        cid = mrecord[2]
-        return "https://{}.slack.com/archives/{}/p{}".format(config.slack_name, cid, mid)
-
     def _finalize_reactions(self):
         for uid in self.reactions:
             enriched = self.create_key(['enriched_user', uid], {})
