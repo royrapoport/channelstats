@@ -45,14 +45,14 @@ class Enricher(object):
     def popular_messages(messages, cinfo, uinfo):
         """
         given a list of lists where each list is
-        [reaction count, ts, cid, uid]
+        [reaction count, ts, cid, uid, tts]
         convert to dict with 'count', 'dt', 'channel', 'cid', 'uid', 'user', 'url'
         """
         ret = []
         for message in messages:
             if not isinstance(message, list):
                 continue
-            (reactions, ts, cid, uid) = message
+            (reactions, ts, cid, uid, tts) = message
             ret.append({
                 'count': reactions,
                 'dt': time.strftime("%m/%d/%Y %H:%M", time.localtime(int(float(ts)))),
@@ -60,7 +60,7 @@ class Enricher(object):
                 'user': uinfo[uid]['label'],
                 'uid': uid,
                 'cid': cid,
-                'url': utils.make_url(cid, ts)
+                'url': utils.make_url(cid, ts, tts)
             })
         return ret
 
