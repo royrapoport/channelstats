@@ -281,7 +281,7 @@ class SlackFormatter(object):
             if count:
                 ratio = num * 1.0 / count
                 ratio = ratio * denominator
-                t += " - {:.2f}/{}".format(ratio, denominator)
+                t += " — {:.2f}/{}".format(ratio, denominator)
             t += "\n"
         block = self.text_block(t)
         return [block]
