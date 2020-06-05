@@ -1,5 +1,6 @@
 #! /usr/bin/env python
 
+import collections
 import copy
 import decimal
 import json
@@ -256,11 +257,32 @@ class SlackFormatter(object):
         fields = [{'type': 'mrkdwn', 'text': x} for x in ftext]
         return utils.chunks(fields, 10)
 
-    def reactions(self, popularity):
+    def reactions(self, popularity, count=None, denominator=1000):
+        """
+        Outputs list of blocks showing the top ten most popular reacjis.
+        Input is a dictionary with {reacji_name: count}
+        if count (int), show the number of each reacji as a frequency based on total count;
+        if denominator (int), then show it per denominator count.
+        In other words, if there were, say, 5 reacji, and count is 10000,
+        we'll show "5 :reacji: - 0.5/1000"
+        but if we provide denominator=100, for example, then we'll show
+        "5 :reacji: - .05/100"
+        """
+
+        sorted_dict = collections.OrderedDict()
+        reactions = list(popularity.keys())
+        reactions.sort(key = lambda x: popularity[x])
+        reactions.reverse()
+
         t = "*Count* *Reactji*\n"
-        for rname in list(popularity.keys())[0:10]:
+        for rname in reactions[0:10]:
             num = popularity[rname]
-            t += "{} :{}:\n".format(str(num), rname)
+            t += "{} :{}:".format(str(num), rname)
+            if count:
+                ratio = num * 1.0 / count
+                ratio = ratio * denominator
+                t += " - {:.2f}/{}".format(ratio, denominator)
+            t += "\n"
         block = self.text_block(t)
         return [block]
 
