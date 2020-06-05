@@ -78,7 +78,7 @@ class SlackUserReport(object):
         blocks += self.reacted_messages(ur, uid)
         blocks += self.replied_messages(ur, uid)
         blocks.append(self.sf.text_block("You got {} reactions".format(ur['enriched_user'][uid]['reaction_count'])))
-        blocks += self.popular_reactions(ur, uid)
+        blocks += self.popular_reactions(ur, uid, count=us['count'][1])
         blocks += self.topten(ur, pur, uid, 'reactions_from', "The people who most reacted to you are")
         blocks += self.topten(ur, pur, uid, 'reacted_to', "The people you most reacted to are")
         blocks += self.topten(ur, pur, uid, 'reactions_combined', "Reaction Affinity")
@@ -186,9 +186,9 @@ class SlackUserReport(object):
             show_user=False,
             show_channel=True)
 
-    def popular_reactions(self, ur, uid):
+    def popular_reactions(self, ur, uid, count=None):
         popularity = ur['enriched_user'][uid]['reaction_popularity']
-        return self.sf.reactions(popularity)
+        return self.sf.reactions(popularity, count=count)
 
     def make_channels(self, ur, pur):
         fields = []

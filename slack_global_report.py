@@ -236,12 +236,12 @@ class SlackGlobalReport(object):
         blocks = []
         header = "*Top Ten Reacji*"
         blocks.append(self.sf.text_block(header))
+        rd = {}
+        words = int(ur['statistics']['words'])
         reacjis = ur['top_ten_reactions']
-        text = ""
         for reacji in reacjis:
-            it = ":{}: *{:,}*\n".format(reacji, ur['reaction'][reacji])
-            text += it
-        blocks.append(self.sf.text_block(text))
+            rd[reacji] = ur['reaction'][reacji]
+        blocks += self.sf.reactions(rd, count=words)
         blocks.append(self.sf.divider())
         return blocks
 
