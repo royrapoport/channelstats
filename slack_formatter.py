@@ -276,7 +276,7 @@ class SlackFormatter(object):
 
         t = "*Count* *Reactji*"
         if count:
-            t += " *#/words*"
+            t += " — *#/words*"
         t += "\n"
         for rname in reactions[0:10]:
             num = popularity[rname]
