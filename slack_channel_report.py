@@ -186,7 +186,8 @@ class SlackChannelReport(object):
 
     def popular_reactions(self, ur, cid):
         popularity = ur['enriched_channel'][cid]['reactions']
-        return self.sf.reactions(popularity)
+        words = ur['channels'][cid][1]
+        return self.sf.reactions(popularity, count=words)
 
     def make_channels(self, ur, pur):
         fields = []
