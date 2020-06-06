@@ -274,7 +274,10 @@ class SlackFormatter(object):
         reactions.sort(key = lambda x: popularity[x])
         reactions.reverse()
 
-        t = "*Count* *Reactji*\n"
+        t = "*Count* *Reactji*"
+        if count:
+            t += " *#/words*"
+        t += "\n"
         for rname in reactions[0:10]:
             num = popularity[rname]
             t += "{} :{}:".format(str(num), rname)
