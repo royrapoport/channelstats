@@ -272,7 +272,7 @@ class SlackGlobalReport(object):
             show_user=True,
             show_channel=True)
 
-    def send_report(self, ur, previous, send=True, destination=None, summary=False):
+    def send_report(self, ur, previous, send=True, destination=None, brief=False):
         enricher.Enricher().enrich(ur)
         enricher.Enricher().enrich(previous)
         blocks = self.make_report(ur, previous)
@@ -300,13 +300,3 @@ class SlackGlobalReport(object):
                     print(e)
                     # print(json.dumps(blockset, indent=4))
                     sys.exit(0)
-        if summary and urls:
-            cid = self.channel.get(config.channel_stats)['slack_cid']
-            self.client.chat_postMessage(
-                channel = cid,
-                parse='full',
-                as_user=as_user,
-                unfurl_links=True,
-                link_names=True,
-                text=urls[0]
-            )
