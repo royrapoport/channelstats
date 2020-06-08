@@ -1,20 +1,5 @@
 #! /usr/bin/env python
 
-import copy
-import json
-import random
-import time
-import sys
-
-import slack
-
-import config
-import channel
-import utils
-import enricher
-import firstpost
-import slack_token
-import slack_formatter
 import slack_global_report
 
 
