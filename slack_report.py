@@ -15,6 +15,7 @@ import utils
 import report_utils
 
 import slack_global_report
+import slack_brief_global_report
 
 parser = argparse.ArgumentParser(description='Run a global Slack activity report.')
 parser.add_argument("--regen", action="store_true", help="Regenerate stats even if we have them")
@@ -26,7 +27,10 @@ args = parser.parse_args()
 rg = report_generator.ReportGenerator()
 html = html_formatter.HTMLFormatter()
 pdf = pdf_formatter.PDFFormatter()
-sgr = slack_global_report.SlackGlobalReport()
+if args.brief:
+    sgr = slack_brief_global_report.SlackBriefGlobalReport()
+else:
+    sgr = slack_global_report.SlackGlobalReport()
 
 send = not args.nosend
 if send and not args.destination:
@@ -65,7 +69,7 @@ else:
     print("Report {} already exists".format(pdf_fname))
 
 if send:
-    sgr.send_report(report, previous_report, send=send, brief=args.brief, destination=destination)
+    sgr.send_report(report, previous_report, send=send, destination=destination)
     if not args.brief:
         client = slack.WebClient(token=slack_token.token)
         comment="Slack activity report for the {} days starting {}".format(days, latest_week_start)

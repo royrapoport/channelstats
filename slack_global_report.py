@@ -79,11 +79,9 @@ class SlackGlobalReport(object):
         blocks.append(self.sf.divider())
         return blocks
 
-    def top_channels(self, ur, pur, brief=False):
+    def top_channels(self, ur, pur):
         blocks = []
         top = 20
-        if brief:
-            top = 10
         header = "*Top {} Channels* (w = words, m = messages)".format(top)
         blocks.append(self.sf.text_block(header))
         channels = ur['channels']
@@ -116,28 +114,25 @@ class SlackGlobalReport(object):
             it += "{}/{} posters, ".format(posters, members)
             it += self.sf.simple_comparison(w, pw) + "w, "
             it += self.sf.simple_comparison(m, pm) + "m,"
-            if not brief:
-                # wp = words per poster.  Make sure we don't divide by 0
-                if p:
-                    wp = w/p
-                else:
-                    wp = 0
-                if pp:
-                    pwp = pw/pp
-                else:
-                    pwp = 0
-                it += self.sf.simple_comparison(wp, pwp, label='word') + "/poster, "
-                it += self.sf.simple_comparison(cs['percent'], pcs.get('percent', 0), is_percent=True) + " of total traffic, "
-                it += self.sf.simple_comparison(cs['cpercent'], pcs.get('cpercent', 0), is_percent=True) + " cumulative of total."
+            # wp = words per poster.  Make sure we don't divide by 0
+            if p:
+                wp = w/p
+            else:
+                wp = 0
+            if pp:
+                pwp = pw/pp
+            else:
+                pwp = 0
+            it += self.sf.simple_comparison(wp, pwp, label='word') + "/poster, "
+            it += self.sf.simple_comparison(cs['percent'], pcs.get('percent', 0), is_percent=True) + " of total traffic, "
+            it += self.sf.simple_comparison(cs['cpercent'], pcs.get('cpercent', 0), is_percent=True) + " cumulative of total."
             blocks.append(self.sf.text_block(it))
         blocks.append(self.sf.divider())
         return blocks
 
-    def top_users(self, ur, pur, brief=False):
+    def top_users(self, ur, pur):
         blocks = []
         top = 20
-        if brief:
-            top = 10
         header = "*Top {} Users*\n".format(top)
         header += "(rphw = Reactions Per Hundred Messages)"
         blocks.append(self.sf.text_block(header))
@@ -178,10 +173,9 @@ class SlackGlobalReport(object):
             it += self.sf.simple_comparison(w, pw, label='word') + ", "
             it += self.sf.simple_comparison(m, pm, label='message') + ","
             it += self.sf.simple_comparison(rphw, prphw) + "rphw, "
-            if not brief:
-                it += self.sf.simple_comparison(t, pt, label="message") + " in threads, "
-                it += self.sf.simple_comparison(per, pper, is_percent=True) + " of total traffic, "
-                it += self.sf.simple_comparison(cper, pcper, is_percent=True) + " cumulative of total.\n"
+            it += self.sf.simple_comparison(t, pt, label="message") + " in threads, "
+            it += self.sf.simple_comparison(per, pper, is_percent=True) + " of total traffic, "
+            it += self.sf.simple_comparison(cper, pcper, is_percent=True) + " cumulative of total.\n"
             blocks.append(self.sf.text_block(it))
         blocks.append(self.sf.divider())
         return blocks
@@ -258,15 +252,14 @@ class SlackGlobalReport(object):
         blocks.append(self.sf.divider())
         return blocks
 
-    def make_report(self, ur, pur, brief=False):
+    def make_report(self, ur, pur):
         blocks = []
         blocks += self.make_header(ur, pur)
-        blocks += self.top_channels(ur, pur, brief=brief)
-        blocks += self.top_users(ur, pur, brief=brief)
+        blocks += self.top_channels(ur, pur)
+        blocks += self.top_users(ur, pur)
         blocks += self.days(ur, pur)
-        if not brief:
-            blocks += self.timezones(ur, pur)
-            blocks += self.hours(ur, pur)
+        blocks += self.timezones(ur, pur)
+        blocks += self.hours(ur, pur)
         blocks += self.reacji(ur, pur)
         blocks += self.reacted_messages(ur)
         blocks += self.replied_messages(ur)
@@ -286,10 +279,10 @@ class SlackGlobalReport(object):
             show_user=True,
             show_channel=True)
 
-    def send_report(self, ur, previous, send=True, destination=None, brief=False):
+    def send_report(self, ur, previous, send=True, destination=None):
         enricher.Enricher().enrich(ur)
         enricher.Enricher().enrich(previous)
-        blocks = self.make_report(ur, previous, brief=brief)
+        blocks = self.make_report(ur, previous)
         print("Saving report to slack.json")
         f = open("slack.json", "w")
         f.write(json.dumps(blocks, indent=4))
