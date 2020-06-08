@@ -94,15 +94,12 @@ class SlackGlobalReport(object):
         pcstats = pur['channel_stats']
         pcusers = pur['channel_user']
         for idx, channel in enumerate(cids):
-            it = "{}. {} ".format(idx + 1, self.sf.show_cid(channel))
             ci = cinfo[channel]
             cs = cstats[channel]
             cu = cusers[channel]
             pci = pcinfo.get(channel, {})
             pcs = pcstats.get(channel, {})
             pcu = pcusers.get(channel, [])
-            if ci['new']:
-                it += " (new)"
             members = self.sf.simple_comparison(ci['members'], pci.get('members', 0))
             m = channels[channel][0]
             w = channels[channel][1]
@@ -111,9 +108,6 @@ class SlackGlobalReport(object):
             pw = pchannels.get(channel, [0,0])[1]
             pp = len(pcu)
             posters = self.sf.simple_comparison(p, pp, label='')
-            it += "{}/{} posters, ".format(posters, members)
-            it += self.sf.simple_comparison(w, pw) + "w, "
-            it += self.sf.simple_comparison(m, pm) + "m,"
             # wp = words per poster.  Make sure we don't divide by 0
             if p:
                 wp = w/p
@@ -123,12 +117,50 @@ class SlackGlobalReport(object):
                 pwp = pw/pp
             else:
                 pwp = 0
-            it += self.sf.simple_comparison(wp, pwp, label='word') + "/poster, "
-            it += self.sf.simple_comparison(cs['percent'], pcs.get('percent', 0), is_percent=True) + " of total traffic, "
-            it += self.sf.simple_comparison(cs['cpercent'], pcs.get('cpercent', 0), is_percent=True) + " cumulative of total."
+            percent = cs['percent']
+            ppercent = pcs.get('percent', 0)
+            cpercent = cs['cpercent']
+            pcpercent = cs.get('cpercent', 0)
+            it = self.format_channel(idx, channel, ci['new'], posters, members, w, pw, m, pm, wp, pwp, percent, ppercent, cpercent, pcpercent)
             blocks.append(self.sf.text_block(it))
         blocks.append(self.sf.divider())
         return blocks
+
+    def format_channel(self, idx, cid, new, posters, members, w, pw, m, pm, wp, pwp, percent, ppercent, cpercent, pcpercent):
+        """
+        Formats a channel's listing in the top X listing
+        idx = the index of the channel (in the top x list, starting with 0)
+        cid = channel's CID
+        new = boolean whether the channel is new or not
+        posters, members = self.explanatory
+        w, pw: words, previous week's words
+        m, pm: messages, previous week's messages
+        wp, pwp: words per poster, previous week's words per poster
+        percent, ppercent: percent of total traffic, previous week's percent of total traffic
+        cpercent, pcpercent: cumulative percent of total traffic, previous week's ...
+        """
+        it = "{}. {} ".format(idx + 1, self.sf.show_cid(cid))
+        if new:
+            it += " (new)"
+        it += "{}/{} posters, ".format(posters, members)
+        it += self.sf.simple_comparison(w, pw) + "w, "
+        it += self.sf.simple_comparison(m, pm) + "m"
+        it += self.detailed_format_channel(wp, pwp, percent, ppercent, cpercent, pcpercent)
+        return it
+
+    def detailed_format_channel(self, wp, pwp, percent, ppercent, cpercent, pcpercent):
+        """
+        Formats a channel's detailed additional stats in the top X listing
+        wp, pwp: words per poster, previous week's words per poster
+        percent, ppercent: percent of total traffic, previous week's percent of total traffic
+        cpercent, pcpercent: cumulative percent of total traffic, previous week's ...
+        """
+
+        it = ", "
+        it += self.sf.simple_comparison(wp, pwp, label='word') + "/poster, "
+        it += self.sf.simple_comparison(percent, ppercent, is_percent=True) + " of total traffic, "
+        it += self.sf.simple_comparison(cpercent, pcpercent, is_percent=True) + " cumulative of total.\n"
+        return it
 
     def top_users(self, ur, pur):
         blocks = []
@@ -206,7 +238,7 @@ class SlackGlobalReport(object):
         it += self.sf.simple_comparison(per, pper, is_percent=True) + " of total traffic, "
         it += self.sf.simple_comparison(cper, pcper, is_percent=True) + " cumulative of total.\n"
         return it
-    
+
 
     def timezones(self, ur, pur):
         blocks = []
