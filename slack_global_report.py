@@ -26,6 +26,7 @@ class SlackGlobalReport(object):
         self.firstpost = firstpost.FirstPost()
         self.enricher = enricher.Enricher()
         self.report_channel  = self.channel.get(config.report_channel)['slack_cid']
+        self.top = 20
 
     def firstposters(self, ur):
         """
@@ -81,12 +82,11 @@ class SlackGlobalReport(object):
 
     def top_channels(self, ur, pur):
         blocks = []
-        top = 20
-        header = "*Top {} Channels*".format(top)
+        header = "*Top {} Channels* (w = words, m = messages)".format(self.top)
         blocks.append(self.sf.text_block(header))
         channels = ur['channels']
         pchannels = pur['channels']
-        cids = list(channels.keys())[:top]
+        cids = list(channels.keys())[:self.top]
         cinfo = ur['channel_info']
         cstats = ur['channel_stats']
         cusers = ur['channel_user']
@@ -94,25 +94,20 @@ class SlackGlobalReport(object):
         pcstats = pur['channel_stats']
         pcusers = pur['channel_user']
         for idx, channel in enumerate(cids):
-            it = "{}. {} ".format(idx + 1, self.sf.show_cid(channel))
             ci = cinfo[channel]
             cs = cstats[channel]
             cu = cusers[channel]
             pci = pcinfo.get(channel, {})
             pcs = pcstats.get(channel, {})
             pcu = pcusers.get(channel, [])
-            if ci['new']:
-                it += " (new)"
-            it += self.sf.simple_comparison(ci['members'], pci.get('members', 0), label='member') + ", "
+            members = self.sf.simple_comparison(ci['members'], pci.get('members', 0))
             m = channels[channel][0]
             w = channels[channel][1]
             p = len(cu)
             pm = pchannels.get(channel, [0,0])[0]
             pw = pchannels.get(channel, [0,0])[1]
             pp = len(pcu)
-            it += self.sf.simple_comparison(p, pp, label='poster') + ", "
-            it += self.sf.simple_comparison(w, pw, label='word') + ", "
-            it += self.sf.simple_comparison(m, pm, label='message') + ","
+            posters = self.sf.simple_comparison(p, pp, label='')
             # wp = words per poster.  Make sure we don't divide by 0
             if p:
                 wp = w/p
@@ -122,23 +117,60 @@ class SlackGlobalReport(object):
                 pwp = pw/pp
             else:
                 pwp = 0
-            it += self.sf.simple_comparison(wp, pwp, label='word') + "/poster, "
-            it += self.sf.simple_comparison(cs['percent'], pcs.get('percent', 0), is_percent=True) + " of total traffic, "
-            it += self.sf.simple_comparison(cs['cpercent'], pcs.get('cpercent', 0), is_percent=True) + " cumulative of total."
+            percent = cs['percent']
+            ppercent = pcs.get('percent', 0)
+            cpercent = cs['cpercent']
+            pcpercent = cs.get('cpercent', 0)
+            it = self.format_channel(idx, channel, ci['new'], posters, members, w, pw, m, pm, wp, pwp, percent, ppercent, cpercent, pcpercent)
             blocks.append(self.sf.text_block(it))
         blocks.append(self.sf.divider())
         return blocks
 
+    def format_channel(self, idx, cid, new, posters, members, w, pw, m, pm, wp, pwp, percent, ppercent, cpercent, pcpercent):
+        """
+        Formats a channel's listing in the top X listing
+        idx = the index of the channel (in the top x list, starting with 0)
+        cid = channel's CID
+        new = boolean whether the channel is new or not
+        posters, members = self.explanatory
+        w, pw: words, previous week's words
+        m, pm: messages, previous week's messages
+        wp, pwp: words per poster, previous week's words per poster
+        percent, ppercent: percent of total traffic, previous week's percent of total traffic
+        cpercent, pcpercent: cumulative percent of total traffic, previous week's ...
+        """
+        it = "{}. {} ".format(idx + 1, self.sf.show_cid(cid))
+        if new:
+            it += " (new)"
+        it += "{}/{} posters, ".format(posters, members)
+        it += self.sf.simple_comparison(w, pw) + "w, "
+        it += self.sf.simple_comparison(m, pm) + "m"
+        it += self.detailed_format_channel(wp, pwp, percent, ppercent, cpercent, pcpercent)
+        return it
+
+    def detailed_format_channel(self, wp, pwp, percent, ppercent, cpercent, pcpercent):
+        """
+        Formats a channel's detailed additional stats in the top X listing
+        wp, pwp: words per poster, previous week's words per poster
+        percent, ppercent: percent of total traffic, previous week's percent of total traffic
+        cpercent, pcpercent: cumulative percent of total traffic, previous week's ...
+        """
+
+        it = ", "
+        it += self.sf.simple_comparison(wp, pwp, label='word') + "/poster, "
+        it += self.sf.simple_comparison(percent, ppercent, is_percent=True) + " of total traffic, "
+        it += self.sf.simple_comparison(cpercent, pcpercent, is_percent=True) + " cumulative of total.\n"
+        return it
+
     def top_users(self, ur, pur):
         blocks = []
-        top = 20
-        header = "*Top {} Users*\n".format(top)
+        header = "*Top {} Users*\n".format(self.top)
         header += "(rphw = Reactions Per Hundred Messages)"
         blocks.append(self.sf.text_block(header))
         stats = ur['statistics']
         us = ur['user_stats']
         pus = pur['user_stats']
-        uids = stats['50percent users for words'][:top]
+        uids = stats['50percent users for words'][:self.top]
         for idx, uid in enumerate(uids):
             # current stats
             usu = us[uid]
@@ -168,16 +200,45 @@ class SlackGlobalReport(object):
                 pw_per_m = 0
                 pt = 0
 
-            it = "{}. *{}* ".format(idx + 1, self.sf.show_uid(uid))
-            it += self.sf.simple_comparison(w, pw, label='word') + ", "
-            it += self.sf.simple_comparison(m, pm, label='message') + ","
-            it += self.sf.simple_comparison(rphw, prphw) + "rphw, "
-            it += self.sf.simple_comparison(t, pt, label="message") + " in threads, "
-            it += self.sf.simple_comparison(per, pper, is_percent=True) + " of total traffic, "
-            it += self.sf.simple_comparison(cper, pcper, is_percent=True) + " cumulative of total.\n"
+            it = self.format_user(idx, uid, w, pw, m, pm, rphw, prphw, t, pt, per, pper, cper, pcper)
             blocks.append(self.sf.text_block(it))
         blocks.append(self.sf.divider())
         return blocks
+
+    def format_user(self, idx, uid, w, pw, m, pm, rphw, prphw, t, pt, per, pper, cper, pcper):
+        """
+        Formats a user's volume line.  For all variables, the variable that starts with 'p' is the previous
+        week's number
+        idx = the index of the user (in the top x list, starting with 0)
+        uid = User's UID
+        w = words
+        m = messages
+        rphw = reactions per hundred words
+        t = messages in threads
+        per = percent of total traffic
+        cper = cumulative percent of total traffic
+        """
+        it = "{}. *{}* ".format(idx + 1, self.sf.show_uid(uid))
+        it += self.sf.simple_comparison(w, pw, label='word') + ", "
+        it += self.sf.simple_comparison(m, pm, label='message') + ", "
+        it += self.sf.simple_comparison(rphw, prphw) + "rphw"
+        it += self.detailed_format_user(t, pt, per, pper, cper, pcper)
+        return it
+
+    def detailed_format_user(self, t, pt, per, pper, cper, pcper):
+        """
+        Provides some details for a user's volume line.
+        For all variables, the variable that starts with 'p' is the previous week's number
+        t = messages in threads
+        per = percent of total traffic
+        cper = cumulative percent of total traffic
+        """
+
+        it = " " + self.sf.simple_comparison(t, pt, label="message") + " in threads, "
+        it += self.sf.simple_comparison(per, pper, is_percent=True) + " of total traffic, "
+        it += self.sf.simple_comparison(cper, pcper, is_percent=True) + " cumulative of total.\n"
+        return it
+
 
     def timezones(self, ur, pur):
         blocks = []
@@ -206,13 +267,19 @@ class SlackGlobalReport(object):
         header = "*Activity Per Day*"
         blocks.append(self.sf.text_block(header))
         uwd = ur['user_weekday']
+        puwd = pur['user_weekday']
         days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
         text = ""
         for idx, day in enumerate(days):
             match = uwd.get(str(idx), [0,0])
+            prev_match = puwd.get(str(idx), [0,0])
             m = match[0]
             w = match[1]
-            it = "*{}* {} in {}\n".format(day, self.sf.pn(w, "word"), self.sf.pn(m, "message"))
+            pm = prev_match[0]
+            pw = prev_match[1]
+            it = "*{}* ".format(day)
+            it += "{} in ".format(self.sf.simple_comparison(w, pw, label="word"))
+            it += "{}\n".format(self.sf.simple_comparison(m, pm, label="message"))
             text += it
         blocks.append(self.sf.text_block(text))
         blocks.append(self.sf.divider())
@@ -250,8 +317,8 @@ class SlackGlobalReport(object):
         blocks += self.make_header(ur, pur)
         blocks += self.top_channels(ur, pur)
         blocks += self.top_users(ur, pur)
-        blocks += self.timezones(ur, pur)
         blocks += self.days(ur, pur)
+        blocks += self.timezones(ur, pur)
         blocks += self.hours(ur, pur)
         blocks += self.reacji(ur, pur)
         blocks += self.reacted_messages(ur)
@@ -272,7 +339,7 @@ class SlackGlobalReport(object):
             show_user=True,
             show_channel=True)
 
-    def send_report(self, ur, previous, send=True, destination=None, summary=False):
+    def send_report(self, ur, previous, send=True, destination=None):
         enricher.Enricher().enrich(ur)
         enricher.Enricher().enrich(previous)
         blocks = self.make_report(ur, previous)
@@ -300,13 +367,3 @@ class SlackGlobalReport(object):
                     print(e)
                     # print(json.dumps(blockset, indent=4))
                     sys.exit(0)
-        if summary and urls:
-            cid = self.channel.get(config.channel_stats)['slack_cid']
-            self.client.chat_postMessage(
-                channel = cid,
-                parse='full',
-                as_user=as_user,
-                unfurl_links=True,
-                link_names=True,
-                text=urls[0]
-            )

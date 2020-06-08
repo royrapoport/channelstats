@@ -15,17 +15,22 @@ import utils
 import report_utils
 
 import slack_global_report
+import slack_brief_global_report
 
-parser = argparse.ArgumentParser(description='Run a user-level Slack activity report.')
+parser = argparse.ArgumentParser(description='Run a global Slack activity report.')
 parser.add_argument("--regen", action="store_true", help="Regenerate stats even if we have them")
 parser.add_argument("--nosend", action="store_true", help="Do not send report")
 parser.add_argument("--destination", help="Specify @username or #channel to send report to")
+parser.add_argument("--brief", action="store_true", help="Generate brief version of the global Slack activity report, do not send PDF")
 args = parser.parse_args()
 
 rg = report_generator.ReportGenerator()
 html = html_formatter.HTMLFormatter()
 pdf = pdf_formatter.PDFFormatter()
-sgr = slack_global_report.SlackGlobalReport()
+if args.brief:
+    sgr = slack_brief_global_report.SlackBriefGlobalReport()
+else:
+    sgr = slack_global_report.SlackGlobalReport()
 
 send = not args.nosend
 if send and not args.destination:
@@ -65,14 +70,15 @@ else:
 
 if send:
     sgr.send_report(report, previous_report, send=send, destination=destination)
-    client = slack.WebClient(token=slack_token.token)
-    comment="Slack activity report for the {} days starting {}".format(days, latest_week_start)
-    response = client.files_upload(
-        channels=destination,
-        channel=destination,
-        file=pdf_fname,
-        filename=pdf_fname,
-        comment=comment,
-        title=comment
-        )
-    print(response)
+    if not args.brief:
+        client = slack.WebClient(token=slack_token.token)
+        comment="Slack activity report for the {} days starting {}".format(days, latest_week_start)
+        response = client.files_upload(
+            channels=destination,
+            channel=destination,
+            file=pdf_fname,
+            filename=pdf_fname,
+            comment=comment,
+            title=comment
+            )
+        print(response)

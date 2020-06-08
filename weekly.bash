@@ -12,4 +12,5 @@ set -x
 ./message_downloader.py
 ./user_and_channel_report
 ./slack_report.py --destination \#zmeta-statistics
+./slack_report.py --brief --destination \#zmeta-statistics-dashboard
 set +x
