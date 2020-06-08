@@ -26,6 +26,7 @@ class SlackGlobalReport(object):
         self.firstpost = firstpost.FirstPost()
         self.enricher = enricher.Enricher()
         self.report_channel  = self.channel.get(config.report_channel)['slack_cid']
+        self.top = 20
 
     def firstposters(self, ur):
         """
@@ -81,12 +82,11 @@ class SlackGlobalReport(object):
 
     def top_channels(self, ur, pur):
         blocks = []
-        top = 20
-        header = "*Top {} Channels* (w = words, m = messages)".format(top)
+        header = "*Top {} Channels* (w = words, m = messages)".format(self.top)
         blocks.append(self.sf.text_block(header))
         channels = ur['channels']
         pchannels = pur['channels']
-        cids = list(channels.keys())[:top]
+        cids = list(channels.keys())[:self.top]
         cinfo = ur['channel_info']
         cstats = ur['channel_stats']
         cusers = ur['channel_user']
@@ -132,14 +132,13 @@ class SlackGlobalReport(object):
 
     def top_users(self, ur, pur):
         blocks = []
-        top = 20
-        header = "*Top {} Users*\n".format(top)
+        header = "*Top {} Users*\n".format(self.top)
         header += "(rphw = Reactions Per Hundred Messages)"
         blocks.append(self.sf.text_block(header))
         stats = ur['statistics']
         us = ur['user_stats']
         pus = pur['user_stats']
-        uids = stats['50percent users for words'][:top]
+        uids = stats['50percent users for words'][:self.top]
         for idx, uid in enumerate(uids):
             # current stats
             usu = us[uid]
@@ -169,16 +168,45 @@ class SlackGlobalReport(object):
                 pw_per_m = 0
                 pt = 0
 
-            it = "{}. *{}* ".format(idx + 1, self.sf.show_uid(uid))
-            it += self.sf.simple_comparison(w, pw, label='word') + ", "
-            it += self.sf.simple_comparison(m, pm, label='message') + ","
-            it += self.sf.simple_comparison(rphw, prphw) + "rphw, "
-            it += self.sf.simple_comparison(t, pt, label="message") + " in threads, "
-            it += self.sf.simple_comparison(per, pper, is_percent=True) + " of total traffic, "
-            it += self.sf.simple_comparison(cper, pcper, is_percent=True) + " cumulative of total.\n"
+            it = self.format_user(idx, uid, w, pw, m, pm, rphw, prphw, t, pt, per, pper, cper, pcper)
             blocks.append(self.sf.text_block(it))
         blocks.append(self.sf.divider())
         return blocks
+
+    def format_user(self, idx, uid, w, pw, m, pm, rphw, prphw, t, pt, per, pper, cper, pcper):
+        """
+        Formats a user's volume line.  For all variables, the variable that starts with 'p' is the previous
+        week's number
+        idx = the index of the user (in the top x list, starting with 0)
+        uid = User's UID
+        w = words
+        m = messages
+        rphw = reactions per hundred words
+        t = messages in threads
+        per = percent of total traffic
+        cper = cumulative percent of total traffic
+        """
+        it = "{}. *{}* ".format(idx + 1, self.sf.show_uid(uid))
+        it += self.sf.simple_comparison(w, pw, label='word') + ", "
+        it += self.sf.simple_comparison(m, pm, label='message') + ", "
+        it += self.sf.simple_comparison(rphw, prphw) + "rphw"
+        it += self.detailed_format_user(t, pt, per, pper, cper, pcper)
+        return it
+
+    def detailed_format_user(self, t, pt, per, pper, cper, pcper):
+        """
+        Provides some details for a user's volume line.
+        For all variables, the variable that starts with 'p' is the previous week's number
+        t = messages in threads
+        per = percent of total traffic
+        cper = cumulative percent of total traffic
+        """
+
+        it = " " + self.sf.simple_comparison(t, pt, label="message") + " in threads, "
+        it += self.sf.simple_comparison(per, pper, is_percent=True) + " of total traffic, "
+        it += self.sf.simple_comparison(cper, pcper, is_percent=True) + " cumulative of total.\n"
+        return it
+    
 
     def timezones(self, ur, pur):
         blocks = []
