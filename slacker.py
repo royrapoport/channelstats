@@ -47,14 +47,16 @@ class Slacker(object):
         """
         self.join_channel(cid)
         j = {'channel': cid, 'topic': topic}
-        ret = self.api_call(api_endpoint="conversations.setTopic", method=requests.post, json=j, header_for_token=True)
+        ret = self.api_call(api_endpoint="conversations.setTopic",
+                            method=requests.post, json=j, header_for_token=True)
         if leave:
             self.leave_channel(cid)
         return ret
 
     def set_purpose(self, cid, topic):
         j = {'channel': cid, 'topic': topic}
-        return self.api_call(api_endpoint="conversations.setPurpose", method=requests.post, json=j, header_for_token=True)
+        return self.api_call(api_endpoint="conversations.setPurpose",
+                             method=requests.post, json=j, header_for_token=True)
 
     def delete(self, channel, ts):
         api_endpoint = "chat.delete?channel={}&ts={}".format(channel, ts)
@@ -72,7 +74,6 @@ class Slacker(object):
 
     def get_messages(self, cid, ts, callback=None):
         ts = int(float(ts))
-        # print("Getting messages from {} starting {}".format(cid, time.asctime(time.localtime(int(ts)))))
         return self.paginated_lister(
             "conversations.history?channel={}&oldest={}".format(
                 cid, ts), callback=callback)
@@ -93,16 +94,16 @@ class Slacker(object):
         channels = self.paginated_lister(
             "conversations.list?types={types}".format(types=types_param))
 
-        channels.sort(key = lambda x: x['id'])
+        channels.sort(key=lambda x: x['id'])
         if 'private_channel' in types:
             channels_to_iterate = channels
             for index, channel in enumerate(channels_to_iterate):
                 is_group = channel.get('is_group', False)
                 is_private = channel.get('is_private', False)
                 if is_group and is_private:
+                    endpoint = 'conversations.info?channel={}&include_num_members=true'
                     channels[index] = self.api_call(
-                        api_endpoint='conversations.info?channel={}&include_num_members=true'.format(
-                            channel.get('id'))
+                        api_endpoint=endpoint.format(channel.get('id'))
                     ).get('channel', channel)
 
         return channels

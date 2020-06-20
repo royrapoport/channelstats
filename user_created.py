@@ -60,12 +60,12 @@ class UserCreated(object):
         self.users[key] = item
         return item
 
-    def set(self, slack_uid, ts = None):
+    def set(self, slack_uid, ts=None):
         if not ts:
             ts = time.time()
         ts = int(ts)
         item = self.get(slack_uid)
-        if item: # We already know about this person -- ignore
+        if item:  # We already know about this person -- ignore
             return
         item = {'slack_uid': slack_uid, 'ts': ts}
         self.new.append(item)

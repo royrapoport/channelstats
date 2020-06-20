@@ -8,6 +8,7 @@ import utils
 import config
 import configuration
 
+
 class User(object):
     table_name = "User"
     fake_table_name = "FakeUser"
@@ -103,7 +104,7 @@ class User(object):
     def batch_upload(self, users):
 
         self.uc.load()
-        active_users = [x for x in users if x['deleted'] == False]
+        active_users = [x for x in users if x['deleted'] is False]
         self.configuration.set_count("active_users", len(active_users))
         self.configuration.set_count("all_users", len(users))
         insert_users = []

@@ -43,22 +43,28 @@ class SlackUserReport(object):
         uc_entry = self.uc.get(uid)
         fp_entry = self.fp.get(uid)
         if uc_entry:
-            user_created = "Your account was created on {}, {:,} days ago.".format(uc_entry['date'], uc_entry['days'])
+            user_created = "Your account was created on {}, {:,} days ago."
+            user_created = user_created.format(uc_entry['date'], uc_entry['days'])
             blocks.append(self.sf.text_block(user_created))
         if fp_entry:
-            first_message = "Your first public message was posted on {}, {:,} days ago. {}".format(fp_entry['date'], fp_entry['days'], fp_entry['url'])
+            first_message = "Your first public message was posted on {}".format(fp_entry['date'])
+            first_message += ", {:,} days ago. {}".format(fp_entry['days'], fp_entry['url'])
             blocks.append(self.sf.text_block(first_message))
 
         blocks.append(self.sf.divider())
 
-        blocks.append(self.sf.text_block("*Last Week (between {} and {})*".format(ur['start_date'], ur['end_date'])))
+        tmp_text = "*Last Week (between {} and {})*".format(ur['start_date'], ur['end_date'])
+        blocks.append(self.sf.text_block(tmp_text))
 
         m = "You posted {} words in {} public messages."
-        m = m.format(self.sf.comparison(us, pus, ['count', 1]), self.sf.comparison(us, pus, ['count', 0]))
+        word_comparison = self.sf.comparison(us, pus, ['count', 1])
+        msg_comparison = self.sf.comparison(us, pus, ['count', 0])
+        m = m.format(word_comparison, msg_comparison)
         m += "\n"
         m += "That made you the *{}*-ranked poster on the Slack and meant you contributed "
         m += "*{:.1f}%*{} of this Slack's total public volume"
-        m = m.format(utils.rank(us['rank']), us['percent_of_words'], self.sf.comparison(us, pus, ['percent_of_words'], False))
+        pow_comparison = self.sf.comparison(us, pus, ['percent_of_words'], False)
+        m = m.format(utils.rank(us['rank']), us['percent_of_words'], pow_comparison)
         tm = us.get("thread_messages")
         if tm:
             t = ".  In total, {} messages were posted as threaded responses to your messages.\n"
@@ -77,16 +83,23 @@ class SlackUserReport(object):
         blocks += self.posting_days(ur, pur, uid)
         blocks += self.reacted_messages(ur, uid)
         blocks += self.replied_messages(ur, uid)
-        blocks.append(self.sf.text_block("You got {} reactions".format(ur['enriched_user'][uid]['reaction_count'])))
+        reaction_count_text = "You got {} reactions"
+        reaction_count_text = reaction_count_text.format(ur['enriched_user'][uid]['reaction_count'])
+        blocks.append(self.sf.text_block(rection_count_text))
         blocks += self.popular_reactions(ur, uid, count=us['count'][1])
-        blocks += self.topten(ur, pur, uid, 'reactions_from', "The people who most reacted to you are")
-        blocks += self.topten(ur, pur, uid, 'reacted_to', "The people you most reacted to are")
+        blocks += self.topten(ur, pur, uid, 'reactions_from',
+                              "The people who most reacted to you are")
+        blocks += self.topten(ur, pur, uid,
+                              'reacted_to', "The people you most reacted to are")
         blocks += self.topten(ur, pur, uid, 'reactions_combined', "Reaction Affinity")
-        blocks += self.topten(ur, pur, uid, 'author_thread_responded', "In-thread responses per original author (top ten authors)")
-        blocks += self.topten(ur, pur, uid, 'thread_responders', "In-thread responses to your threads (top ten authors)")
+        blocks += self.topten(ur, pur, uid, 'author_thread_responded',
+                              "In-thread responses per original author (top ten authors)")
+        blocks += self.topten(ur, pur, uid, 'thread_responders',
+                              "In-thread responses to your threads (top ten authors)")
         blocks += self.topten(ur, pur, uid, 'threads_combined', "Thread Affinity")
         blocks += self.topten(ur, pur, uid, 'you_mentioned', "The people you mentioned the most")
-        blocks += self.topten(ur, pur, uid, 'mentioned_you', "The people who mentioned you the most")
+        blocks += self.topten(ur, pur, uid, 'mentioned_you',
+                              "The people who mentioned you the most")
         blocks += self.topten(ur, pur, uid, 'mentions_combined', "Mention Affinity")
         blocks += self.unsubscribe()
         return blocks
@@ -102,7 +115,11 @@ class SlackUserReport(object):
         return blocks
 
     def unsubscribe(self):
-        unsub_block = self.sf.text_block('You are receiving this because you are a member of #zmeta-per-user-report-optin. Feedback is welcome over in #rands-slack-statistics.')
+        explanatory = """
+        You are receiving this because you are a member of #zmeta-per-user-report-optin.
+        Feedback is welcome over in #rands-slack-statistics
+        """
+        unsub_block = self.sf.text_block(explanatory)
         return [unsub_block]
 
     def firstpost(self, uid):
@@ -133,7 +150,8 @@ class SlackUserReport(object):
         Report on activity per hour of the workday
         """
         blocks = []
-        blocks.append(self.sf.text_block("*Your weekday posting activity by (local) hour of the day:*"))
+        header = "*Your weekday posting activity by (local) hour of the day:*"
+        blocks.append(self.sf.text_block(header))
         # We'll use messages (idx 0) rather than words (idx 1)
         idx = 0
         d = ur['user_stats'][uid]['posting_hours']
@@ -232,7 +250,7 @@ class SlackUserReport(object):
         # If set to true, this message will be sent as the user who owns the token we use
         as_user = False
         if override_uid:
-            uid=override_uid
+            uid = override_uid
         for blockset in utils.chunks(blocks, 49):
             if send:
                 print("Sending report to {}".format(uid))
