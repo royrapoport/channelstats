@@ -84,7 +84,10 @@ class Report(object):
 
     def set_users(self, users):
         dummyenriched = {}
-        for label in "reactions_from reacted_to you_mentioned thread_responders author_thread_responded mentioned_you mentions_combined".split():
+        labels = "reactions_from reacted_to you_mentioned thread_responders "
+        labels += "author_thread_responded mentioned_you mentions_combined"
+        labels = labels.split()
+        for label in labels:
             dummyenriched[label] = {}
         for label in "reactions replies".split():
             dummyenriched[label] = []
@@ -118,7 +121,7 @@ class Report(object):
             self.reactions[user] = {}
             self.track[user] = 1
             self.create_key(["enriched_user", user], copy.deepcopy(dummyenriched))
-            self.create_key(["users", user], [0,0])
+            self.create_key(["users", user], [0, 0])
             self.create_key(["user_stats", user], copy.deepcopy(dummy_user))
             self.create_key(["user_stats", user, "posting_hours"], {})
 
@@ -232,7 +235,6 @@ class Report(object):
             if cid in self._data['enriched_channel']:
                 self.increment(["enriched_channel", cid, "posting_hours", hour], message)
 
-
     def finalize(self):
         self._finalize_channels()
         self._finalize_mentions()
@@ -301,14 +303,17 @@ class Report(object):
         for uid in self.user_reply_accumulators:
             self._data['enriched_user'][uid]['replies'] = self.user_reply_accumulators[uid].dump()
         for cid in self.channel_reply_accumulators:
-            self._data['enriched_channel'][cid]['most_replied'] = self.channel_reply_accumulators[cid].dump()
+            self._data['enriched_channel'][cid]['most_replied'] = \
+                    self.channel_reply_accumulators[cid].dump()
 
     def _finalize_reaction_popularity(self):
         self._data['reaction_count'] = self.reactions_accumulator.dump()
         for uid in self.user_reaction_accumulators:
-            self._data['enriched_user'][uid]['reactions'] = self.user_reaction_accumulators[uid].dump()
+            self._data['enriched_user'][uid]['reactions'] = \
+                self.user_reaction_accumulators[uid].dump()
         for cid in self.channel_reaction_accumulators:
-            self._data['enriched_channel'][cid]['most_reacted'] = self.channel_reaction_accumulators[cid].dump()
+            self._data['enriched_channel'][cid]['most_reacted'] = \
+                self.channel_reaction_accumulators[cid].dump()
 
     def _finalize_period_activity(self):
         # Two-step process:
@@ -420,7 +425,7 @@ class Report(object):
                 elif type(v) in [dict, collections.OrderedDict, collections.defaultdict]:
                     expect[k] = {}
                 elif type(v) == list and len(v) == 2:
-                    expect[k] = [0,0]
+                    expect[k] = [0, 0]
                 elif type(v) == list:
                     expect[k] = []
                 else:
@@ -560,7 +565,6 @@ class Report(object):
                 self._data['enriched_channel'][cid]['reactions'] = Report.order_dict(reactions)
             else:
                 self._data['enriched_channel'][cid]['reactions'] = {}
-
 
     def _finalize_channels(self):
         """

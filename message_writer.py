@@ -54,8 +54,6 @@ class MessageWriter(object):
                     batch.put_item(Row)
                 else:
                     pass
-                    # sys.stdout.write("f")
-                    #sys.stdout.flush()
 
     def make_row(self, message, cid, parent_user_id):
         """
@@ -123,7 +121,7 @@ class MessageWriter(object):
         """
         reply_count = 0
         replies = message.get("replies", [])
-        replies.sort(key = lambda x: int(float(x['ts'])))
+        replies.sort(key=lambda x: int(float(x['ts'])))
         reply_count = len(replies)
         replies = ["{}:{}".format(x['user'], x['ts']) for x in replies]
         if replies:

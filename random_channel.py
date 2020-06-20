@@ -6,6 +6,7 @@ import time
 
 fname = "words"
 
+
 class RandomChannel(object):
     attempts = 50
 
@@ -23,13 +24,14 @@ class RandomChannel(object):
 
     def name(self):
         attempt = 1
-        while attempt  < self.attempts:
+        while attempt < self.attempts:
             if random.choice(range(2)):
                 # Create a SOMETHING-and/or-SOMETHING
                 middle = "and"
                 if random.choice(range(2)):
                     middle = "or"
-                name = "{}-{}-{}".format(random.choice(self.words), middle, random.choice(self.words))
+                name = "{}-{}-{}".format(random.choice(self.words), middle,
+                                         random.choice(self.words))
             else:
                 name = random.choice(self.words)
             if name not in self.used:
@@ -41,6 +43,7 @@ class RandomChannel(object):
         self.failures += 1
         return name  # Oh well.  Giving up is better than failing to give a name
 
+
 if __name__ == "__main__":
     counter = 2000000
     if len(sys.argv) > 1:
@@ -49,4 +52,4 @@ if __name__ == "__main__":
     for i in range(counter):
         rn.name()
     print("{} collisions ({:.1f}%)".format(rn.collisions, rn.collisions * 100.0 / counter))
-    print("{} failures ({:.1f}%)".format(rn.failures , rn.failures * 100.0 / counter))
+    print("{} failures ({:.1f}%)".format(rn.failures, rn.failures * 100.0 / counter))

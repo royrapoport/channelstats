@@ -46,11 +46,14 @@ class SlackChannelReport(object):
     def messages(self, cid, ur, pur):
         text = ""
         m = "{} messages and {} words were posted to the channel"
-        m = m.format(self.sf.comparison(ur, pur, ['channels', cid, 0]), self.sf.comparison(ur, pur, ['channels', cid, 1]))
+        msg_comp = self.sf.comparison(ur, pur, ['channels', cid, 0])
+        word_comp = self.sf.comparison(ur, pur, ['channels', cid, 1])
+        m = m.format(msg_comp, word_comp)
         text += m
         cur_user_count = len(ur['channel_user'].get(cid, []))
         prev_user_count = len(pur['channel_user'].get(cid, []))
-        text += " from {} unique users".format(self.sf.simple_comparison(cur_user_count, prev_user_count))
+        user_comp = self.sf.simple_comparison(cur_user_count, prev_user_count)
+        text += " from {} unique users".format(user_comp)
         curchannelvol = ur['channels'][cid][1]
         curtotal = ur['statistics']["words"]
         prevchannelvol = pur['channels'][cid][1]
@@ -69,7 +72,7 @@ class SlackChannelReport(object):
         prev_users = pur['channel_user'].get(cid)
         total = sum([x[1] for x in cur_users.values()])
         cur_user_names = list(cur_users.keys())
-        cur_user_names.sort(key = lambda x: cur_users[x][1])
+        cur_user_names.sort(key=lambda x: cur_users[x][1])
         cur_user_names.reverse()
         fields = ["*User*", "*Activity"]
         ctr = 1
@@ -133,7 +136,9 @@ class SlackChannelReport(object):
         # was during the weekend, we won't see posting hours stats
         d = ur['enriched_channel'][cid].get("posting_hours")
         if not d:
-            text = "*Note*: No weekday posting hours statistics are available, possibly because all activity during this time period was during the weekend"
+            text = "*Note*: No weekday posting hours statistics are available, "
+            text += "possibly because all activity during this time period was "
+            text += "during the weekend"
             block = self.sf.text_block(text)
             return [block]
         return self.sf.posting_hours(d)
@@ -215,8 +220,8 @@ class SlackChannelReport(object):
             blocks.append(block)
         return blocks
 
-
-    def send_report(self, cid, ur, previous, send=True, override_cid=None, summary=False):
+    def send_report(self, cid, ur, previous, send=True, override_cid=None,
+                    summary=False):
         """
         Send report for channel `cid`
         ur is current period report; previous is the previous report
@@ -225,7 +230,9 @@ class SlackChannelReport(object):
         if summary, will send summary of report to config.channel_stats channel
         """
         if override_cid == cid:
-            raise RuntimeError("You may not specify an override_cid that is the same as the report cid")
+            m = "You may not specify an override_cid that is the same as the "
+            m += "report cid"
+            raise RuntimeError(m)
 
         enricher.Enricher(fake=self.fake).enrich(ur)
         enricher.Enricher(fake=self.fake).enrich(previous)
@@ -241,7 +248,7 @@ class SlackChannelReport(object):
         # If set to true, this message will be sent as the user who owns the token we use
         as_user = False
         if override_cid:
-            cid=override_cid
+            cid = override_cid
         urls = []
         for blockset in utils.chunks(blocks, 49):
             if send:
@@ -263,7 +270,7 @@ class SlackChannelReport(object):
         if summary and urls:
             cid = self.channel.get(config.channel_stats)['slack_cid']
             self.client.chat_postMessage(
-                channel = cid,
+                channel=cid,
                 parse='full',
                 as_user=as_user,
                 unfurl_links=True,

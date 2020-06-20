@@ -7,6 +7,7 @@ import channel
 u = user.User()
 c = channel.Channel()
 
+
 def override(o):
     """
     Assume that o is #channelname or @username
@@ -34,6 +35,7 @@ def override(o):
         else:
             raise RuntimeError("Couldn't find a CID for #{}".format(o))
 
+
 def uid_for(token):
     """
     token is either a username or a UID.  If UID, make sure it's valid
@@ -50,9 +52,12 @@ def uid_for(token):
     if len(matches) == 0:
         raise RuntimeError("Could not find a user with name '{}'".format(token))
     if len(matches) > 1:
-        raise RuntimeError("Found too many matches for user {}: {}".format(token, json.dumps(matches, indent=4)))
+        m = "Found too many matches for user {}: {}"
+        m = m.format(token, json.dumps(matches, indent=4))
+        raise RuntimeError(m)
     uid = matches[0]['slack_uid']
     return uid
+
 
 def cid_for(token):
     """

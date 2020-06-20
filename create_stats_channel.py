@@ -29,7 +29,7 @@ for c in creates:
     cs = "{}-stats".format(c)
     u = "channels.create?name={}".format(cs)
     ret = slack.api_call(u)
-    if ret['ok'] != True:
+    if ret['ok'] is True:
         print("Oh oh: {}".format(ret))
         continue
     cid = ret['channel']['id']
@@ -39,4 +39,3 @@ for c in creates:
     print("setPurpose: {}".format(u))
     ret = slack.api_call(u)
     print("ret: {}".format(ret))
-

@@ -42,10 +42,8 @@ class Downloader(object):
         s = time.strftime("%Y-%m-%d %H:%M", tl)
         return s
 
-    def download(self, start_at = None):
+    def download(self, start_at=None):
         cids = self.slack.get_all_channel_ids()
-        # cids = [self.channel.get("devops")["name"]]
-        #cids = cids[17:]
         if start_at:
             cids = cids[start_at:]
         cid_count = len(cids)
@@ -92,7 +90,9 @@ class Downloader(object):
                         elif 'bot_id' in message:
                             parent_user_id = message['bot_id']
                         else:
-                            raise RuntimeError("Could not deduce message author: {}".format(message))
+                            m = "Could not deduce message author: {}"
+                            m = m.format(message)
+                            raise RuntimeError(m)
                         thread_messages = self.slack.get_thread_responses(
                             cid, message['thread_ts'])
                         thread_messages = [
