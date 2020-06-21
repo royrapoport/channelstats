@@ -26,7 +26,7 @@ class Message(object):
         idxname = attname.capitalize()
         AttributeDefinitions = [{'AttributeName': attname, 'AttributeType': 'S'}]
         Projection = {'ProjectionType': 'ALL'}
-        KeySchema = [{'AttributeName': attname, 'KeyType': 'HASH'}],
+        KeySchema = [{'AttributeName': attname, 'KeyType': 'HASH'}]
         Create = {'IndexName': idxname, 'KeySchema': KeySchema, 'Projection': Projection}
         GSIUpdates = [{'Create': Create}]
         self.ddb.dynamodb_client.update_table(TableName=self.table.name,
