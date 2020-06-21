@@ -175,7 +175,7 @@ class SlackGlobalReport(object):
     def top_users(self, ur, pur):
         blocks = []
         header = "*Top {} Users*\n".format(self.top)
-        header += "(rphw = Reactions Per Hundred Messages)"
+        header += "(rphw = Reactions Per Hundred Words)"
         blocks.append(self.sf.text_block(header))
         stats = ur['statistics']
         us = ur['user_stats']
