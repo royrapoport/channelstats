@@ -132,8 +132,6 @@ class ReportGenerator(object):
         report_creator.set_start_date(dates[0])
         report_creator.set_end_date(dates[-1])
         report_creator.set_days(days)
-        # print("For the report of {} days starting {} we have dates {}".format(days, start_day, dates))
-        # print("Message table names: {}".format(tables))
         for date in dates:
             for message in self.Message.messages_for_day(date):
                 report_creator.message(message)

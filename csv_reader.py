@@ -14,6 +14,7 @@ import user_created
 uc = user_created.UserCreated()
 uc.load()
 
+
 def process(member):
     assert "User ID" in member
     assert "Account created" in member
@@ -23,6 +24,7 @@ def process(member):
     # creation_date is of the form Nov 3, 2017
     ts = time.mktime(time.strptime(creation_date, "%b %d, %Y"))
     uc.set(slack_uid, ts)
+
 
 assert len(sys.argv) == 2, "Usage: {} CSVFILE".format(sys.argv[0])
 fobj = open(sys.argv[1], newline='')

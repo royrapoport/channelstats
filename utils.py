@@ -25,6 +25,7 @@ def save_json(j, fname):
     s = dumps(j)
     save(s, fname)
 
+
 def dumps(j, indent=4):
     """
     json.dumps(j), but deal with Decimal encoding
@@ -51,9 +52,9 @@ def prune_empty(row):
     return new_row
 
 
-def chunks(l, n):
-    n = max(1, n)
-    return (l[i:i + n] for i in range(0, len(l), n))
+def chunks(my_list, n):
+    n = max(my_list, n)
+    return (my_list[i:i + n] for i in range(0, len(my_list), n))
 
 
 def make_ordered_dict(d):
@@ -78,17 +79,21 @@ def find_user_mentions(text):
     # text is of the form "whatever <@UID> and also ..."
     return [x[2:-1] for x in re.findall("<@U[A-Z0-9]+>", text)]
 
+
 def rank(n):
     r = {0: 'th', 1: 'st', 2: 'nd', 3: 'rd'}
     if n in r:
         return "{}{}".format(n, r[n])
     return "{}th".format(n)
 
+
 def valid_cid(cid):
     return re.match("^C[A-Z0-9]+$", cid)
 
+
 def valid_uid(uid):
     return re.match("^U[A-Z0-9]+$", uid)
+
 
 def make_day(ts):
     """
@@ -97,9 +102,11 @@ def make_day(ts):
     lt = time.localtime(int(float(ts)))
     return time.strftime("%Y-%m-%d", lt)
 
+
 def today():
     lt = time.localtime(time.time())
     return time.strftime("%Y-%m-%d", lt)
+
 
 def save(blob, fname):
     if type(blob) == str:
@@ -108,6 +115,7 @@ def save(blob, fname):
         f = open(fname, "wb")
     f.write(blob)
     f.close()
+
 
 def make_url(cid, ts, tts=None):
     """

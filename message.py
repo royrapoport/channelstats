@@ -10,6 +10,7 @@ import utils
 import config
 import configuration
 
+
 class Message(object):
     table_name = "Message"
 
@@ -23,17 +24,15 @@ class Message(object):
         Create a GSI for attname, named AttnameIndex; wait until done if wait
         """
         idxname = attname.capitalize()
+        AttributeDefinitions = [{'AttributeName': attname, 'AttributeType': 'S'}]
+        Projection = {'ProjectionType': 'ALL'}
+        KeySchema = [{'AttributeName': attname, 'KeyType': 'HASH'}]
+        Create = {'IndexName': idxname, 'KeySchema': KeySchema, 'Projection': Projection}
+        GSIUpdates = [{'Create': Create}]
         self.ddb.dynamodb_client.update_table(TableName=self.table.name,
-               AttributeDefinitions=[{'AttributeName': attname, 'AttributeType': 'S'}],
-               GlobalSecondaryIndexUpdates=[ {
-                 'Create': {
-                        'IndexName': idxname,
-                        'KeySchema': [{'AttributeName': attname, 'KeyType': 'HASH'}],
-                        'Projection': {'ProjectionType': 'ALL'},
-                            }
-                        }
-                    ]
-              )
+                                              AttributeDefinitions=AttributeDefinitions,
+                                              GlobalSecondaryIndexUpdates=GSIUpdates,
+                                              )
         if wait:
             done = False
             while not done:
@@ -44,7 +43,9 @@ class Message(object):
                 else:
                     nonactive = [x for x in gsis if x['IndexStatus'] != "ACTIVE"]
                     if nonactive:
-                        print("GSI creation incomplete -- Inactive GSIs pending: {}.  Waiting".format([x['IndexName'] for x in nonactive]))
+                        m = "GSI creation incomplete -- Inactive GSIs pending: "
+                        m += "{}.  Waiting".format([x['IndexName'] for x in nonactive])
+                        print(m)
                     else:
                         done = True
                 if not done:
@@ -69,11 +70,11 @@ class Message(object):
         while run:
             if ExclusiveStartKey:
                 resp = self.table.query(IndexName=GSIname,
-                    ExclusiveStartKey=ExclusiveStartKey,
-                    KeyConditionExpression=Key(field_name).eq(field_value))
+                                        ExclusiveStartKey=ExclusiveStartKey,
+                                        KeyConditionExpression=Key(field_name).eq(field_value))
             else:
                 resp = self.table.query(IndexName=GSIname,
-                    KeyConditionExpression=Key(field_name).eq(field_value))
+                                        KeyConditionExpression=Key(field_name).eq(field_value))
             if 'LastEvaluatedKey' in resp:
                 ExclusiveStartKey = resp['LastEvaluatedKey']
             else:
@@ -84,7 +85,7 @@ class Message(object):
     def messages_for_channel(self, cid):
         """
         given a cid (Channel ID), return generator you can use to get all messages
-        we have for that channel 
+        we have for that channel
         """
 
         return self.gsi_search("slack_cid", "Slack_cid", cid)
@@ -105,7 +106,7 @@ class Message(object):
 
         return self.gsi_search("date", "Date", day)
 
+
 if __name__ == "__main__":
     # Just create the table and GSIs
     m = Message()
-

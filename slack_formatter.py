@@ -49,7 +49,7 @@ class SlackFormatter(object):
         return block
 
     def divider(self):
-        return { "type": "divider" }
+        return {"type": "divider"}
 
     def adjust_values(self, cur, prev, label):
         """
@@ -70,7 +70,6 @@ class SlackFormatter(object):
 
         return(cur, prev, label)
 
-
     def format_percent(self, n):
         """
         returns string print of n using our preferred formatting
@@ -86,7 +85,8 @@ class SlackFormatter(object):
         else:
             return "*{:,.1f}*".format(n)
 
-    def simple_comparison(self, cur_item, prev_item, found_prev=True, print_num=True, is_percent=False, label=None):
+    def simple_comparison(self, cur_item, prev_item, found_prev=True,
+                          print_num=True, is_percent=False, label=None):
         """
         Returns a string with an emoji indicating difference between
         cur_item and prev_item (which should be numbers or decimal.Decimals).
@@ -133,7 +133,7 @@ class SlackFormatter(object):
         elif diff < 0:
             emoji = emoji or self.emoji_down
             sign = ""
-        if diff: # Don't print change if there's no difference
+        if diff:  # Don't print change if there's no difference
             ds += " ({}{:.0f}%)".format(sign, diff)
         else:
             emoji = emoji or ""
@@ -159,12 +159,12 @@ class SlackFormatter(object):
             # then we divide by 0 and bad things happen
             try:
                 prev_item = prev_item[i]
-            except:
+            except Exception:
                 prev_item = cur_item
                 found_prev = False
         return self.simple_comparison(cur_item, prev_item, found_prev, print_num, is_percent, label)
 
-    def histogram(self, d, m, idx, header, label = None):
+    def histogram(self, d, m, idx, header, label=None):
         """
         With d as a dict with {k:v} where v are (messages, words)
         output a histogram with percent of total activity for each k
@@ -187,7 +187,7 @@ class SlackFormatter(object):
             percent = (value * 100.0 / total)
             new[i] = (percent, value)
         k = list(d.keys())
-        k.sort(key = lambda x: int(x))
+        k.sort(key=lambda x: int(x))
         fields = [header, "*Percent of Activity*"]
         for i in k:
             fields.append("{}".format(m(i)))
@@ -234,8 +234,9 @@ class SlackFormatter(object):
         return "@{}".format(choice)
 
     def make_link_button(self, text, buttontext, url):
-        block = {'type':'section', 'text': { 'type': 'mrkdwn', 'text':text} }
-        block['accessory'] = { 'type':'button', 'text':{'type':'plain_text', 'text':buttontext }, 'url':url }
+        block = {'type': 'section', 'text': {'type': 'mrkdwn', 'text': text}}
+        block['accessory'] = {'type': 'button', 'url': url}
+        block['accessory']['text'] = {'type': 'plain_text', 'text': buttontext}
         return block
 
     def get_fake_channel(self, cname):
@@ -271,7 +272,7 @@ class SlackFormatter(object):
 
         sorted_dict = collections.OrderedDict()
         reactions = list(popularity.keys())
-        reactions.sort(key = lambda x: popularity[x])
+        reactions.sort(key=lambda x: popularity[x])
         reactions.reverse()
 
         t = "*Count* *Reactji*"

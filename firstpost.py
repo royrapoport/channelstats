@@ -111,7 +111,7 @@ class FirstPost(object):
         dt = datetime.datetime(y, m, d, 0, 0, 0)
         report_start_ts = dt.timestamp()
         report_end_ts = report_start_ts + 86400 * days
-        matches =[]
+        matches = []
         for item in self.ddb.items(self.ddb.get_table()):
             ts = item['ts']
             if ts >= report_start_ts and ts <= report_end_ts:

@@ -4,6 +4,7 @@ import time
 import ddb
 import utils
 
+
 class ChannelMembersLog(object):
     table_name = "ChannelMembersLog"
 
@@ -28,7 +29,7 @@ class ChannelMembersLog(object):
     def update(self, cid, ts, count):
         nows = self.token(int(ts))
         self.table.update_item(
-            Key = {'slack_cid': cid},
+            Key={'slack_cid': cid},
             UpdateExpression='set {} = :m'.format(nows),
             ExpressionAttributeValues={':m': count},
             ReturnValues='UPDATED_NEW'

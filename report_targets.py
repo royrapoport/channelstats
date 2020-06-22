@@ -11,6 +11,7 @@ fake = False
 slack = slacker.Slacker(config.slack_name, slack_token.token)
 channel_obj = channel.Channel()
 
+
 def users():
     """
     return list of users who should get user reports
@@ -19,6 +20,7 @@ def users():
     optchan_id = channel_obj.get(optchan)['slack_cid']
     users = slack.get_users_for_channel(optchan_id)
     return users
+
 
 def channels(debug=False):
     """
@@ -29,7 +31,7 @@ def channels(debug=False):
     stats_channels = [x for x in friendly_names if re.match(".*-stats$", x)]
     if debug:
         print("Stats channels: {}".format(stats_channels))
-    # channel_names will be a 
+    # channel_names will be a
     # {channel_name_to_do_report_on: channel_name_to_send_report_to}
     # dict
     channel_names = {}
@@ -47,7 +49,7 @@ def channels(debug=False):
 
     return channel_ids
 
+
 if __name__ == "__main__":
     print("users: {}".format(users()))
     print("channels: {}".format(channels(debug=True)))
-

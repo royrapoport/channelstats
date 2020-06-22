@@ -6,9 +6,11 @@ import slack_token
 
 import user_downloader
 
+
 def make_username(name):
     first, last = name.split()
     return "{}{}".format(first[0].lower(), last.lower())
+
 
 rn = random_name.RandomName()
 ud = user_downloader.UserDownloader("rands-leadership", slack_token.token)
