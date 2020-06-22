@@ -52,9 +52,9 @@ def prune_empty(row):
     return new_row
 
 
-def chunks(mylist, n):
-    n = max(mylist, n)
-    return (mylist[i:i + n] for i in range(0, len(mylist), n))
+def chunks(my_list, n):
+    n = max(my_list, n)
+    return (my_list[i:i + n] for i in range(0, len(my_list), n))
 
 
 def make_ordered_dict(d):
