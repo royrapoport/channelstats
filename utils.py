@@ -53,7 +53,7 @@ def prune_empty(row):
 
 
 def chunks(my_list, n):
-    n = max(my_list, n)
+    n = max(1, n)
     return (my_list[i:i + n] for i in range(0, len(my_list), n))
 
 
