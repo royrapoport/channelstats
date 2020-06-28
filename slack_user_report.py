@@ -85,7 +85,7 @@ class SlackUserReport(object):
         blocks += self.replied_messages(ur, uid)
         reaction_count_text = "You got {} reactions"
         reaction_count_text = reaction_count_text.format(ur['enriched_user'][uid]['reaction_count'])
-        blocks.append(self.sf.text_block(rection_count_text))
+        blocks.append(self.sf.text_block(reaction_count_text))
         blocks += self.popular_reactions(ur, uid, count=us['count'][1])
         blocks += self.topten(ur, pur, uid, 'reactions_from',
                               "The people who most reacted to you are")
