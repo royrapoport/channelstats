@@ -18,11 +18,15 @@ class Channel(object):
     def batch_get_channel(self, cids):
         return self.ddb.batch_hash_get(cids)
 
-    def friendly_channel_names(self):
+    def friendly_channel_names(self, active=False):
         """
         returns list of friendly channel names
+        if active, only return names of active channels
         """
-        item = self.configuration.get("channel_names")
+        label = "channel_names"
+        if active:
+            label = "active_" + label
+        item = self.configuration.get(label)
         return item['names'].split("#")
 
     def batch_upload(self, channels):
@@ -31,6 +35,10 @@ class Channel(object):
         friendlies = [x['name'] for x in channels]
         friendly_string = "#".join(friendlies)
         self.configuration.set("channel_names", {"names": friendly_string})
+        active_friendlies = [x['name'] for x in channels if x['is_archived'] is False]
+        active_friendly_string = "#".join(active_friendlies)
+        self.configuration.set("active_channel_names", {"names": active_friendly_string})
+
         with self.table.batch_writer() as batch:
             for channel in channels:
                 cid = channel['id']
@@ -39,6 +47,7 @@ class Channel(object):
                 values = {
                     'friendly_name': cname,
                     'slack_cid': cid,
+                    'is_archived': channel.get("is_archived", None),
                     'created': channel.get('created'),
                     'members': channel.get('num_members'),
                     'is_channel': channel.get('is_channel', None),

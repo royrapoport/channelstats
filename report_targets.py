@@ -27,8 +27,9 @@ def channels(debug=False):
     for a cid that we should get activity for, return
     {cid: report_cid} where report_cid is the CID to which we should send the report
     """
-    friendly_names = channel_obj.friendly_channel_names()
+    friendly_names = channel_obj.friendly_channel_names(active=True)
     stats_channels = [x for x in friendly_names if re.match(".*-stats$", x)]
+    friendly_names = channel_obj.friendly_channel_names()
     if debug:
         print("Stats channels: {}".format(stats_channels))
     # channel_names will be a
