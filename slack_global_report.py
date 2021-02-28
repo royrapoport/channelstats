@@ -6,7 +6,7 @@ import random
 import time
 import sys
 
-import slack
+from slack_sdk import WebClient
 
 import config
 import channel
@@ -22,7 +22,7 @@ class SlackGlobalReport(object):
     def __init__(self):
         self.sf = slack_formatter.SlackFormatter()
         self.channel = channel.Channel()
-        self.client = slack.WebClient(token=slack_token.token)
+        self.client = WebClient(token=slack_token.token)
         self.firstpost = firstpost.FirstPost()
         self.enricher = enricher.Enricher()
         self.report_channel = self.channel.get(config.report_channel)['slack_cid']

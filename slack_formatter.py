@@ -8,7 +8,7 @@ import random
 import time
 import sys
 
-import slack
+from slack_sdk import WebClient
 
 import random_name
 import channel
@@ -37,7 +37,7 @@ class SlackFormatter(object):
             self.channel = self.fake_channel
         self.rn = random_name.RandomName()
         self.user = user.User(fake=fake)
-        self.client = slack.WebClient(token=slack_token.token)
+        self.client = WebClient(token=slack_token.token)
         self.enricher = enricher.Enricher(fake=fake)
 
     def text_block(self, text, markdown=True):

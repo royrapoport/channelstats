@@ -6,7 +6,7 @@ import random
 import time
 import sys
 
-import slack
+from slack_sdk import WebClient
 
 import random_name
 import config
@@ -29,7 +29,7 @@ class SlackChannelReport(object):
         self.channel = channel.Channel(fake=fake)
         self.rn = random_name.RandomName()
         self.user = user.User(fake=fake)
-        self.client = slack.WebClient(token=slack_token.token)
+        self.client = WebClient(token=slack_token.token)
         self.enricher = enricher.Enricher(fake=fake)
         self.cml = channel_members_log.ChannelMembersLog()
 
