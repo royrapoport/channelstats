@@ -24,12 +24,15 @@ class ChannelDownloader(object):
         if include_private:
             channel_types.append('private_channel')
         channels = self.slack.get_all_channels(types=channel_types)
+        channels = [x for x in channels if x['is_archived'] == False]
+        channels.sort(key = lambda x: x['name'])
         # channels = [x for x in channels if x['name'].find("ztest") == 0]
         print("Getting channel memberships now ... ")
+        total = len(channels)
+        idx = 0
         for channel in channels:
-            if channel['is_archived']:
-                continue
-            m = "Downloading members for {} ... ".format(channel['name'])
+            idx += 1
+            m = "{}/{} Downloading members for {} ... ".format(idx, total, channel['name'])
             sys.stdout.write(m)
             cid = channel['id']
             try:
