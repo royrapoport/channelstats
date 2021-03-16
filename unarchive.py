@@ -9,6 +9,7 @@ import channel
 import config
 import slack_token
 import slacker
+import utils
 
 slack = slacker.Slacker(config.slack_name, slack_token.token)
 client = WebClient(token=slack_token.token)
