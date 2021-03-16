@@ -28,5 +28,6 @@ slack.unarchive_channel(cid)
 slack.join_channel(cid)
 client.chat_postMessage(channel=cid, text="Greetings fellow humans! This channel is being unarchived by the emergency channel unarchiving system! One moment as we re-populate it with the latest list of members we have for it ({} members)!".format(len(members)))
 print("Adding {}".format(members))
-slack.invite(cid, members)
+for members_chunk in utils.chunks(members, 900):
+    slack.invite(cid, members_chunk)
 client.chat_postMessage(channel=cid, text="We've brought all previously-noted members back into the channel.  Have just the most *awesome* day!")
