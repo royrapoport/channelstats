@@ -27,6 +27,10 @@ class Slacker(object):
         if current_topic != topic:
             self.set_topic(cid, topic, leave=leave)
 
+    def unarchive_channel(self, cid):
+        response = self.api_call("conversations.unarchive?channel={}".format(cid), method=requests.post)
+        return response
+
     def leave_channel(self, cid):
         response = self.api_call("conversations.leave?channel={}".format(cid), method=requests.post)
         return response
@@ -34,6 +38,19 @@ class Slacker(object):
     def join_channel(self, cid):
         response = self.api_call("conversations.join?channel={}".format(cid), method=requests.post)
         return response
+
+    def get_users_for_channel(self, cid):
+        response = self.paginated_lister("conversations.members?channel={}".format(cid))
+        return response
+
+    def invite(self, cid, list_of_uids):
+        """
+        Invites the list of UIDs into the channel
+        """
+        uid_string = ",".join(list_of_uids)
+        j = {'channel': cid, 'users': uid_string}
+        ret = self.api_call(api_endpoint="conversations.invite", method=requests.post, json=j, header_for_token=True)
+        return ret
 
     def get_topic(self, cid):
         response = self.api_call("conversations.info?channel={}".format(cid))
