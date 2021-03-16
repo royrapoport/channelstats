@@ -97,7 +97,7 @@ originating message in the thread or because the author of the thread replies in
 The message is the head of the thread if the `thread_timestamp` is identical to the
 `timestamp`.
 
-## ItemStore
+## BulkStore
 
 | column      | values |
 | ----------- | -------- |
