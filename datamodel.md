@@ -97,6 +97,26 @@ originating message in the thread or because the author of the thread replies in
 The message is the head of the thread if the `thread_timestamp` is identical to the
 `timestamp`.
 
+## ItemStore
+
+| column      | values |
+| ----------- | -------- |
+| **item_id** (H) | unique ID of the item |
+| **value**    | item text |
+| **0 [ 1 ... N ]** |  item_id for chunk N|
+
+Used to store (potentially large) items.  Used for reports (so we don't have to re-generate them) and channel membership records.
+
+If the item size is smaller than 300K, we'll just store the item text in `value`.  
+
+If the item size is larger than 300K, we'll chunk it up into 300K chunks.
+Each will be given its own unique item_id and stored in its own row.
+Then, the item ID for that chunk will be stored as the value of the particular
+index of that chunk.
+
+So for example, if the item with item_id `foo` is "whatever" and chunk size is limited to 2, we'll break it into `wh`, `at`, `ev`, and `er`
+(chunks 0, 1, 2, 3 in order).  `foo` will have 4 keys in addition to `item_id`: 0, 1, 2, 3.  Each key will have as its value another item_id -- e.g. 0:foo-0, 1:foo-1, etc.
+Then item_id foo-0 will have an entry in the table whose `value` is `wh`.
 
 ## ReportStore
 
