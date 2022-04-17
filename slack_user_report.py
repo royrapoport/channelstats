@@ -260,7 +260,7 @@ class SlackUserReport(object):
                         blocks=blockset,
                         parse='full',
                         as_user=as_user,
-                        unfurl_links=True,
+                        unfurl_links=False,
                         link_names=True)
                     # print("Response: {}".format(response))
                 except Exception:
