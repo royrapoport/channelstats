@@ -81,6 +81,18 @@ def find_user_mentions(text):
 
 
 def rank(n):
+    tenremainder = n % 10
+    hundredremainder = n % 100
+    suffix = "th"
+    if (tenremainder == 1 and hundredremainder != 11):
+        suffix = "st"
+    if (tenremainder == 2 and hundredremainder != 12):
+        suffix = "nd"
+    if (tenremainder == 3 and hundredremainder != 13):
+        suffix = "rd"
+    return "{}{}".format(n, suffix)
+
+def rank(n):
     r = {0: 'th', 1: 'st', 2: 'nd', 3: 'rd'}
     if n in r:
         return "{}{}".format(n, r[n])
