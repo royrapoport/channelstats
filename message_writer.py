@@ -123,6 +123,12 @@ class MessageWriter(object):
         replies = message.get("replies", [])
         replies.sort(key=lambda x: int(float(x['ts'])))
         reply_count = len(replies)
+        # Some replies (e.g. bot replies) will not have a user associated.
+        # For simplicity, I'm dropping them
+        replies = [x for x in replies if 'user' in x and 'ts' in x]
+        if len(replies) < reply_count:
+            print("Dropped {} replies...".format(reply_count - len(replies)))
+            reply_count = len(replies)
         replies = ["{}:{}".format(x['user'], x['ts']) for x in replies]
         if replies:
             replies = ",".join(replies)
