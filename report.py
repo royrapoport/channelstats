@@ -200,7 +200,7 @@ class Report(object):
         cid = message['slack_cid']
         ts = int(float(message['ts']))
         # First, get stats unadjusted and by UTC
-        localtime = time.gmtime(ts)
+        localtime = time.gmtime(int(ts))
         hour = localtime.tm_hour
         wday = localtime.tm_wday
         self.increment(["weekday", wday], message)
@@ -219,7 +219,7 @@ class Report(object):
         self.increment(["timezone", tz], message)
         self._data['posters_per_timezone'][tz][uid] = 1
         ts += tz_offset
-        localtime = time.gmtime(ts)
+        localtime = time.gmtime(int(ts))
         hour = localtime.tm_hour
         wday = localtime.tm_wday
         self.increment(["user_weekday", wday], message)
