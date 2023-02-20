@@ -368,6 +368,7 @@ class SlackGlobalReport(object):
             if send:
                 try:
                     response = self.client.chat_postMessage(
+                        text="Weekly Activity Report",
                         channel=destination,
                         blocks=blockset,
                         parse='full',

@@ -255,6 +255,7 @@ class SlackChannelReport(object):
                 print("Sending report to {}".format(cid))
                 try:
                     response = self.client.chat_postMessage(
+                        text="Weekly Channel Activity Report",
                         channel=cid,
                         blocks=blockset,
                         parse='full',
@@ -270,6 +271,7 @@ class SlackChannelReport(object):
         if summary and urls:
             cid = self.channel.get(config.channel_stats)['slack_cid']
             self.client.chat_postMessage(
+                text="Weekly Channel Activity Report",
                 channel=cid,
                 parse='full',
                 as_user=as_user,

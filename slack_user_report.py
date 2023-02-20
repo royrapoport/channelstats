@@ -256,6 +256,7 @@ class SlackUserReport(object):
                 print("Sending report to {}".format(uid))
                 try:
                     response = self.client.chat_postMessage(
+                        text="Your Weekly Activity Report",
                         channel=uid,
                         blocks=blockset,
                         parse='full',
