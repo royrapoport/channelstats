@@ -36,8 +36,9 @@ class SlackUserReport(object):
 
     def make_header(self, ur, us, pur, pus, uid):
         blocks = []
-        header = "*Public User Activity Report for {}*"
-        header = header.format(ur['user'])
+        header = "*Public User Activity Report for <@{}>*"
+        # header = header.format(ur['user'])
+        header = header.format(uid)
         blocks.append(self.sf.text_block(header))
 
         uc_entry = self.uc.get(uid)
