@@ -65,7 +65,7 @@ if not args.nouser:
     for user in users:
         user_destination = override or user
         if not args.nosend:
-            print("Sendnig user reports")
+            print("Sending user reports")
             try:
                 slack_user_reporter.send_report(user, report, previous_report, send=True, override_uid=user_destination)
             except Exception as ex:
