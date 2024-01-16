@@ -1,6 +1,6 @@
 # channelstats
 
-## Minimum requirements
+## Minimum Requirements
 
 Download the local version of DynamoDB ( https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/DynamoDBLocal.html ) and run it
 
