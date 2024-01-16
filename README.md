@@ -14,7 +14,7 @@ This will take a while as it downloads about two months of data.
 
 Then you can start playing with report_generator.py
 
-## Some files you'll need
+## Some Files you'll need
 
 If you want to do PDF generation, you'll need a pdfcrowd_token.py file whose format is
 ```
