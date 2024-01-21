@@ -72,7 +72,7 @@ if not args.nouser:
                 print("Failed to send a report to {}: {} {}".format(user, ex, sys.exc_info()[0]))
                 traceback.print_exc()
 
-topic = "Channel for automated postings of channel stats for the #{} channel.  Feedback/questions to #rands-slack-statistics"
+topic = "Channel for automated postings of channel stats for the #{} channel.  Feedback/questions to #rls-slack-statistics"
 
 if not args.nochannel:
     for channel in channels:

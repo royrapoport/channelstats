@@ -118,7 +118,7 @@ class SlackUserReport(object):
     def unsubscribe(self):
         explanatory = """
         You are receiving this because you are a member of #zmeta-per-user-report-optin.
-        Feedback is welcome over in #rands-slack-statistics
+        Feedback is welcome over in #rls-slack-statistics
         """
         unsub_block = self.sf.text_block(explanatory)
         return [unsub_block]
