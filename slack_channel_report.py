@@ -36,8 +36,8 @@ class SlackChannelReport(object):
     def membercount(self, cid, start, end):
         sc = self.cml.earliest_count(cid, start)
         ec = self.cml.latest_count(cid, end)
-        text = self.sf.simple_comparison(sc, ec)
-        diff = sc - ec
+        text = self.sf.simple_comparison(ec, sc)
+        diff = ec - sc
         text = "{} ended this period with {} members".format(self.sf.show_cid(cid), text)
         if diff:
             text += ", a change of {} members".format(diff)
