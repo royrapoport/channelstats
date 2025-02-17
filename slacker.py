@@ -15,6 +15,7 @@ class Slacker(object):
 
         self.slack = slack
         self.token = token
+        print("Using API token {}".format(self.token))
         self.api_calls = 0
         self.api_wait = 0
 
@@ -230,7 +231,8 @@ class Slacker(object):
             api_endpoint,
             method=requests.get,
             json=None,
-            header_for_token=False):
+            header_for_token=True):
+        # print("Slacker called to enact {}".format(api_endpoint))
         url = "https://{}.slack.com/api/{}".format(self.slack, api_endpoint)
         headers = {}
         if header_for_token:
