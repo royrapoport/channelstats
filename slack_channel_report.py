@@ -245,8 +245,6 @@ class SlackChannelReport(object):
             f.write(json.dumps(blocks, indent=4))
             f.close()
             return
-        # If set to true, this message will be sent as the user who owns the token we use
-        as_user = False
         if override_cid:
             cid = override_cid
         urls = []
@@ -259,7 +257,6 @@ class SlackChannelReport(object):
                         channel=cid,
                         blocks=blockset,
                         parse='full',
-                        as_user=as_user,
                         unfurl_links=True,
                         link_names=True)
                     # print("Response: {}".format(response))
@@ -273,7 +270,6 @@ class SlackChannelReport(object):
             self.client.chat_postMessage(
                 channel=cid,
                 parse='full',
-                as_user=as_user,
                 unfurl_links=True,
                 link_names=True,
                 text=urls[0]

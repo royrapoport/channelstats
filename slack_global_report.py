@@ -360,8 +360,6 @@ class SlackGlobalReport(object):
         f = open("slack.json", "w")
         f.write(json.dumps(blocks, indent=4))
         f.close()
-        # If set to true, this message will be sent as the user who owns the token we use
-        as_user = False
         urls = []
         destination = destination or self.report_channel
         for blockset in utils.chunks(blocks, 49):
@@ -372,7 +370,6 @@ class SlackGlobalReport(object):
                         channel=destination,
                         blocks=blockset,
                         parse='full',
-                        as_user=as_user,
                         unfurl_links=True,
                         link_names=True)
                     # print("Response: {}".format(response))

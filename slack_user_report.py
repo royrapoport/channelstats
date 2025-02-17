@@ -248,8 +248,6 @@ class SlackUserReport(object):
             utils.save_json(ur, "enriched_current_report.json")
             utils.save_json(previous, "enriched_previous_report.json")
             return
-        # If set to true, this message will be sent as the user who owns the token we use
-        as_user = False
         if override_uid:
             uid = override_uid
         for blockset in utils.chunks(blocks, 49):
@@ -261,11 +259,10 @@ class SlackUserReport(object):
                         channel=uid,
                         blocks=blockset,
                         parse='full',
-                        as_user=as_user,
                         unfurl_links=False,
                         link_names=True)
                     # print("Response: {}".format(response))
-                except Exception:
-                    print(Exception)
-                    print(json.dumps(blockset, indent=4))
+                except Exception as ex:
+                    print(ex)
+                    # print(json.dumps(blockset, indent=4))
                     sys.exit(0)
