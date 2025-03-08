@@ -20,5 +20,5 @@ class UserDownloader(object):
 
 
 if __name__ == "__main__":
-    user_downloader = UserDownloader("rands-leadership", slack_token.token)
+    user_downloader = UserDownloader("rands-leadership", slack_token.read_token)
     user_downloader.download()

@@ -23,7 +23,7 @@ for c in channels:
         creates.append(c)
 
 print("Will create stats channels for {}".format(creates))
-slack = slacker.Slacker(config.slack_name, slack_token.token)
+slack = slacker.Slacker(config.slack_name, slack_token.read_token)
 
 for c in creates:
     cs = "{}-stats".format(c)

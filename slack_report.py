@@ -6,7 +6,6 @@ import sys
 
 import report_generator
 
-import slack_token
 import slack
 
 import utils

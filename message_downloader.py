@@ -112,7 +112,7 @@ class Downloader(object):
 
 
 if __name__ == "__main__":
-    downloader = Downloader("rands-leadership", slack_token.token)
+    downloader = Downloader("rands-leadership", slack_token.read_token)
     start_at = None
     if len(sys.argv) > 1:
         start_at = int(sys.argv[1])

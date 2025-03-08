@@ -45,4 +45,4 @@ days = 7
 send = not args.nosend
 (report, previous_report) = rg.report(latest_week_start, days, channels=[cid],
                                       force_generate=args.regen)
-slack_formatter_obj.send_report(cid, report, previous_report, send=send, override_uid=destination)
+slack_formatter_obj.send_report(cid, report, previous_report, send=send, override_cid=destination)

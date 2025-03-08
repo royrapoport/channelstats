@@ -11,8 +11,8 @@ import slack_token
 import slacker
 import utils
 
-slack = slacker.Slacker(config.slack_name, slack_token.token)
-client = WebClient(token=slack_token.token)
+slack = slacker.Slacker(config.slack_name, slack_token.read_token)
+client = WebClient(token=slack_token.post_token)
 channel_obj = channel.Channel()
 bulk_store_obj = bulk_store.BulkStore()
 

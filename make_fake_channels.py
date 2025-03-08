@@ -6,7 +6,6 @@ import sys
 import utils
 import random_channel
 import channel
-import slack_token
 
 import user_downloader
 

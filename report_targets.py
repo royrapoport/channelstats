@@ -8,7 +8,7 @@ import channel
 import slack_token
 
 fake = False
-slack = slacker.Slacker(config.slack_name, slack_token.token)
+slack = slacker.Slacker(config.slack_name, slack_token.read_token)
 channel_obj = channel.Channel()
 
 

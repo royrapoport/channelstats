@@ -30,7 +30,7 @@ class SlackUserReport(object):
         self.channel = channel.Channel()
         self.rn = random_name.RandomName()
         self.user = user.User(fake=fake)
-        self.client = WebClient(token=slack_token.token)
+        self.client = WebClient(token=slack_token.post_token)
         self.enricher = enricher.Enricher(fake=fake)
         self.uc = user_created.UserCreated()
 

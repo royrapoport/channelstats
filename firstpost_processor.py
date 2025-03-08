@@ -41,5 +41,5 @@ class Downloader(object):
 
 
 if __name__ == "__main__":
-    downloader = Downloader("rands-leadership", slack_token.token)
+    downloader = Downloader("rands-leadership", slack_token.read_token)
     downloader.download()

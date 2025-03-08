@@ -22,7 +22,7 @@ class SlackGlobalReport(object):
     def __init__(self):
         self.sf = slack_formatter.SlackFormatter()
         self.channel = channel.Channel()
-        self.client = WebClient(token=slack_token.token)
+        self.client = WebClient(token=slack_token.post_token)
         self.firstpost = firstpost.FirstPost()
         self.enricher = enricher.Enricher()
         self.report_channel = self.channel.get(config.report_channel)['slack_cid']

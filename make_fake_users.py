@@ -13,7 +13,7 @@ def make_username(name):
 
 
 rn = random_name.RandomName()
-ud = user_downloader.UserDownloader("rands-leadership", slack_token.token)
+ud = user_downloader.UserDownloader("rands-leadership", slack_token.read_token)
 users = ud.slack.get_all_users()
 # print("I have {} users".format(len(users)))
 for u in users:

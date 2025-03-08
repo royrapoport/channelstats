@@ -37,7 +37,7 @@ class SlackFormatter(object):
             self.channel = self.fake_channel
         self.rn = random_name.RandomName()
         self.user = user.User(fake=fake)
-        self.client = WebClient(token=slack_token.token)
+        self.client = WebClient(token=slack_token.post_token)
         self.enricher = enricher.Enricher(fake=fake)
 
     def text_block(self, text, markdown=True):
